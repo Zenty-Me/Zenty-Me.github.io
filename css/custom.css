@@ -81,3 +81,34 @@
     transform: rotate(-315deg) scale(1);
   }
 }
+
+/* ========================================
+   底部栏适配深色渐变背景
+   ======================================== */
+
+#footer {
+  background-color: rgba(15, 12, 41, 0.55) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 底部导航条加深一层，和上方主体区分 */
+#footer .footer-other {
+  background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 文字与链接颜色：浅灰，悬停高亮 */
+#footer,
+#footer a {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+#footer a:hover {
+  color: #b9a8ff !important;
+}
+
+/* 标题略亮 */
+#footer .footer-flex-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
