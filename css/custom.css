@@ -1,0 +1,83 @@
+/* ========================================
+   自定义欢迎加载动画
+   ======================================== */
+
+/* 背景遮罩颜色 */
+#loading-box .loading-left-bg,
+#loading-box .loading-right-bg {
+  background-color: #1a1a2e !important;
+}
+
+/* 旋转方块颜色 */
+#loading-box .configure-border-1 {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  width: 100px !important;
+  height: 100px !important;
+  border-radius: 12px !important;
+  animation: custom-spin-1 2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite alternate !important;
+}
+
+#loading-box .configure-border-2 {
+  background: linear-gradient(135deg, #f093fb, #f5576c) !important;
+  width: 100px !important;
+  height: 100px !important;
+  border-radius: 12px !important;
+  left: -100px !important;
+  animation: custom-spin-2 2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite alternate !important;
+}
+
+/* 内核方块 */
+#loading-box .configure-core {
+  background-color: #1a1a2e !important;
+  border-radius: 10px !important;
+}
+
+/* 加载文字 */
+#loading-box .loading-word {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 18px !important;
+  font-weight: 300 !important;
+  letter-spacing: 4px !important;
+  margin-top: 160px !important;
+}
+
+/* 加载完成 - 左右门滑开 */
+#loading-box.loaded .loading-left-bg {
+  transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  transform: translate(-100%, 0) !important;
+}
+
+#loading-box.loaded .loading-right-bg {
+  transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  transform: translate(100%, 0) !important;
+}
+
+#loading-box.loaded .spinner-box {
+  transition: opacity 0.3s ease !important;
+  opacity: 0 !important;
+}
+
+/* 自定义旋转动画 */
+@keyframes custom-spin-1 {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes custom-spin-2 {
+  0% {
+    transform: rotate(45deg) scale(1);
+  }
+  50% {
+    transform: rotate(-135deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(-315deg) scale(1);
+  }
+}
