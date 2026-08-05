@@ -1,6 +1,204 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/2026/08/06/hexo-publish-guide/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章hexo new &quot;文章标题&quot;
+
+执行后会在 source/_posts/ 下生成两个东西：
+
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
+
+二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+
+常用字段说明：
+
+
+
+字段
+作用
+必填
+
+
+
+title
+文章标题
+是
+
+
+date
+发布时间
+是
+
+
+tags
+标签（列表）
+否
+
+
+categories
+分类（列表）
+否
+
+
+cover
+封面图路径
+否
+
+
+description
+摘要（首页显示）
+否
+
+
+三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式文章里用裸文件名引用图片：
+![图片说明](图片名.png)
+
+
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
+
+Typora 配置建议如果用 Typora 写作，推荐这样配置：
+
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 .&#x2F;“ 和 “应用上述规则到所有插入的图片”
+
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览hexo server
+
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+
+按 Ctrl+C 停止服务。
+
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+
+五、部署到 GitHub Pages写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+
+简写形式：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+各步骤作用：
+
+
+
+命令
+作用
+
+
+
+hexo clean
+清理缓存（删 db.json 和 public/）
+
+
+hexo generate
+生成静态文件到 public/
+
+
+hexo deploy
+把 public/ 推送到 GitHub 仓库
+
+
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客部署完成后访问主页：
+https://zenty-me.github.io/
+
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
+
+
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+七、草稿机制不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+
+发布后记得执行部署命令。
+八、常用命令速查
+
+
+命令
+作用
+
+
+
+hexo new &quot;标题&quot;
+新建文章
+
+
+hexo new draft &quot;标题&quot;
+新建草稿
+
+
+hexo publish &quot;标题&quot;
+草稿转正式
+
+
+hexo server
+本地预览
+
+
+hexo server --draft
+预览含草稿
+
+
+hexo clean
+清理缓存
+
+
+hexo generate
+生成静态文件
+
+
+hexo deploy
+部署到远程
+
+
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
+
+
+hexo list
+列出所有文章
+
+
+hexo version
+查看版本
+
+
+简写：g &#x3D; generate，s &#x3D; server，d &#x3D; deploy，c &#x3D; clean
+九、常见问题1. 修改配置后预览没变化？改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？按顺序检查：
+
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
+
+3. 部署后看不到更新？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hello World</title>
     <url>/2026/08/05/hello-world/</url>
     <content><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
