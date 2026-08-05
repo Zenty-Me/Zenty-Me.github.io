@@ -1,0 +1,386 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>如何配置网站外观与个人信息 | Welcome</title><meta name="author" content="Zenty"><meta name="copyright" content="Zenty"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="讲解 Butterfly 主题下站点信息、头像、背景、顶部图、导航菜单等常用配置的修改方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何配置网站外观与个人信息">
+<meta property="og:url" content="https://zenty-me.github.io/2026/08/06/site-config-guide/index.html">
+<meta property="og:site_name" content="Welcome">
+<meta property="og:description" content="讲解 Butterfly 主题下站点信息、头像、背景、顶部图、导航菜单等常用配置的修改方法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zenty-me.github.io/img/avatar.png">
+<meta property="article:published_time" content="2026-08-06T05:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-05T17:16:20.509Z">
+<meta property="article:author" content="Zenty">
+<meta property="article:tag" content="Butterfly">
+<meta property="article:tag" content="Hexo">
+<meta property="article:tag" content="教程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zenty-me.github.io/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "如何配置网站外观与个人信息",
+  "url": "https://zenty-me.github.io/2026/08/06/site-config-guide/",
+  "image": "https://zenty-me.github.io/img/avatar.png",
+  "datePublished": "2026-08-06T05:00:00.000Z",
+  "dateModified": "2026-08-05T17:16:20.509Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Zenty",
+      "url": "https://zenty-me.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zenty-me.github.io/2026/08/06/site-config-guide/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@700&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: Zenty","link":"链接: ","source":"来源: Welcome","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '如何配置网站外观与个人信息',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">欢迎光临...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (true) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div class="bg-animation" id="web_bg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fas fa-bookmark"></i><span> 书签</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/top-bg.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Welcome</span></a><a class="nav-page-title" href="/"><span class="site-name">如何配置网站外观与个人信息</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fas fa-bookmark"></i><span> 书签</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">如何配置网站外观与个人信息</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-06T05:00:00.000Z" title="发表于 2026-08-06 13:00:00">2026-08-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-05T17:16:20.509Z" title="更新于 2026-08-06 01:16:20">2026-08-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/">博客搭建</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><div id="post-outdate-notice" data="{&quot;limitDay&quot;:365,&quot;messagePrev&quot;:&quot;距离上次更新已经&quot;,&quot;messageNext&quot;:&quot;天，文章内容可能已过时。&quot;,&quot;postUpdate&quot;:&quot;2026-08-06 01:16:20&quot;}" hidden></div><p>本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>_config.yml</code></td>
+<td>Hexo 站点级配置（站名、作者、语言、部署等）</td>
+</tr>
+<tr>
+<td><code>_config.butterfly.yml</code></td>
+<td>Butterfly 主题配置（头像、背景、菜单、侧边栏等）</td>
+</tr>
+</tbody></table>
+<p>改完后执行 <code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code> 部署即可生效。</p>
+<h2 id="一、站点基本信息"><a href="#一、站点基本信息" class="headerlink" title="一、站点基本信息"></a>一、站点基本信息</h2><p>编辑 <code>_config.yml</code> 顶部的 <code>Site</code> 段：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">title:</span> <span class="string">Welcome</span>          <span class="comment"># 站点标题（浏览器标签页和首页大标题）</span></span><br><span class="line"><span class="attr">subtitle:</span> <span class="string">&quot;&quot;</span>            <span class="comment"># 副标题</span></span><br><span class="line"><span class="attr">description:</span> <span class="string">&quot;&quot;</span>         <span class="comment"># 站点描述（SEO 用）</span></span><br><span class="line"><span class="attr">keywords:</span>               <span class="comment"># 关键词</span></span><br><span class="line"><span class="attr">author:</span> <span class="string">Zenty</span>           <span class="comment"># 站长名称（侧边栏卡片、页脚版权都读这里）</span></span><br><span class="line"><span class="attr">language:</span> <span class="string">zh-CN</span></span><br><span class="line"><span class="attr">timezone:</span> <span class="string">&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>author</code> 改一次，全站的作者署名、版权信息都会同步。</p>
+<h2 id="二、头像"><a href="#二、头像" class="headerlink" title="二、头像"></a>二、头像</h2><p>编辑 <code>_config.butterfly.yml</code>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">avatar:</span></span><br><span class="line">  <span class="attr">img:</span> <span class="string">/img/avatar.png</span>   <span class="comment"># 头像图片路径</span></span><br><span class="line">  <span class="attr">effect:</span> <span class="literal">false</span>          <span class="comment"># 是否旋转，true 会一直转圈</span></span><br></pre></td></tr></table></figure>
+
+<p>图片放到 <code>source/img/avatar.png</code>（没有 <code>img</code> 文件夹就新建一个）。路径里的 <code>/img/xxx</code> 对应的就是 <code>source/img/xxx</code>。</p>
+<blockquote>
+<p>支持 png &#x2F; jpg &#x2F; webp，建议用正方形图，否则会被裁切。</p>
+</blockquote>
+<h2 id="三、网站背景"><a href="#三、网站背景" class="headerlink" title="三、网站背景"></a>三、网站背景</h2><p>背景在 <code>_config.butterfly.yml</code> 的 <code>background</code> 字段：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 纯色</span></span><br><span class="line"><span class="attr">background:</span> <span class="string">&quot;#f5f5f5&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 渐变（本站当前用的）</span></span><br><span class="line"><span class="attr">background:</span> <span class="string">&quot;linear-gradient(135deg, #667eea 0%, #764ba2 100%)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 图片背景</span></span><br><span class="line"><span class="attr">background:</span> <span class="string">url(https://example.com/bg.jpg)</span></span><br></pre></td></tr></table></figure>
+
+<p>本站用的是紫蓝渐变。想换色，改两个色值即可；想用图片，把 url 换成自己的图。</p>
+<h2 id="四、顶部图（Top-Img）"><a href="#四、顶部图（Top-Img）" class="headerlink" title="四、顶部图（Top Img）"></a>四、顶部图（Top Img）</h2><p>顶部图是每页面顶部那张大横图：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">disable_top_img:</span> <span class="literal">false</span>       <span class="comment"># true 则全站关闭顶部图</span></span><br><span class="line"></span><br><span class="line"><span class="attr">default_top_img:</span> <span class="string">/img/top-bg.webp</span>   <span class="comment"># 默认顶部图（没单独配的页面用它）</span></span><br><span class="line"><span class="attr">index_img:</span> <span class="string">/img/top-bg.webp</span>         <span class="comment"># 首页顶部图</span></span><br><span class="line"><span class="attr">archive_img:</span> <span class="string">/img/top-bg.webp</span>       <span class="comment"># 归档页顶部图</span></span><br><span class="line"><span class="attr">tag_img:</span>                            <span class="comment"># 标签页顶部图（留空用 default）</span></span><br><span class="line"><span class="attr">category_img:</span>                       <span class="comment"># 分类页顶部图（留空用 default）</span></span><br></pre></td></tr></table></figure>
+
+<p>图片放到 <code>source/img/top-bg.webp</code>（或你指定的路径）。</p>
+<blockquote>
+<p>单篇文章也能单独配顶部图：在文章 front-matter 加 <code>top_img: /img/xxx.jpg</code>。</p>
+</blockquote>
+<h2 id="五、导航菜单"><a href="#五、导航菜单" class="headerlink" title="五、导航菜单"></a>五、导航菜单</h2><p>菜单在 <code>_config.butterfly.yml</code> 顶部：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">menu:</span></span><br><span class="line">  <span class="string">首页:</span> <span class="string">/</span> <span class="string">||</span> <span class="string">fas</span> <span class="string">fa-home</span></span><br><span class="line">  <span class="string">归档:</span> <span class="string">/archives/</span> <span class="string">||</span> <span class="string">fas</span> <span class="string">fa-archive</span></span><br><span class="line">  <span class="string">标签:</span> <span class="string">/tags/</span> <span class="string">||</span> <span class="string">fas</span> <span class="string">fa-tags</span></span><br><span class="line">  <span class="string">分类:</span> <span class="string">/categories/</span> <span class="string">||</span> <span class="string">fas</span> <span class="string">fa-folder-open</span></span><br><span class="line">  <span class="string">书签:</span> <span class="string">/links/</span> <span class="string">||</span> <span class="string">fas</span> <span class="string">fa-bookmark</span></span><br><span class="line">  <span class="string">关于:</span> <span class="string">/about/</span> <span class="string">||</span> <span class="string">fas</span> <span class="string">fa-heart</span></span><br></pre></td></tr></table></figure>
+
+<p>格式是 <code>显示名: 路径 || 图标class</code>。</p>
+<ul>
+<li><strong>显示名</strong>：菜单上显示的文字</li>
+<li><strong>路径</strong>：页面的 URL，比如 <code>/tags/</code></li>
+<li><strong>图标</strong>：FontAwesome 图标 class，去 <a target="_blank" rel="noopener" href="https://fontawesome.com/icons">fontawesome.com</a> 搜，复制 class 名（如 <code>fas fa-home</code>）</li>
+</ul>
+<p>新增菜单项后，记得用 <code>hexo new page 页面名</code> 建对应页面，否则点进去会 404。</p>
+<h2 id="六、社交链接"><a href="#六、社交链接" class="headerlink" title="六、社交链接"></a>六、社交链接</h2><p>侧边栏的社交图标：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">social:</span></span><br><span class="line">  <span class="attr">fab fa-github:</span> <span class="string">https://github.com/Zenty-Me</span> <span class="string">||</span> <span class="string">Github</span> <span class="string">||</span> <span class="string">&#x27;#24292e&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>格式是 <code>图标class: 链接 || 悬停文字 || 颜色</code>。想加多个就多写几行：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">social:</span></span><br><span class="line">  <span class="attr">fab fa-github:</span> <span class="string">https://github.com/Zenty-Me</span> <span class="string">||</span> <span class="string">Github</span> <span class="string">||</span> <span class="string">&#x27;#24292e&#x27;</span></span><br><span class="line">  <span class="attr">fas fa-envelope:</span> <span class="string">mailto:me@example.com</span> <span class="string">||</span> <span class="string">Email</span> <span class="string">||</span> <span class="string">&#x27;#88c0d0&#x27;</span></span><br><span class="line">  <span class="attr">fab fa-weibo:</span> <span class="string">https://weibo.com/yourid</span> <span class="string">||</span> <span class="string">微博</span> <span class="string">||</span> <span class="string">&#x27;#e6162d&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="七、侧边栏作者卡片"><a href="#七、侧边栏作者卡片" class="headerlink" title="七、侧边栏作者卡片"></a>七、侧边栏作者卡片</h2><p>侧边栏那个带头像和按钮的卡片：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">card_author:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">description:</span> <span class="string">写代码，也写点别的</span>   <span class="comment"># 作者名下方的描述</span></span><br><span class="line">  <span class="attr">button:</span></span><br><span class="line">    <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">icon:</span> <span class="string">fab</span> <span class="string">fa-github</span></span><br><span class="line">    <span class="attr">text:</span> <span class="string">Follow</span> <span class="string">Me</span></span><br><span class="line">    <span class="attr">link:</span> <span class="string">https://github.com/Zenty-Me</span></span><br></pre></td></tr></table></figure>
+
+<p><code>description</code> 是作者名下面那一行小字，改成自己的签名即可。</p>
+<h2 id="八、公告"><a href="#八、公告" class="headerlink" title="八、公告"></a>八、公告</h2><p>侧边栏顶部的小公告条：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">card_announcement:</span></span><br><span class="line">  <span class="attr">enable:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">content:</span> <span class="string">欢迎来到我的小站</span> <span class="string">🎉</span></span><br></pre></td></tr></table></figure>
+
+<p><code>content</code> 改成想公告的内容，支持 emoji。</p>
+<h2 id="九、Favicon（浏览器标签页小图标）"><a href="#九、Favicon（浏览器标签页小图标）" class="headerlink" title="九、Favicon（浏览器标签页小图标）"></a>九、Favicon（浏览器标签页小图标）</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">favicon:</span> <span class="string">/img/favicon.png</span></span><br></pre></td></tr></table></figure>
+
+<p>图片放到 <code>source/img/favicon.png</code>。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 <code>/img/favicon.ico</code>）。</p>
+<h2 id="十、图片资源放哪"><a href="#十、图片资源放哪" class="headerlink" title="十、图片资源放哪"></a>十、图片资源放哪</h2><p>所有自定义图片（头像、顶部图、favicon、文章配图）都放在 <code>source/img/</code> 目录下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">source/</span><br><span class="line">  img/</span><br><span class="line">    avatar.png        # 头像</span><br><span class="line">    top-bg.webp       # 顶部图</span><br><span class="line">    favicon.png       # 站点图标</span><br><span class="line">    404.jpg           # 404 页配图</span><br></pre></td></tr></table></figure>
+
+<p>引用时路径写 <code>/img/文件名</code>。新增图片后不需要额外配置，直接部署即可。</p>
+<h2 id="十一、部署生效"><a href="#十一、部署生效" class="headerlink" title="十一、部署生效"></a>十一、部署生效</h2><p>任何配置改完后，三连部署：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</span><br></pre></td></tr></table></figure>
+
+<p>等 30 秒 ~ 2 分钟，访问 <a href="https://zenty-me.github.io/">https://zenty-me.github.io/</a> 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 <code>Ctrl+F5</code> 强刷或等一两分钟。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><table>
+<thead>
+<tr>
+<th>想改什么</th>
+<th>改哪里</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>站点名 &#x2F; 作者名</td>
+<td><code>_config.yml</code> 的 <code>title</code> &#x2F; <code>author</code></td>
+</tr>
+<tr>
+<td>头像</td>
+<td><code>_config.butterfly.yml</code> 的 <code>avatar.img</code> + 放图到 <code>source/img/</code></td>
+</tr>
+<tr>
+<td>背景色 &#x2F; 渐变</td>
+<td><code>_config.butterfly.yml</code> 的 <code>background</code></td>
+</tr>
+<tr>
+<td>顶部图</td>
+<td><code>_config.butterfly.yml</code> 的 <code>default_top_img</code> 等</td>
+</tr>
+<tr>
+<td>导航菜单</td>
+<td><code>_config.butterfly.yml</code> 的 <code>menu</code></td>
+</tr>
+<tr>
+<td>社交图标</td>
+<td><code>_config.butterfly.yml</code> 的 <code>social</code></td>
+</tr>
+<tr>
+<td>作者签名</td>
+<td><code>_config.butterfly.yml</code> 的 <code>card_author.description</code></td>
+</tr>
+<tr>
+<td>公告</td>
+<td><code>_config.butterfly.yml</code> 的 <code>card_announcement.content</code></td>
+</tr>
+<tr>
+<td>标签页小图标</td>
+<td><code>_config.butterfly.yml</code> 的 <code>favicon</code></td>
+</tr>
+</tbody></table>
+<p>记住一句话：<strong>个人信息和外观基本都在 <code>_config.butterfly.yml</code>，站点名和作者在 <code>_config.yml</code></strong>。改完记得部署。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://zenty-me.github.io">Zenty</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://zenty-me.github.io/2026/08/06/site-config-guide/">https://zenty-me.github.io/2026/08/06/site-config-guide/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://zenty-me.github.io" target="_blank">Welcome</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Hexo/">Hexo</a><a class="post-meta__tags" href="/tags/%E6%95%99%E7%A8%8B/">教程</a><a class="post-meta__tags" href="/tags/Butterfly/">Butterfly</a></div><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/08/06/bookmark-guide/" title="如何添加书签"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">如何添加书签</div></div><div class="info-2"><div class="info-item-1">本站的书签页（&#x2F;links&#x2F;）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。 一、书签数据文件所有书签数据存放在： 1source/_data/link.yml  用任意编辑器（VS Code、Typora、记事本）打开即可编辑。 二、文件结构文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段： 1234567- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/06/hexo-publish-guide/" title="Hexo 博客发布笔记完整教程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-06</div><div class="info-item-2">Hexo 博客发布笔记完整教程</div></div><div class="info-2"><div class="info-item-1">本篇记录从新建文章到部署上线的完整流程，方便以后查阅。 一、新建文章1hexo new &quot;文章标题&quot;  执行后会在 source/_posts/ 下生成两个东西：  文章标题.md：Markdown 文章文件 文章标题/：同名文件夹，用于存放图片等资源  二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息： 1234567891011---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---  常用字段说明：    字段 作用 必填    title 文章标题 是   date 发布时间 是   tags 标签（列表） 否   categories 分类（列表） 否   cover 封面图路径 否   description 摘要（首页显示） 否   三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md ...</div></div></div></a><a class="pagination-related" href="/2026/08/06/bookmark-guide/" title="如何添加书签"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-06</div><div class="info-item-2">如何添加书签</div></div><div class="info-2"><div class="info-item-1">本站的书签页（&#x2F;links&#x2F;）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。 一、书签数据文件所有书签数据存放在： 1source/_data/link.yml  用任意编辑器（VS Code、Typora、记事本）打开即可编辑。 二、文件结构文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段： 1234567- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Zenty</div><div class="author-info-description">写代码，也写点别的</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Zenty-Me"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Zenty-Me" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的小站 🎉</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%AB%99%E7%82%B9%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="toc-number">1.</span> <span class="toc-text">一、站点基本信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%A4%B4%E5%83%8F"><span class="toc-number">2.</span> <span class="toc-text">二、头像</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BD%91%E7%AB%99%E8%83%8C%E6%99%AF"><span class="toc-number">3.</span> <span class="toc-text">三、网站背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%A1%B6%E9%83%A8%E5%9B%BE%EF%BC%88Top-Img%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">四、顶部图（Top Img）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%AF%BC%E8%88%AA%E8%8F%9C%E5%8D%95"><span class="toc-number">5.</span> <span class="toc-text">五、导航菜单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%A4%BE%E4%BA%A4%E9%93%BE%E6%8E%A5"><span class="toc-number">6.</span> <span class="toc-text">六、社交链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%BE%A7%E8%BE%B9%E6%A0%8F%E4%BD%9C%E8%80%85%E5%8D%A1%E7%89%87"><span class="toc-number">7.</span> <span class="toc-text">七、侧边栏作者卡片</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%85%AC%E5%91%8A"><span class="toc-number">8.</span> <span class="toc-text">八、公告</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Favicon%EF%BC%88%E6%B5%8F%E8%A7%88%E5%99%A8%E6%A0%87%E7%AD%BE%E9%A1%B5%E5%B0%8F%E5%9B%BE%E6%A0%87%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">九、Favicon（浏览器标签页小图标）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%9B%BE%E7%89%87%E8%B5%84%E6%BA%90%E6%94%BE%E5%93%AA"><span class="toc-number">10.</span> <span class="toc-text">十、图片资源放哪</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E9%83%A8%E7%BD%B2%E7%94%9F%E6%95%88"><span class="toc-number">11.</span> <span class="toc-text">十一、部署生效</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">12.</span> <span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/06/site-config-guide/" title="如何配置网站外观与个人信息">如何配置网站外观与个人信息</a><time datetime="2026-08-06T05:00:00.000Z" title="发表于 2026-08-06 13:00:00">2026-08-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/06/bookmark-guide/" title="如何添加书签">如何添加书签</a><time datetime="2026-08-06T04:00:00.000Z" title="发表于 2026-08-06 12:00:00">2026-08-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/06/hexo-publish-guide/" title="Hexo 博客发布笔记完整教程">Hexo 博客发布笔记完整教程</a><time datetime="2026-08-06T02:00:00.000Z" title="发表于 2026-08-06 10:00:00">2026-08-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/05/hello-world/" title="Hello World">Hello World</a><time datetime="2026-08-05T14:15:23.117Z" title="发表于 2026-08-05 22:15:23">2026-08-05</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Zenty</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div><div class="footer_custom_text"><p>心之所向，素履以往</p></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      true
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
