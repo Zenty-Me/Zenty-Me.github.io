@@ -80,6 +80,24 @@ GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或
       </tags>
   </entry>
   <entry>
+    <title>Hello World</title>
+    <url>/2026/08/05/hello-world/</url>
+    <content><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
+Quick StartCreate a new post$ hexo new &quot;My New Post&quot;
+
+More info: Writing
+Run server$ hexo server
+
+More info: Server
+Generate static files$ hexo generate
+
+More info: Generating
+Deploy to remote sites$ hexo deploy
+
+More info: Deployment
+]]></content>
+  </entry>
+  <entry>
     <title>Hexo 博客发布笔记完整教程</title>
     <url>/2026/08/06/hexo-publish-guide/</url>
     <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
@@ -409,23 +427,5 @@ _config.butterfly.yml 的 favicon
         <tag>教程</tag>
         <tag>Butterfly</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2026/08/05/hello-world/</url>
-    <content><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick StartCreate a new post$ hexo new &quot;My New Post&quot;
-
-More info: Writing
-Run server$ hexo server
-
-More info: Server
-Generate static files$ hexo generate
-
-More info: Generating
-Deploy to remote sites$ hexo deploy
-
-More info: Deployment
-]]></content>
   </entry>
 </search>
