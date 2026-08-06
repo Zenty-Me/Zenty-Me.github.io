@@ -112,3 +112,45 @@
 #footer .footer-flex-title {
   color: rgba(255, 255, 255, 0.85) !important;
 }
+
+/* ========================================
+   首页分类分组样式
+   ======================================== */
+
+.category-group {
+  margin-bottom: 44px;
+}
+
+.category-group:last-child {
+  margin-bottom: 0;
+}
+
+.category-group-title {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.category-group-title a {
+  font-size: 1.35em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.category-group-title a:hover {
+  color: #b9a8ff !important;
+}
+
+.category-group-title i {
+  margin-right: 8px;
+  color: #b9a8ff;
+}
+
+.category-count {
+  margin-left: 10px;
+  font-size: 0.8em;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.45);
+}
