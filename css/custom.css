@@ -332,3 +332,109 @@
   background: rgba(185, 168, 255, 0.22);
   color: #b9a8ff;
 }
+
+/* ========================================
+   侧边栏深色适配（与首页卡片 / footer 统一）
+   ======================================== */
+
+#aside-content .card-widget {
+  background-color: rgba(15, 12, 41, 0.45) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* 卡片标题 */
+#aside-content .item-headline {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#aside-content .item-headline i {
+  color: #b9a8ff;
+}
+
+/* 头像描边融入深色卡 */
+#aside-content .avatar-img {
+  border: 2px solid rgba(185, 168, 255, 0.3);
+}
+
+/* 作者卡 */
+#aside-content .author-info__name {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+#aside-content .author-info__description {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 作者卡数据（文章 / 标签 / 分类 数） */
+#aside-content .site-data .headline {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+#aside-content .site-data .length-num {
+  color: #b9a8ff !important;
+}
+
+/* Follow Me 按钮 */
+#aside-content #card-info-btn {
+  background: linear-gradient(135deg, #7c6cf0, #b9a8ff) !important;
+  color: #fff !important;
+  border: none;
+}
+
+#aside-content #card-info-btn:hover {
+  background: linear-gradient(135deg, #b9a8ff, #7c6cf0) !important;
+}
+
+/* 社交图标 */
+#aside-content .card-info-social-icons .social-icon {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+#aside-content .card-info-social-icons .social-icon:hover {
+  color: #b9a8ff !important;
+}
+
+/* 分类 / 归档 列表 */
+#aside-content .card-categories a,
+#aside-content .card-archives a {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+#aside-content .card-categories a:hover,
+#aside-content .card-archives a:hover {
+  background-color: rgba(185, 168, 255, 0.15) !important;
+  color: #b9a8ff !important;
+}
+
+#aside-content .card-category-list-count,
+#aside-content .card-archive-list-count {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* 标签云 */
+#aside-content .card-tag-cloud a {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+#aside-content .card-tag-cloud a:hover {
+  color: #b9a8ff !important;
+}
+
+/* 文章页目录（toc）适配深色卡 */
+#aside-content .toc-link {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+#aside-content .toc-link:hover,
+#aside-content .toc-link.active {
+  color: #b9a8ff !important;
+}
+
+#aside-content .toc-percentage {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
