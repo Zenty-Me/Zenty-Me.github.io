@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>如何添加书签</title>
-    <url>/2026/08/06/bookmark-guide/</url>
+    <url>/2026/08/06/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/bookmark-guide/</url>
     <content><![CDATA[本站的书签页（&#x2F;links&#x2F;）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
 一、书签数据文件所有书签数据存放在：
 source/_data/link.yml
@@ -80,26 +80,8 @@ GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或
       </tags>
   </entry>
   <entry>
-    <title>Hello World</title>
-    <url>/2026/08/05/hello-world/</url>
-    <content><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick StartCreate a new post$ hexo new &quot;My New Post&quot;
-
-More info: Writing
-Run server$ hexo server
-
-More info: Server
-Generate static files$ hexo generate
-
-More info: Generating
-Deploy to remote sites$ hexo deploy
-
-More info: Deployment
-]]></content>
-  </entry>
-  <entry>
     <title>Hexo 博客发布笔记完整教程</title>
-    <url>/2026/08/06/hexo-publish-guide/</url>
+    <url>/2026/08/06/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo-publish-guide/</url>
     <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
 一、新建文章hexo new &quot;文章标题&quot;
 
@@ -297,7 +279,7 @@ hexo version
   </entry>
   <entry>
     <title>如何配置网站外观与个人信息</title>
-    <url>/2026/08/06/site-config-guide/</url>
+    <url>/2026/08/06/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/site-config-guide/</url>
     <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
 
 
