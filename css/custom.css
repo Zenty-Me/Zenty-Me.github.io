@@ -214,25 +214,69 @@ figure.highlight {
    首页：欢迎区 + 分类卡片入口
    ============================================================ */
 
-/* 欢迎区：左对齐、克制、底部细线分隔 */
+/* 欢迎区：左对齐、克制、底部细线分隔，进场依次渐显 */
 .home-intro {
   padding: 8px 4px 30px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 30px;
 }
-.home-intro__title {
-  font-size: 1.9em;
-  font-weight: 600;
+.home-intro > * {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: homeIntroIn 0.7s var(--ease) forwards;
+}
+.home-intro__badge { animation-delay: 0.10s; }
+.home-intro__title { animation-delay: 0.26s; }
+.home-intro__sub { animation-delay: 0.42s; }
+.home-intro__meta { animation-delay: 0.58s; }
+@keyframes homeIntroIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 流星徽章 + 时段问候 */
+.home-intro__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  margin-bottom: 18px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  border: 1px solid rgba(185, 168, 255, 0.25);
+  color: var(--accent);
+  font-size: 0.82em;
   letter-spacing: 0.04em;
+}
+.home-intro__badge i {
+  font-size: 0.9em;
+}
+
+.home-intro__title {
+  font-size: 2em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
   color: var(--text-strong);
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 .home-intro__sub {
-  font-size: 1.02em;
-  color: var(--text-muted);
-  margin: 0 0 14px;
+  font-size: 1.05em;
+  color: var(--text);
+  margin: 0 0 16px;
   line-height: 1.7;
+  min-height: 1.7em;
 }
+/* 打字机光标 */
+.typed-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 4px;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  animation: typedBlink 1s steps(2, start) infinite;
+}
+@keyframes typedBlink { 50% { opacity: 0; } }
+
 .home-intro__meta {
   font-size: 0.82em;
   letter-spacing: 0.06em;
@@ -248,6 +292,12 @@ figure.highlight {
   margin-right: 10px;
   background: var(--accent);
   opacity: 0.7;
+}
+
+/* 无障碍：尊重 reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .home-intro > * { animation: none; opacity: 1; transform: none; }
+  .typed-cursor { animation: none; }
 }
 
 /* 分类卡片网格 */
