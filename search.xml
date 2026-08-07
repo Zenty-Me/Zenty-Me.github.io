@@ -80,6 +80,204 @@ GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或
       </tags>
   </entry>
   <entry>
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/posts/b9c5d664/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章hexo new &quot;文章标题&quot;
+
+执行后会在 source/_posts/ 下生成两个东西：
+
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
+
+二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+
+常用字段说明：
+
+
+
+字段
+作用
+必填
+
+
+
+title
+文章标题
+是
+
+
+date
+发布时间
+是
+
+
+tags
+标签（列表）
+否
+
+
+categories
+分类（列表）
+否
+
+
+cover
+封面图路径
+否
+
+
+description
+摘要（首页显示）
+否
+
+
+三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式文章里用裸文件名引用图片：
+![图片说明](图片名.png)
+
+
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
+
+Typora 配置建议如果用 Typora 写作，推荐这样配置：
+
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 .&#x2F;“ 和 “应用上述规则到所有插入的图片”
+
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览hexo server
+
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+
+按 Ctrl+C 停止服务。
+
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+
+五、部署到 GitHub Pages写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+
+简写形式：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+各步骤作用：
+
+
+
+命令
+作用
+
+
+
+hexo clean
+清理缓存（删 db.json 和 public/）
+
+
+hexo generate
+生成静态文件到 public/
+
+
+hexo deploy
+把 public/ 推送到 GitHub 仓库
+
+
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客部署完成后访问主页：
+https://zenty-me.github.io/
+
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
+
+
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+七、草稿机制不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+
+发布后记得执行部署命令。
+八、常用命令速查
+
+
+命令
+作用
+
+
+
+hexo new &quot;标题&quot;
+新建文章
+
+
+hexo new draft &quot;标题&quot;
+新建草稿
+
+
+hexo publish &quot;标题&quot;
+草稿转正式
+
+
+hexo server
+本地预览
+
+
+hexo server --draft
+预览含草稿
+
+
+hexo clean
+清理缓存
+
+
+hexo generate
+生成静态文件
+
+
+hexo deploy
+部署到远程
+
+
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
+
+
+hexo list
+列出所有文章
+
+
+hexo version
+查看版本
+
+
+简写：g &#x3D; generate，s &#x3D; server，d &#x3D; deploy，c &#x3D; clean
+九、常见问题1. 修改配置后预览没变化？改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？按顺序检查：
+
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
+
+3. 部署后看不到更新？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>文章分类、置顶与短链配置</title>
     <url>/posts/1784a007/</url>
     <content><![CDATA[本站用三个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链。配合起来，写笔记时只要把文件放进对应文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶。
@@ -551,263 +749,6 @@ CDN加速服务
       </categories>
   </entry>
   <entry>
-    <title>Hexo 博客发布笔记完整教程</title>
-    <url>/posts/b9c5d664/</url>
-    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章hexo new &quot;文章标题&quot;
-
-执行后会在 source/_posts/ 下生成两个东西：
-
-文章标题.md：Markdown 文章文件
-文章标题/：同名文件夹，用于存放图片等资源
-
-二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息：
----title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-
-常用字段说明：
-
-
-
-字段
-作用
-必填
-
-
-
-title
-文章标题
-是
-
-
-date
-发布时间
-是
-
-
-tags
-标签（列表）
-否
-
-
-categories
-分类（列表）
-否
-
-
-cover
-封面图路径
-否
-
-
-description
-摘要（首页显示）
-否
-
-
-三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式文章里用裸文件名引用图片：
-![图片说明](图片名.png)
-
-
-⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
-
-Typora 配置建议如果用 Typora 写作，推荐这样配置：
-
-偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
-路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 .&#x2F;“ 和 “应用上述规则到所有插入的图片”
-
-这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览hexo server
-
-访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
-预览草稿：
-hexo server --draft
-
-按 Ctrl+C 停止服务。
-
-修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
-
-五、部署到 GitHub Pages写完满意后，一键部署：
-hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-
-简写形式：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-各步骤作用：
-
-
-
-命令
-作用
-
-
-
-hexo clean
-清理缓存（删 db.json 和 public/）
-
-
-hexo generate
-生成静态文件到 public/
-
-
-hexo deploy
-把 public/ 推送到 GitHub 仓库
-
-
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客部署完成后访问主页：
-https://zenty-me.github.io/
-
-文章地址格式：
-https://zenty-me.github.io/年/月/日/文章标题/
-
-
-GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-七、草稿机制不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
-新建草稿：
-hexo new draft &quot;草稿标题&quot;
-
-把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
-hexo publish &quot;草稿标题&quot;
-
-发布后记得执行部署命令。
-八、常用命令速查
-
-
-命令
-作用
-
-
-
-hexo new &quot;标题&quot;
-新建文章
-
-
-hexo new draft &quot;标题&quot;
-新建草稿
-
-
-hexo publish &quot;标题&quot;
-草稿转正式
-
-
-hexo server
-本地预览
-
-
-hexo server --draft
-预览含草稿
-
-
-hexo clean
-清理缓存
-
-
-hexo generate
-生成静态文件
-
-
-hexo deploy
-部署到远程
-
-
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-一键发布
-
-
-hexo list
-列出所有文章
-
-
-hexo version
-查看版本
-
-
-简写：g &#x3D; generate，s &#x3D; server，d &#x3D; deploy，c &#x3D; clean
-九、常见问题1. 修改配置后预览没变化？改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？按顺序检查：
-
-确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
-确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
-确认 _config.yml 里 post_asset_folder: true 已开启
-确认 marked 配置了 postAsset: true
-
-3. 部署后看不到更新？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
-
-以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>缓存技术常见问题及解决</title>
-    <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题缓存雪崩认识
- 当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
-
-解决方案
-为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
-
-缓存穿透认识
-解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
-
-举个栗子:
-
-假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
-
-解决方案
-为了应对上述情况，可以选择如下两种策略：
-
-
-当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
-
-这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
-为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
-
-
-引入布隆过滤器；
-
-布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
-布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
-
-将数据库中的所有用户数据加入布隆过滤器中；
-当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
-若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
-若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
-
-
-
-
-缓存击穿认识
-解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
-
-解决方案为了应对上述情况，可以选择如下方案：
-
-缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
-
-加分布式锁；
-
-当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
-
-
-引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
-
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
     <title>docker</title>
     <url>/posts/f255ffad/</url>
     <content><![CDATA[]]></content>
@@ -887,6 +828,65 @@ wrkwrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
 单机压测工具，无分布式施压能力。
 只支持HTTP协议。
 无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>缓存技术常见问题及解决</title>
+    <url>/posts/aad9f202/</url>
+    <content><![CDATA[缓存技术常见的问题缓存雪崩认识
+ 当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
+
+解决方案
+为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
+
+缓存穿透认识
+解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
+
+举个栗子:
+
+假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
+
+解决方案
+为了应对上述情况，可以选择如下两种策略：
+
+
+当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
+
+这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
+为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
+
+
+引入布隆过滤器；
+
+布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
+布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
+
+将数据库中的所有用户数据加入布隆过滤器中；
+当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
+若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
+若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
+
+
+
+
+缓存击穿认识
+解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
+
+解决方案为了应对上述情况，可以选择如下方案：
+
+缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+
+加分布式锁；
+
+当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
+
+
+引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
+
 
 ]]></content>
       <categories>
