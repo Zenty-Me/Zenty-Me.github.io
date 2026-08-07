@@ -1,6 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>如何添加书签</title>
+    <url>/posts/3ffe122/</url>
+    <content><![CDATA[本站的书签页（&#x2F;links&#x2F;）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
+一、书签数据文件所有书签数据存放在：
+source/_data/link.yml
+
+用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
+二、文件结构文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
+- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
+
+三、添加书签到已有分类在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
+- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
+
+注意 name 前面是 4 个空格，link&#x2F;avatar&#x2F;descr 前面是 6 个空格，和同分类下其他书签对齐。
+四、新建分类在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
+- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
+
+新分类前面留一个空行和上个分类隔开。
+五、缩进规则（重要）YAML 对缩进敏感，必须用空格，不能用 Tab：
+
+
+
+层级
+内容
+缩进
+
+
+
+1
+class_name
+0 空格（顶格）
+
+
+2
+class_desc &#x2F; link_list
+2 空格
+
+
+3
+name
+4 空格
+
+
+4
+link &#x2F; avatar &#x2F; descr
+6 空格
+
+
+六、图标自动获取avatar 字段填网站自己的 favicon，格式固定：
+https://网站域名/favicon.ico
+
+例如：
+
+GitHub → https://github.com/favicon.ico
+掘金 → https://juejin.cn/favicon.ico
+
+不用手动下载图标，浏览器会自动加载网站图标。
+七、删除书签找到对应书签的 4 行（name&#x2F;link&#x2F;avatar&#x2F;descr），整段删除即可。注意不要破坏周围书签的缩进。
+八、部署上线改完 link.yml 后，执行：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+
+GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+九、完整示例下面是一个包含两个分类的完整 link.yml 示例：
+- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+
+照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>书签</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hexo 博客发布笔记完整教程</title>
     <url>/posts/b9c5d664/</url>
     <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
@@ -199,83 +278,210 @@ hexo version
       </tags>
   </entry>
   <entry>
-    <title>如何添加书签</title>
-    <url>/posts/3ffe122/</url>
-    <content><![CDATA[本站的书签页（&#x2F;links&#x2F;）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
-一、书签数据文件所有书签数据存放在：
-source/_data/link.yml
-
-用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
-二、文件结构文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
-- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
-
-三、添加书签到已有分类在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
-- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
-
-注意 name 前面是 4 个空格，link&#x2F;avatar&#x2F;descr 前面是 6 个空格，和同分类下其他书签对齐。
-四、新建分类在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
-- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
-
-新分类前面留一个空行和上个分类隔开。
-五、缩进规则（重要）YAML 对缩进敏感，必须用空格，不能用 Tab：
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
 
 
-
-层级
-内容
-缩进
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
 
 
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
 
-1
-class_name
-0 空格（顶格）
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
 
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
 
-2
-class_desc &#x2F; link_list
-2 空格
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
 
 
-3
-name
-4 空格
+易混淆的术语接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
 
 
-4
-link &#x2F; avatar &#x2F; descr
-6 空格
+QPS vs. RPS
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
 
 
-六、图标自动获取avatar 字段填网站自己的 favicon，格式固定：
-https://网站域名/favicon.ico
+TPS vs. RPS
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
 
-例如：
 
-GitHub → https://github.com/favicon.ico
-掘金 → https://juejin.cn/favicon.ico
 
-不用手动下载图标，浏览器会自动加载网站图标。
-七、删除书签找到对应书签的 4 行（name&#x2F;link&#x2F;avatar&#x2F;descr），整段删除即可。注意不要破坏周围书签的缩进。
-八、部署上线改完 link.yml 后，执行：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+VU (并发用户) 和 TPS 换算
+公式描述：TPS &#x3D; VU&#x2F;RT，（RT单位：秒）。
 
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeterApache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
 
-GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
 
-九、完整示例下面是一个包含两个分类的完整 link.yml 示例：
-- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+ApacheBenchApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
 
-照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrkwrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>文章分类、置顶与短链配置</title>
+    <url>/posts/1784a007/</url>
+    <content><![CDATA[本站用三个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链。配合起来，写笔记时只要把文件放进对应文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶。
+一、文件夹自动归类（auto_category）装了 hexo-auto-category 插件，文件夹名 &#x3D; 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
+用法在 source/_posts/ 下建文件夹，文章放进去：
+source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
+
+上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
+注意
+手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
+_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
+建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
+
+配置（已设好，一般不用改）_config.yml 里：
+auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
+
+想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
+二、置顶排序（sticky）首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
+---title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
+
+规则
+有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
+没 sticky 的文章：按日期倒序排在置顶文章之后
+sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
+
+示例本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
+三、永久短链（abbrlink）装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
+https://zenty-me.github.io/posts/b9c5d664/
+
+为什么用短链
+永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
+简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
+适合分享：短链好看，外链稳定
+
+工作机制
+第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
+之后这个值永久不变，URL 固定为 /posts/abbrlink值/
+不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
+
+配置（已设好）_config.yml 里：
+permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
+
+四、日常写笔记流程结合三个机制，写一篇新笔记的完整流程：
+
+建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
+移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
+（可选）置顶：在 front-matter 加 sticky: 100
+编辑：Typora 写正文
+部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
+小结
+
+
+需求
+怎么做
+
+
+
+给文章归类
+把 md 文件放进 _posts/分类名/ 文件夹
+
+
+新建分类
+在 _posts/ 下新建文件夹并放入文章
+
+
+置顶文章
+front-matter 加 sticky: 100
+
+
+文章 URL
+自动生成 /posts/xxxxxxxx/，不用管
+
+
+多级分类
+auto_category.depth 改大、multiple: true
+
+
+一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管。
 ]]></content>
       <categories>
         <category>博客搭建</category>
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>书签</tag>
+        <tag>教程</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>docker</title>
+    <url>/posts/f255ffad/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置2.1 github新建仓库+token获取
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务
+
+
+3. 使用
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
   </entry>
   <entry>
     <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
@@ -496,38 +702,6 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </tags>
   </entry>
   <entry>
-    <title>docker</title>
-    <url>/posts/f255ffad/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置2.1 github新建仓库+token获取
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务
-
-
-3. 使用
-]]></content>
-  </entry>
-  <entry>
     <title>如何配置网站外观与个人信息</title>
     <url>/posts/9fa0ea99/</url>
     <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
@@ -661,96 +835,6 @@ _config.butterfly.yml 的 favicon
       </tags>
   </entry>
   <entry>
-    <title>文章分类、置顶与短链配置</title>
-    <url>/posts/1784a007/</url>
-    <content><![CDATA[本站用三个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链。配合起来，写笔记时只要把文件放进对应文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶。
-一、文件夹自动归类（auto_category）装了 hexo-auto-category 插件，文件夹名 &#x3D; 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
-用法在 source/_posts/ 下建文件夹，文章放进去：
-source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
-
-上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
-注意
-手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
-_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
-建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
-
-配置（已设好，一般不用改）_config.yml 里：
-auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
-
-想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
-二、置顶排序（sticky）首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
----title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
-
-规则
-有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
-没 sticky 的文章：按日期倒序排在置顶文章之后
-sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
-
-示例本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
-三、永久短链（abbrlink）装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
-https://zenty-me.github.io/posts/b9c5d664/
-
-为什么用短链
-永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
-简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
-适合分享：短链好看，外链稳定
-
-工作机制
-第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
-之后这个值永久不变，URL 固定为 /posts/abbrlink值/
-不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
-
-配置（已设好）_config.yml 里：
-permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
-
-四、日常写笔记流程结合三个机制，写一篇新笔记的完整流程：
-
-建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
-移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
-（可选）置顶：在 front-matter 加 sticky: 100
-编辑：Typora 写正文
-部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
-小结
-
-
-需求
-怎么做
-
-
-
-给文章归类
-把 md 文件放进 _posts/分类名/ 文件夹
-
-
-新建分类
-在 _posts/ 下新建文件夹并放入文章
-
-
-置顶文章
-front-matter 加 sticky: 100
-
-
-文章 URL
-自动生成 /posts/xxxxxxxx/，不用管
-
-
-多级分类
-auto_category.depth 改大、multiple: true
-
-
-一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>缓存技术常见问题及解决</title>
     <url>/posts/aad9f202/</url>
     <content><![CDATA[缓存技术常见的问题缓存雪崩认识
@@ -803,84 +887,6 @@ auto_category.depth 改大、multiple: true
 
 引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
 
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
-
-
-
-VU (并发用户) 和 TPS 换算
-公式描述：TPS &#x3D; VU&#x2F;RT，（RT单位：秒）。
-
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeterApache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
-
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
-
-ApacheBenchApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
-
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
-
-wrkwrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
-
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
 
 ]]></content>
       <categories>
