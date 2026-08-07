@@ -80,410 +80,6 @@ GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或
       </tags>
   </entry>
   <entry>
-    <title>Hexo 博客发布笔记完整教程</title>
-    <url>/posts/b9c5d664/</url>
-    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章hexo new &quot;文章标题&quot;
-
-执行后会在 source/_posts/ 下生成两个东西：
-
-文章标题.md：Markdown 文章文件
-文章标题/：同名文件夹，用于存放图片等资源
-
-二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息：
----title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-
-常用字段说明：
-
-
-
-字段
-作用
-必填
-
-
-
-title
-文章标题
-是
-
-
-date
-发布时间
-是
-
-
-tags
-标签（列表）
-否
-
-
-categories
-分类（列表）
-否
-
-
-cover
-封面图路径
-否
-
-
-description
-摘要（首页显示）
-否
-
-
-三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式文章里用裸文件名引用图片：
-![图片说明](图片名.png)
-
-
-⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
-
-Typora 配置建议如果用 Typora 写作，推荐这样配置：
-
-偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
-路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 .&#x2F;“ 和 “应用上述规则到所有插入的图片”
-
-这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览hexo server
-
-访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
-预览草稿：
-hexo server --draft
-
-按 Ctrl+C 停止服务。
-
-修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
-
-五、部署到 GitHub Pages写完满意后，一键部署：
-hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-
-简写形式：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-各步骤作用：
-
-
-
-命令
-作用
-
-
-
-hexo clean
-清理缓存（删 db.json 和 public/）
-
-
-hexo generate
-生成静态文件到 public/
-
-
-hexo deploy
-把 public/ 推送到 GitHub 仓库
-
-
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客部署完成后访问主页：
-https://zenty-me.github.io/
-
-文章地址格式：
-https://zenty-me.github.io/年/月/日/文章标题/
-
-
-GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-七、草稿机制不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
-新建草稿：
-hexo new draft &quot;草稿标题&quot;
-
-把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
-hexo publish &quot;草稿标题&quot;
-
-发布后记得执行部署命令。
-八、常用命令速查
-
-
-命令
-作用
-
-
-
-hexo new &quot;标题&quot;
-新建文章
-
-
-hexo new draft &quot;标题&quot;
-新建草稿
-
-
-hexo publish &quot;标题&quot;
-草稿转正式
-
-
-hexo server
-本地预览
-
-
-hexo server --draft
-预览含草稿
-
-
-hexo clean
-清理缓存
-
-
-hexo generate
-生成静态文件
-
-
-hexo deploy
-部署到远程
-
-
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-一键发布
-
-
-hexo list
-列出所有文章
-
-
-hexo version
-查看版本
-
-
-简写：g &#x3D; generate，s &#x3D; server，d &#x3D; deploy，c &#x3D; clean
-九、常见问题1. 修改配置后预览没变化？改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？按顺序检查：
-
-确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
-确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
-确认 _config.yml 里 post_asset_folder: true 已开启
-确认 marked 配置了 postAsset: true
-
-3. 部署后看不到更新？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
-
-以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
-
-
-
-VU (并发用户) 和 TPS 换算
-公式描述：TPS &#x3D; VU&#x2F;RT，（RT单位：秒）。
-
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeterApache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
-
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
-
-ApacheBenchApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
-
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
-
-wrkwrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
-
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>文章分类、置顶与短链配置</title>
-    <url>/posts/1784a007/</url>
-    <content><![CDATA[本站用三个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链。配合起来，写笔记时只要把文件放进对应文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶。
-一、文件夹自动归类（auto_category）装了 hexo-auto-category 插件，文件夹名 &#x3D; 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
-用法在 source/_posts/ 下建文件夹，文章放进去：
-source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
-
-上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
-注意
-手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
-_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
-建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
-
-配置（已设好，一般不用改）_config.yml 里：
-auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
-
-想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
-二、置顶排序（sticky）首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
----title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
-
-规则
-有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
-没 sticky 的文章：按日期倒序排在置顶文章之后
-sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
-
-示例本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
-三、永久短链（abbrlink）装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
-https://zenty-me.github.io/posts/b9c5d664/
-
-为什么用短链
-永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
-简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
-适合分享：短链好看，外链稳定
-
-工作机制
-第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
-之后这个值永久不变，URL 固定为 /posts/abbrlink值/
-不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
-
-配置（已设好）_config.yml 里：
-permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
-
-四、日常写笔记流程结合三个机制，写一篇新笔记的完整流程：
-
-建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
-移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
-（可选）置顶：在 front-matter 加 sticky: 100
-编辑：Typora 写正文
-部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
-小结
-
-
-需求
-怎么做
-
-
-
-给文章归类
-把 md 文件放进 _posts/分类名/ 文件夹
-
-
-新建分类
-在 _posts/ 下新建文件夹并放入文章
-
-
-置顶文章
-front-matter 加 sticky: 100
-
-
-文章 URL
-自动生成 /posts/xxxxxxxx/，不用管
-
-
-多级分类
-auto_category.depth 改大、multiple: true
-
-
-一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>docker</title>
-    <url>/posts/f255ffad/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置2.1 github新建仓库+token获取
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务
-
-
-3. 使用
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-  </entry>
-  <entry>
     <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
     <url>/posts/35a7b521/</url>
     <content><![CDATA[本篇面向完全没接触过代码的同学。跟着做完，你会得到一个有独立网址（你的名字.github.io）、能写文章、手机电脑都能看的个人博客。
@@ -697,8 +293,206 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>教程</tag>
         <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/posts/b9c5d664/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章hexo new &quot;文章标题&quot;
+
+执行后会在 source/_posts/ 下生成两个东西：
+
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
+
+二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+
+常用字段说明：
+
+
+
+字段
+作用
+必填
+
+
+
+title
+文章标题
+是
+
+
+date
+发布时间
+是
+
+
+tags
+标签（列表）
+否
+
+
+categories
+分类（列表）
+否
+
+
+cover
+封面图路径
+否
+
+
+description
+摘要（首页显示）
+否
+
+
+三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式文章里用裸文件名引用图片：
+![图片说明](图片名.png)
+
+
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
+
+Typora 配置建议如果用 Typora 写作，推荐这样配置：
+
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 .&#x2F;“ 和 “应用上述规则到所有插入的图片”
+
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览hexo server
+
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+
+按 Ctrl+C 停止服务。
+
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+
+五、部署到 GitHub Pages写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+
+简写形式：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+各步骤作用：
+
+
+
+命令
+作用
+
+
+
+hexo clean
+清理缓存（删 db.json 和 public/）
+
+
+hexo generate
+生成静态文件到 public/
+
+
+hexo deploy
+把 public/ 推送到 GitHub 仓库
+
+
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客部署完成后访问主页：
+https://zenty-me.github.io/
+
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
+
+
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+七、草稿机制不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+
+发布后记得执行部署命令。
+八、常用命令速查
+
+
+命令
+作用
+
+
+
+hexo new &quot;标题&quot;
+新建文章
+
+
+hexo new draft &quot;标题&quot;
+新建草稿
+
+
+hexo publish &quot;标题&quot;
+草稿转正式
+
+
+hexo server
+本地预览
+
+
+hexo server --draft
+预览含草稿
+
+
+hexo clean
+清理缓存
+
+
+hexo generate
+生成静态文件
+
+
+hexo deploy
+部署到远程
+
+
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
+
+
+hexo list
+列出所有文章
+
+
+hexo version
+查看版本
+
+
+简写：g &#x3D; generate，s &#x3D; server，d &#x3D; deploy，c &#x3D; clean
+九、常见问题1. 修改配置后预览没变化？改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？按顺序检查：
+
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
+
+3. 部署后看不到更新？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
       </tags>
   </entry>
   <entry>
@@ -830,9 +624,215 @@ _config.butterfly.yml 的 favicon
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>教程</tag>
         <tag>Butterfly</tag>
+        <tag>教程</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置2.1 github新建仓库+token获取
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务
+
+
+3. 使用
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>文章分类、置顶与短链配置</title>
+    <url>/posts/1784a007/</url>
+    <content><![CDATA[本站用三个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链。配合起来，写笔记时只要把文件放进对应文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶。
+一、文件夹自动归类（auto_category）装了 hexo-auto-category 插件，文件夹名 &#x3D; 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
+用法在 source/_posts/ 下建文件夹，文章放进去：
+source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
+
+上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
+注意
+手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
+_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
+建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
+
+配置（已设好，一般不用改）_config.yml 里：
+auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
+
+想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
+二、置顶排序（sticky）首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
+---title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
+
+规则
+有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
+没 sticky 的文章：按日期倒序排在置顶文章之后
+sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
+
+示例本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
+三、永久短链（abbrlink）装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
+https://zenty-me.github.io/posts/b9c5d664/
+
+为什么用短链
+永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
+简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
+适合分享：短链好看，外链稳定
+
+工作机制
+第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
+之后这个值永久不变，URL 固定为 /posts/abbrlink值/
+不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
+
+配置（已设好）_config.yml 里：
+permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
+
+四、日常写笔记流程结合三个机制，写一篇新笔记的完整流程：
+
+建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
+移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
+（可选）置顶：在 front-matter 加 sticky: 100
+编辑：Typora 写正文
+部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
+小结
+
+
+需求
+怎么做
+
+
+
+给文章归类
+把 md 文件放进 _posts/分类名/ 文件夹
+
+
+新建分类
+在 _posts/ 下新建文件夹并放入文章
+
+
+置顶文章
+front-matter 加 sticky: 100
+
+
+文章 URL
+自动生成 /posts/xxxxxxxx/，不用管
+
+
+多级分类
+auto_category.depth 改大、multiple: true
+
+
+一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>docker</title>
+    <url>/posts/f255ffad/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+
+
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+
+
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
+
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
+
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
+
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
+
+
+易混淆的术语接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+
+
+QPS vs. RPS
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+
+
+TPS vs. RPS
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+
+
+
+VU (并发用户) 和 TPS 换算
+公式描述：TPS &#x3D; VU&#x2F;RT，（RT单位：秒）。
+
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeterApache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
+
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
+
+ApacheBenchApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
+
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrkwrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
   </entry>
   <entry>
     <title>缓存技术常见问题及解决</title>
