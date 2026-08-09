@@ -1,935 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hexo 博客发布笔记完整教程</title>
-    <url>/posts/b9c5d664/</url>
-    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章hexo new &quot;文章标题&quot;
-
-执行后会在 source/_posts/ 下生成两个东西：
-
-文章标题.md：Markdown 文章文件
-文章标题/：同名文件夹，用于存放图片等资源
-
-二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息：
----title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-
-常用字段说明：
-
-
-
-字段
-作用
-必填
-
-
-
-title
-文章标题
-是
-
-
-date
-发布时间
-是
-
-
-tags
-标签（列表）
-否
-
-
-categories
-分类（列表）
-否
-
-
-cover
-封面图路径
-否
-
-
-description
-摘要（首页显示）
-否
-
-
-三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式文章里用裸文件名引用图片：
-![图片说明](图片名.png)
-
-
-⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
-
-Typora 配置建议如果用 Typora 写作，推荐这样配置：
-
-偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
-路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 .&#x2F;“ 和 “应用上述规则到所有插入的图片”
-
-这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览hexo server
-
-访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
-预览草稿：
-hexo server --draft
-
-按 Ctrl+C 停止服务。
-
-修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
-
-五、部署到 GitHub Pages写完满意后，一键部署：
-hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-
-简写形式：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-各步骤作用：
-
-
-
-命令
-作用
-
-
-
-hexo clean
-清理缓存（删 db.json 和 public/）
-
-
-hexo generate
-生成静态文件到 public/
-
-
-hexo deploy
-把 public/ 推送到 GitHub 仓库
-
-
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客部署完成后访问主页：
-https://zenty-me.github.io/
-
-文章地址格式：
-https://zenty-me.github.io/年/月/日/文章标题/
-
-
-GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-七、草稿机制不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
-新建草稿：
-hexo new draft &quot;草稿标题&quot;
-
-把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
-hexo publish &quot;草稿标题&quot;
-
-发布后记得执行部署命令。
-八、常用命令速查
-
-
-命令
-作用
-
-
-
-hexo new &quot;标题&quot;
-新建文章
-
-
-hexo new draft &quot;标题&quot;
-新建草稿
-
-
-hexo publish &quot;标题&quot;
-草稿转正式
-
-
-hexo server
-本地预览
-
-
-hexo server --draft
-预览含草稿
-
-
-hexo clean
-清理缓存
-
-
-hexo generate
-生成静态文件
-
-
-hexo deploy
-部署到远程
-
-
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-一键发布
-
-
-hexo list
-列出所有文章
-
-
-hexo version
-查看版本
-
-
-简写：g &#x3D; generate，s &#x3D; server，d &#x3D; deploy，c &#x3D; clean
-九、常见问题1. 修改配置后预览没变化？改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？按顺序检查：
-
-确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
-确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
-确认 _config.yml 里 post_asset_folder: true 已开启
-确认 marked 配置了 postAsset: true
-
-3. 部署后看不到更新？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
-
-以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>文章分类、置顶与短链配置</title>
-    <url>/posts/1784a007/</url>
-    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
-一、文件夹自动归类（auto_category）装了 hexo-auto-category 插件，文件夹名 &#x3D; 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
-用法在 source/_posts/ 下建文件夹，文章放进去：
-source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
-
-上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
-注意
-手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
-_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
-建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
-
-配置（已设好，一般不用改）_config.yml 里：
-auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
-
-想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
-二、置顶排序（sticky）首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
----title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
-
-规则
-有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
-没 sticky 的文章：按日期倒序排在置顶文章之后
-sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
-
-示例本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
-三、永久短链（abbrlink）装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
-https://zenty-me.github.io/posts/b9c5d664/
-
-为什么用短链
-永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
-简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
-适合分享：短链好看，外链稳定
-
-工作机制
-第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
-之后这个值永久不变，URL 固定为 /posts/abbrlink值/
-不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
-
-配置（已设好）_config.yml 里：
-permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
-
-四、系列文章（series）写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
-归入系列在 front-matter 加 series: 系列名，同名的就是一个系列：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
-
-加完后该文章自动获得：
-
-文章底部：显示系列内的「上一篇 &#x2F; 下一篇」导航（不是全站按时间的）
-侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
-
-自定义顺序默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
-
-series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
-排序规则
-
-
-情况
-排序方式
-
-
-
-系列里有任一篇带 series_order
-按 series_order 数字升序（没加的排最后）
-
-
-全都没加 series_order
-按 date 排序
-
-
-配置在 _config.butterfly.yml：
-series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
-
-示例本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
-五、日常写笔记流程结合三个机制，写一篇新笔记的完整流程：
-
-建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
-移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
-（可选）置顶：在 front-matter 加 sticky: 100
-（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
-编辑：Typora 写正文
-部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
-小结
-
-
-需求
-怎么做
-
-
-
-给文章归类
-把 md 文件放进 _posts/分类名/ 文件夹
-
-
-新建分类
-在 _posts/ 下新建文件夹并放入文章
-
-
-置顶文章
-front-matter 加 sticky: 100
-
-
-文章 URL
-自动生成 /posts/xxxxxxxx/，不用管
-
-
-多级分类
-auto_category.depth 改大、multiple: true
-
-
-组成系列文章
-front-matter 加 series: 系列名
-
-
-指定系列内顺序
-front-matter 加 series_order: 数字（越小越靠前）
-
-
-一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何配置网站外观与个人信息</title>
-    <url>/posts/9fa0ea99/</url>
-    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
-
-
-
-文件
-作用
-
-
-
-_config.yml
-Hexo 站点级配置（站名、作者、语言、部署等）
-
-
-_config.butterfly.yml
-Butterfly 主题配置（头像、背景、菜单、侧边栏等）
-
-
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
-
-
-title：浏览器标签页和首页大标题都读这里
-description：搜索引擎抓取的站点描述，写一句话介绍即可
-author：改一次，全站的作者署名、版权信息都会同步
-
-二、头像编辑 _config.butterfly.yml：
-avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-
-图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
-
-支持 png &#x2F; jpg &#x2F; webp，建议用正方形图，否则会被裁切。
-
-三、网站背景背景在 _config.butterfly.yml 的 background 字段：
-# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-
-本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）顶部图是每页面顶部那张大横图：
-disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-
-图片放到 source/img/top-bg.webp（或你指定的路径）。
-
-单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
-
-五、导航菜单菜单在 _config.butterfly.yml 顶部：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-
-格式是 显示名: 路径 || 图标class。
-
-显示名：菜单上显示的文字
-路径：页面的 URL，比如 /tags/
-图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
-
-新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接侧边栏的社交图标：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-
-格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-
-七、侧边栏作者卡片侧边栏那个带头像和按钮的卡片：
-card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-
-description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）favicon: /img/favicon.png
-
-图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
-source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-
-引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
-在 _config.butterfly.yml 里：
-lightbox: fancybox
-
-一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
-
-写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
-
-十一、部署生效任何配置改完后，三连部署：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
-小结
-
-
-想改什么
-改哪里
-
-
-
-站点名 &#x2F; 作者名 &#x2F; SEO 描述
-_config.yml 的 title &#x2F; author &#x2F; description
-
-
-头像
-_config.butterfly.yml 的 avatar.img + 放图到 source/img/
-
-
-背景色 &#x2F; 渐变
-_config.butterfly.yml 的 background
-
-
-顶部图
-_config.butterfly.yml 的 default_top_img 等
-
-
-导航菜单
-_config.butterfly.yml 的 menu
-
-
-社交图标
-_config.butterfly.yml 的 social
-
-
-作者签名
-_config.butterfly.yml 的 card_author.description
-
-
-图片点击放大
-_config.butterfly.yml 的 lightbox: fancybox
-
-
-标签页小图标
-_config.butterfly.yml 的 favicon
-
-
-记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-        <tag>Butterfly</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置2.1 github新建仓库+token获取
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Elasticsearch使用</title>
-    <url>/posts/78c3da92/</url>
-    <content><![CDATA[安装docker安装 es
-拉取镜像
-
-docker pull elasticsearch:7.3.0
-
-
-准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
-
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
-
-
-复制需要挂载的文件夹
-
-docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
-
-
-修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
-
-cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
-
-
-删除刚刚创建的容器
-
-docker rm -f es7
-
-
-新建容器，使用挂载的文件夹
-
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
-
-
-浏览器访问 http://localhost:9200/ 如下：
-
-
-可视化工具 Kibana 安装
-拉取镜像
-
-docker pull kibana:7.3.0
-
-
-准备和挂载的文件夹，先运行一个容器
-
-docker run -d --name kibana -p 5601:5601 kibana:7.3.0
-
-
-复制配置到挂载的文件夹
-
-docker cp kibana:/usr/share/kibana/config E:\docker\kibana
-
-
-编辑配置文件 kibana.yml 如下
-
-server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
-
-
-如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
-
-
-
-删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
-
-docker rm -f kibana
-
-docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
-
-
-浏览器访问 http://localhost:5601 即可访问控制台
-
-
-Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
-
-命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
-历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
-语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
-响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
-
-
-Elasticsearch 基本请求格式Elasticsearch 提供 REST API，常见请求格式如下：
-GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
-
-Elasticsearch 基础语法学习1. 创建索引
-创建一个名为 users 的索引。
-
-PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
-
-
-2. 新增文档指定 ID 新增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-
-自动生成 ID 新增POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
-
-3. 根据 ID 查询文档GET /users/_doc/1
-
-
-4. 搜索文档查询所有文档GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
-
-条件搜索
-查询 name 包含 张 的文档：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
-
-精确查询
-查询 email 等于指定值：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
-
-范围查询
-查询年龄大于等于 20 的文档：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
-
-分页查询GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
-
-含义：
-
-from：从第几条开始
-size：每页返回多少条
-
-5. 更新文档局部更新只更新某个字段：
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-
-增加字段POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
-
-
-6. 删除文档删除 ID 为 1 的文档：
-DELETE /users/_doc/1
-
-
-7. 删除索引删除整个 users 索引：
-DELETE /users
-
-
-8. 查看索引是否存在HEAD /users
-
-如果存在，返回状态码：
-200
-
-如果不存在，返回：
-404
-
-
-9. 查看索引信息GET /users
-
-查看索引 mapping：
-GET /users/_mapping
-
-查看索引 settings：
-GET /users/_settings
-
-
-10. 最小可用 CRUD 总结增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-
-查GET /users/_doc/1
-
-改POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-
-删DELETE /users/_doc/1
-
-
-记住这个格式就行：
-PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
-
-倒排索引认识
-倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
-
-
-简单示例：
-假设我们有以下文档，分别对应一条中文句子：
-
-文档 1: Elasticsearch 是分布式引擎
-文档 2: 分布式系统的核心是搜索
-文档 3: 搜索引擎的未来是智能化
-
-倒排索引将这些文档转化为如下形式：
-
-
-
-关键词
-文档 ID
-
-
-
-elasticsearch
-1
-
-
-分布式
-1, 2
-
-
-系统
-2
-
-
-核心
-2
-
-
-搜索
-2, 3
-
-
-引擎
-1, 3
-
-
-智能化
-3
-
-
-当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
-构建过程1. 分词（Tokenization）
-分词是将文本内容拆分为独立的单词或短语，例如：
-
-原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
-
-2. 归一化（Normalization）
-归一化是对分词结果进行标准化处理，包括：
-
-
-转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
-去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
-词干提取：将词汇归为基本形式，如 running → run。
-
-3. 创建倒排索引
-根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
-
-&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
-
-
-此时，倒排索引已经完成，后续的搜索操作会以此为基础。
-
-ik 中文分词器插件安装
-打开终端进入 es7 容器的内部
-
-docker exec -it es7 /bin/sh
-
-
-执行安装命令
-
-bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
-
-
-安装完成后，执行如下命令，退出容器：
-
-exit
-
-
-然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
-
-docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
-
-
-重启容器
-
-docker restart es7
-
-分词模式智能化分词 - ik_smartPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
-
-
-最细粒度分词 - ik_max_wordPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
-
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>如何添加书签</title>
-    <url>/posts/3ffe122/</url>
-    <content><![CDATA[本站的书签页（&#x2F;links&#x2F;）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
-一、书签数据文件所有书签数据存放在：
-source/_data/link.yml
-
-用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
-二、文件结构文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
-- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
-
-三、添加书签到已有分类在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
-- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
-
-注意 name 前面是 4 个空格，link&#x2F;avatar&#x2F;descr 前面是 6 个空格，和同分类下其他书签对齐。
-四、新建分类在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
-- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
-
-新分类前面留一个空行和上个分类隔开。
-五、缩进规则（重要）YAML 对缩进敏感，必须用空格，不能用 Tab：
-
-
-
-层级
-内容
-缩进
-
-
-
-1
-class_name
-0 空格（顶格）
-
-
-2
-class_desc &#x2F; link_list
-2 空格
-
-
-3
-name
-4 空格
-
-
-4
-link &#x2F; avatar &#x2F; descr
-6 空格
-
-
-六、图标自动获取avatar 字段填网站自己的 favicon，格式固定：
-https://网站域名/favicon.ico
-
-例如：
-
-GitHub → https://github.com/favicon.ico
-掘金 → https://juejin.cn/favicon.ico
-
-不用手动下载图标，浏览器会自动加载网站图标。
-七、删除书签找到对应书签的 4 行（name&#x2F;link&#x2F;avatar&#x2F;descr），整段删除即可。注意不要破坏周围书签的缩进。
-八、部署上线改完 link.yml 后，执行：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
-
-GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-九、完整示例下面是一个包含两个分类的完整 link.yml 示例：
-- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
-
-照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>书签</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
-
-
-
-VU (并发用户) 和 TPS 换算
-公式描述：TPS &#x3D; VU&#x2F;RT，（RT单位：秒）。
-
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeterApache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
-
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
-
-ApacheBenchApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
-
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
-
-wrkwrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
-
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
     <title>缓存技术常见问题及解决</title>
     <url>/posts/aad9f202/</url>
     <content><![CDATA[缓存技术常见的问题缓存雪崩认识
@@ -1210,8 +281,937 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>教程</tag>
         <tag>Butterfly</tag>
+        <tag>教程</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/posts/b9c5d664/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章hexo new &quot;文章标题&quot;
+
+执行后会在 source/_posts/ 下生成两个东西：
+
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
+
+二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+
+常用字段说明：
+
+
+
+字段
+作用
+必填
+
+
+
+title
+文章标题
+是
+
+
+date
+发布时间
+是
+
+
+tags
+标签（列表）
+否
+
+
+categories
+分类（列表）
+否
+
+
+cover
+封面图路径
+否
+
+
+description
+摘要（首页显示）
+否
+
+
+三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式文章里用裸文件名引用图片：
+![图片说明](图片名.png)
+
+
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
+
+Typora 配置建议如果用 Typora 写作，推荐这样配置：
+
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 .&#x2F;“ 和 “应用上述规则到所有插入的图片”
+
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览hexo server
+
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+
+按 Ctrl+C 停止服务。
+
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+
+五、部署到 GitHub Pages写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+
+简写形式：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+各步骤作用：
+
+
+
+命令
+作用
+
+
+
+hexo clean
+清理缓存（删 db.json 和 public/）
+
+
+hexo generate
+生成静态文件到 public/
+
+
+hexo deploy
+把 public/ 推送到 GitHub 仓库
+
+
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客部署完成后访问主页：
+https://zenty-me.github.io/
+
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
+
+
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+七、草稿机制不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+
+发布后记得执行部署命令。
+八、常用命令速查
+
+
+命令
+作用
+
+
+
+hexo new &quot;标题&quot;
+新建文章
+
+
+hexo new draft &quot;标题&quot;
+新建草稿
+
+
+hexo publish &quot;标题&quot;
+草稿转正式
+
+
+hexo server
+本地预览
+
+
+hexo server --draft
+预览含草稿
+
+
+hexo clean
+清理缓存
+
+
+hexo generate
+生成静态文件
+
+
+hexo deploy
+部署到远程
+
+
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
+
+
+hexo list
+列出所有文章
+
+
+hexo version
+查看版本
+
+
+简写：g &#x3D; generate，s &#x3D; server，d &#x3D; deploy，c &#x3D; clean
+九、常见问题1. 修改配置后预览没变化？改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？按顺序检查：
+
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
+
+3. 部署后看不到更新？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+
+
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+
+
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
+
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
+
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
+
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
+
+
+易混淆的术语接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+
+
+QPS vs. RPS
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+
+
+TPS vs. RPS
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+
+
+
+VU (并发用户) 和 TPS 换算
+公式描述：TPS &#x3D; VU&#x2F;RT，（RT单位：秒）。
+
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeterApache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
+
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
+
+ApacheBenchApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
+
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrkwrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Elasticsearch使用</title>
+    <url>/posts/78c3da92/</url>
+    <content><![CDATA[安装docker安装 es
+拉取镜像
+
+docker pull elasticsearch:7.3.0
+
+
+准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
+
+
+复制需要挂载的文件夹
+
+docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
+
+
+修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
+
+cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
+
+
+删除刚刚创建的容器
+
+docker rm -f es7
+
+
+新建容器，使用挂载的文件夹
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
+
+
+浏览器访问 http://localhost:9200/ 如下：
+
+
+可视化工具 Kibana 安装
+拉取镜像
+
+docker pull kibana:7.3.0
+
+
+准备和挂载的文件夹，先运行一个容器
+
+docker run -d --name kibana -p 5601:5601 kibana:7.3.0
+
+
+复制配置到挂载的文件夹
+
+docker cp kibana:/usr/share/kibana/config E:\docker\kibana
+
+
+编辑配置文件 kibana.yml 如下
+
+server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
+
+
+如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
+
+
+
+删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
+
+docker rm -f kibana
+
+docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
+
+
+浏览器访问 http://localhost:5601 即可访问控制台
+
+
+Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
+
+命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
+历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
+语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
+响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
+
+
+Elasticsearch 基本请求格式Elasticsearch 提供 REST API，常见请求格式如下：
+GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
+
+Elasticsearch 基础语法学习1. 创建索引
+创建一个名为 users 的索引。
+
+PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
+
+
+2. 新增文档指定 ID 新增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+
+自动生成 ID 新增POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
+
+3. 根据 ID 查询文档GET /users/_doc/1
+
+
+4. 搜索文档查询所有文档GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
+
+条件搜索
+查询 name 包含 张 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
+
+精确查询
+查询 email 等于指定值：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
+
+范围查询
+查询年龄大于等于 20 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
+
+分页查询GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
+
+含义：
+
+from：从第几条开始
+size：每页返回多少条
+
+5. 更新文档局部更新只更新某个字段：
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+
+增加字段POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
+
+
+6. 删除文档删除 ID 为 1 的文档：
+DELETE /users/_doc/1
+
+
+7. 删除索引删除整个 users 索引：
+DELETE /users
+
+
+8. 查看索引是否存在HEAD /users
+
+如果存在，返回状态码：
+200
+
+如果不存在，返回：
+404
+
+
+9. 查看索引信息GET /users
+
+查看索引 mapping：
+GET /users/_mapping
+
+查看索引 settings：
+GET /users/_settings
+
+
+10. 最小可用 CRUD 总结增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+
+查GET /users/_doc/1
+
+改POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+
+删DELETE /users/_doc/1
+
+
+记住这个格式就行：
+PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
+
+倒排索引认识
+倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
+
+
+简单示例：
+假设我们有以下文档，分别对应一条中文句子：
+
+文档 1: Elasticsearch 是分布式引擎
+文档 2: 分布式系统的核心是搜索
+文档 3: 搜索引擎的未来是智能化
+
+倒排索引将这些文档转化为如下形式：
+
+
+
+关键词
+文档 ID
+
+
+
+elasticsearch
+1
+
+
+分布式
+1, 2
+
+
+系统
+2
+
+
+核心
+2
+
+
+搜索
+2, 3
+
+
+引擎
+1, 3
+
+
+智能化
+3
+
+
+当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
+构建过程1. 分词（Tokenization）
+分词是将文本内容拆分为独立的单词或短语，例如：
+
+原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
+
+2. 归一化（Normalization）
+归一化是对分词结果进行标准化处理，包括：
+
+
+转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
+去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
+词干提取：将词汇归为基本形式，如 running → run。
+
+3. 创建倒排索引
+根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
+
+&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
+
+
+此时，倒排索引已经完成，后续的搜索操作会以此为基础。
+
+ik 中文分词器插件安装
+打开终端进入 es7 容器的内部
+
+docker exec -it es7 /bin/sh
+
+
+执行安装命令
+
+bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
+
+
+安装完成后，执行如下命令，退出容器：
+
+exit
+
+
+然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
+
+docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
+
+
+重启容器
+
+docker restart es7
+
+分词模式智能化分词 - ik_smartPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
+
+
+最细粒度分词 - ik_max_wordPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
+
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>文章分类、置顶与短链配置</title>
+    <url>/posts/1784a007/</url>
+    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
+一、文件夹自动归类（auto_category）装了 hexo-auto-category 插件，文件夹名 &#x3D; 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
+用法在 source/_posts/ 下建文件夹，文章放进去：
+source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
+
+上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
+注意
+手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
+_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
+建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
+
+配置（已设好，一般不用改）_config.yml 里：
+auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
+
+想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
+二、置顶排序（sticky）首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
+---title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
+
+规则
+有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
+没 sticky 的文章：按日期倒序排在置顶文章之后
+sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
+
+示例本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
+三、永久短链（abbrlink）装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
+https://zenty-me.github.io/posts/b9c5d664/
+
+为什么用短链
+永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
+简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
+适合分享：短链好看，外链稳定
+
+工作机制
+第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
+之后这个值永久不变，URL 固定为 /posts/abbrlink值/
+不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
+
+配置（已设好）_config.yml 里：
+permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
+
+四、系列文章（series）写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
+归入系列在 front-matter 加 series: 系列名，同名的就是一个系列：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
+
+加完后该文章自动获得：
+
+文章底部：显示系列内的「上一篇 &#x2F; 下一篇」导航（不是全站按时间的）
+侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
+
+自定义顺序默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
+
+series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
+排序规则
+
+
+情况
+排序方式
+
+
+
+系列里有任一篇带 series_order
+按 series_order 数字升序（没加的排最后）
+
+
+全都没加 series_order
+按 date 排序
+
+
+配置在 _config.butterfly.yml：
+series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
+
+示例本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
+五、日常写笔记流程结合三个机制，写一篇新笔记的完整流程：
+
+建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
+移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
+（可选）置顶：在 front-matter 加 sticky: 100
+（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
+编辑：Typora 写正文
+部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
+小结
+
+
+需求
+怎么做
+
+
+
+给文章归类
+把 md 文件放进 _posts/分类名/ 文件夹
+
+
+新建分类
+在 _posts/ 下新建文件夹并放入文章
+
+
+置顶文章
+front-matter 加 sticky: 100
+
+
+文章 URL
+自动生成 /posts/xxxxxxxx/，不用管
+
+
+多级分类
+auto_category.depth 改大、multiple: true
+
+
+组成系列文章
+front-matter 加 series: 系列名
+
+
+指定系列内顺序
+front-matter 加 series_order: 数字（越小越靠前）
+
+
+一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何添加书签</title>
+    <url>/posts/3ffe122/</url>
+    <content><![CDATA[本站的书签页（&#x2F;links&#x2F;）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
+一、书签数据文件所有书签数据存放在：
+source/_data/link.yml
+
+用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
+二、文件结构文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
+- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
+
+三、添加书签到已有分类在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
+- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
+
+注意 name 前面是 4 个空格，link&#x2F;avatar&#x2F;descr 前面是 6 个空格，和同分类下其他书签对齐。
+四、新建分类在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
+- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
+
+新分类前面留一个空行和上个分类隔开。
+五、缩进规则（重要）YAML 对缩进敏感，必须用空格，不能用 Tab：
+
+
+
+层级
+内容
+缩进
+
+
+
+1
+class_name
+0 空格（顶格）
+
+
+2
+class_desc &#x2F; link_list
+2 空格
+
+
+3
+name
+4 空格
+
+
+4
+link &#x2F; avatar &#x2F; descr
+6 空格
+
+
+六、图标自动获取avatar 字段填网站自己的 favicon，格式固定：
+https://网站域名/favicon.ico
+
+例如：
+
+GitHub → https://github.com/favicon.ico
+掘金 → https://juejin.cn/favicon.ico
+
+不用手动下载图标，浏览器会自动加载网站图标。
+七、删除书签找到对应书签的 4 行（name&#x2F;link&#x2F;avatar&#x2F;descr），整段删除即可。注意不要破坏周围书签的缩进。
+八、部署上线改完 link.yml 后，执行：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+
+GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+九、完整示例下面是一个包含两个分类的完整 link.yml 示例：
+- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+
+照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>书签</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何配置网站外观与个人信息</title>
+    <url>/posts/9fa0ea99/</url>
+    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
+
+
+
+文件
+作用
+
+
+
+_config.yml
+Hexo 站点级配置（站名、作者、语言、部署等）
+
+
+_config.butterfly.yml
+Butterfly 主题配置（头像、背景、菜单、侧边栏等）
+
+
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
+
+
+title：浏览器标签页和首页大标题都读这里
+description：搜索引擎抓取的站点描述，写一句话介绍即可
+author：改一次，全站的作者署名、版权信息都会同步
+
+二、头像编辑 _config.butterfly.yml：
+avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
+
+图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
+
+支持 png &#x2F; jpg &#x2F; webp，建议用正方形图，否则会被裁切。
+
+三、网站背景背景在 _config.butterfly.yml 的 background 字段：
+# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
+
+本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
+四、顶部图（Top Img）顶部图是每页面顶部那张大横图：
+disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
+
+图片放到 source/img/top-bg.webp（或你指定的路径）。
+
+单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
+
+五、导航菜单菜单在 _config.butterfly.yml 顶部：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
+
+格式是 显示名: 路径 || 图标class。
+
+显示名：菜单上显示的文字
+路径：页面的 URL，比如 /tags/
+图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
+
+新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
+六、社交链接侧边栏的社交图标：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
+
+格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
+
+七、侧边栏作者卡片侧边栏那个带头像和按钮的卡片：
+card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
+
+description 是作者名下面那一行小字，改成自己的签名即可。
+八、Favicon（浏览器标签页小图标）favicon: /img/favicon.png
+
+图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
+九、图片资源放哪所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
+
+引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
+十、图片灯箱（lightbox）文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+在 _config.butterfly.yml 里：
+lightbox: fancybox
+
+一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
+
+写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
+
+十一、部署生效任何配置改完后，三连部署：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
+小结
+
+
+想改什么
+改哪里
+
+
+
+站点名 &#x2F; 作者名 &#x2F; SEO 描述
+_config.yml 的 title &#x2F; author &#x2F; description
+
+
+头像
+_config.butterfly.yml 的 avatar.img + 放图到 source/img/
+
+
+背景色 &#x2F; 渐变
+_config.butterfly.yml 的 background
+
+
+顶部图
+_config.butterfly.yml 的 default_top_img 等
+
+
+导航菜单
+_config.butterfly.yml 的 menu
+
+
+社交图标
+_config.butterfly.yml 的 social
+
+
+作者签名
+_config.butterfly.yml 的 card_author.description
+
+
+图片点击放大
+_config.butterfly.yml 的 lightbox: fancybox
+
+
+标签页小图标
+_config.butterfly.yml 的 favicon
+
+
+记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置2.1 github新建仓库+token获取
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
   </entry>
 </search>
