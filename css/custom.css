@@ -172,6 +172,11 @@ figure.highlight {
   background: transparent !important;
   color: rgba(255, 255, 255, 0.86);
 }
+/* figure 内的 pre 背景置透明：避免半透明 pre 叠在半透明 figure 上造成
+   「有代码处更深、空白处更浅」的左右色差，整块统一显示 figure 背景 */
+#article-container figure.highlight pre {
+  background: transparent !important;
+}
 #article-container hr {
   background: rgba(255, 255, 255, 0.15);
 }
