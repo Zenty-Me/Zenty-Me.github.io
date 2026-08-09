@@ -298,304 +298,6 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </tags>
   </entry>
   <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置2.1 github新建仓库+token获取
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Elasticsearch使用</title>
-    <url>/posts/78c3da92/</url>
-    <content><![CDATA[安装docker安装 es
-拉取镜像
-
-docker pull elasticsearch:7.3.0
-
-
-准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
-
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
-
-
-复制需要挂载的文件夹
-
-docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
-
-
-修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
-
-cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
-
-
-删除刚刚创建的容器
-
-docker rm -f es7
-
-
-新建容器，使用挂载的文件夹
-
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
-
-
-浏览器访问 http://localhost:9200/ 如下：
-
-
-可视化工具 Kibana 安装
-拉取镜像
-
-docker pull kibana:7.3.0
-
-
-准备和挂载的文件夹，先运行一个容器
-
-docker run -d --name kibana -p 5601:5601 kibana:7.3.0
-
-
-复制配置到挂载的文件夹
-
-docker cp kibana:/usr/share/kibana/config E:\docker\kibana
-
-
-编辑配置文件 kibana.yml 如下
-
-server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
-
-
-如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
-
-
-
-删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
-
-docker rm -f kibana
-
-docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
-
-
-浏览器访问 http://localhost:5601 即可访问控制台
-
-
-Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
-
-命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
-历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
-语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
-响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
-
-
-Elasticsearch 基本请求格式Elasticsearch 提供 REST API，常见请求格式如下：
-GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
-
-Elasticsearch 基础语法学习1. 创建索引
-创建一个名为 users 的索引。
-
-PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
-
-
-2. 新增文档指定 ID 新增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-
-自动生成 ID 新增POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
-
-3. 根据 ID 查询文档GET /users/_doc/1
-
-
-4. 搜索文档查询所有文档GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
-
-条件搜索
-查询 name 包含 张 的文档：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
-
-精确查询
-查询 email 等于指定值：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
-
-范围查询
-查询年龄大于等于 20 的文档：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
-
-分页查询GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
-
-含义：
-
-from：从第几条开始
-size：每页返回多少条
-
-5. 更新文档局部更新只更新某个字段：
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-
-增加字段POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
-
-
-6. 删除文档删除 ID 为 1 的文档：
-DELETE /users/_doc/1
-
-
-7. 删除索引删除整个 users 索引：
-DELETE /users
-
-
-8. 查看索引是否存在HEAD /users
-
-如果存在，返回状态码：
-200
-
-如果不存在，返回：
-404
-
-
-9. 查看索引信息GET /users
-
-查看索引 mapping：
-GET /users/_mapping
-
-查看索引 settings：
-GET /users/_settings
-
-
-10. 最小可用 CRUD 总结增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-
-查GET /users/_doc/1
-
-改POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-
-删DELETE /users/_doc/1
-
-
-记住这个格式就行：
-PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
-
-倒排索引认识
-倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
-
-
-简单示例：
-假设我们有以下文档，分别对应一条中文句子：
-
-文档 1: Elasticsearch 是分布式引擎
-文档 2: 分布式系统的核心是搜索
-文档 3: 搜索引擎的未来是智能化
-
-倒排索引将这些文档转化为如下形式：
-
-
-
-关键词
-文档 ID
-
-
-
-elasticsearch
-1
-
-
-分布式
-1, 2
-
-
-系统
-2
-
-
-核心
-2
-
-
-搜索
-2, 3
-
-
-引擎
-1, 3
-
-
-智能化
-3
-
-
-当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
-构建过程1. 分词（Tokenization）
-分词是将文本内容拆分为独立的单词或短语，例如：
-
-原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
-
-2. 归一化（Normalization）
-归一化是对分词结果进行标准化处理，包括：
-
-
-转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
-去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
-词干提取：将词汇归为基本形式，如 running → run。
-
-3. 创建倒排索引
-根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
-
-&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
-
-
-此时，倒排索引已经完成，后续的搜索操作会以此为基础。
-
-ik 中文分词器插件安装
-打开终端进入 es7 容器的内部
-
-docker exec -it es7 /bin/sh
-
-
-执行安装命令
-
-bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
-
-
-安装完成后，执行如下命令，退出容器：
-
-exit
-
-
-然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
-
-docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
-
-
-重启容器
-
-docker restart es7
-
-分词模式智能化分词 - ik_smartPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
-
-
-最细粒度分词 - ik_max_wordPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
-
-
-]]></content>
-  </entry>
-  <entry>
     <title>Hexo 博客发布笔记完整教程</title>
     <url>/posts/b9c5d664/</url>
     <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
@@ -933,6 +635,307 @@ _config.butterfly.yml 的 favicon
         <tag>Butterfly</tag>
         <tag>教程</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置2.1 github新建仓库+token获取
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Elasticsearch使用</title>
+    <url>/posts/78c3da92/</url>
+    <content><![CDATA[安装docker安装 es
+拉取镜像
+
+docker pull elasticsearch:7.3.0
+
+
+准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
+
+
+复制需要挂载的文件夹
+
+docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
+
+
+修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
+
+cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
+
+
+删除刚刚创建的容器
+
+docker rm -f es7
+
+
+新建容器，使用挂载的文件夹
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
+
+
+浏览器访问 http://localhost:9200/ 如下：
+
+
+可视化工具 Kibana 安装
+拉取镜像
+
+docker pull kibana:7.3.0
+
+
+准备和挂载的文件夹，先运行一个容器
+
+docker run -d --name kibana -p 5601:5601 kibana:7.3.0
+
+
+复制配置到挂载的文件夹
+
+docker cp kibana:/usr/share/kibana/config E:\docker\kibana
+
+
+编辑配置文件 kibana.yml 如下
+
+server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
+
+
+如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
+
+
+
+删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
+
+docker rm -f kibana
+
+docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
+
+
+浏览器访问 http://localhost:5601 即可访问控制台
+
+
+Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
+
+命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
+历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
+语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
+响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
+
+
+Elasticsearch 基本请求格式Elasticsearch 提供 REST API，常见请求格式如下：
+GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
+
+Elasticsearch 基础语法学习1. 创建索引
+创建一个名为 users 的索引。
+
+PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
+
+
+2. 新增文档指定 ID 新增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+
+自动生成 ID 新增POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
+
+3. 根据 ID 查询文档GET /users/_doc/1
+
+
+4. 搜索文档查询所有文档GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
+
+条件搜索
+查询 name 包含 张 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
+
+精确查询
+查询 email 等于指定值：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
+
+范围查询
+查询年龄大于等于 20 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
+
+分页查询GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
+
+含义：
+
+from：从第几条开始
+size：每页返回多少条
+
+5. 更新文档局部更新只更新某个字段：
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+
+增加字段POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
+
+
+6. 删除文档删除 ID 为 1 的文档：
+DELETE /users/_doc/1
+
+
+7. 删除索引删除整个 users 索引：
+DELETE /users
+
+
+8. 查看索引是否存在HEAD /users
+
+如果存在，返回状态码：
+200
+
+如果不存在，返回：
+404
+
+
+9. 查看索引信息GET /users
+
+查看索引 mapping：
+GET /users/_mapping
+
+查看索引 settings：
+GET /users/_settings
+
+
+10. 最小可用 CRUD 总结增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+
+查GET /users/_doc/1
+
+改POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+
+删DELETE /users/_doc/1
+
+
+记住这个格式就行：
+PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
+
+倒排索引认识
+倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
+
+
+简单示例：
+假设我们有以下文档，分别对应一条中文句子：
+
+文档 1: Elasticsearch 是分布式引擎
+文档 2: 分布式系统的核心是搜索
+文档 3: 搜索引擎的未来是智能化
+
+倒排索引将这些文档转化为如下形式：
+
+
+
+关键词
+文档 ID
+
+
+
+elasticsearch
+1
+
+
+分布式
+1, 2
+
+
+系统
+2
+
+
+核心
+2
+
+
+搜索
+2, 3
+
+
+引擎
+1, 3
+
+
+智能化
+3
+
+
+当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
+构建过程1. 分词（Tokenization）
+分词是将文本内容拆分为独立的单词或短语，例如：
+
+原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
+
+2. 归一化（Normalization）
+归一化是对分词结果进行标准化处理，包括：
+
+
+转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
+去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
+词干提取：将词汇归为基本形式，如 running → run。
+
+3. 创建倒排索引
+根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
+
+&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
+
+
+此时，倒排索引已经完成，后续的搜索操作会以此为基础。
+
+ik 中文分词器插件安装
+打开终端进入 es7 容器的内部
+
+docker exec -it es7 /bin/sh
+
+
+执行安装命令
+
+bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
+
+
+安装完成后，执行如下命令，退出容器：
+
+exit
+
+
+然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
+
+docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
+
+
+重启容器
+
+docker restart es7
+
+分词模式智能化分词 - ik_smartPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
+
+
+最细粒度分词 - ik_max_wordPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
+
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
   </entry>
   <entry>
     <title>文章分类、置顶与短链配置</title>
