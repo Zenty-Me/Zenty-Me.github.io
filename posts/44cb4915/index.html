@@ -1,0 +1,390 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>PCA降维 | Zenty's Blog</title><meta name="author" content="Zenty"><meta name="copyright" content="Zenty"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前置知识向量内积数学公式：$$(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} &#x3D; a_1 b_1 + a_2 b_2 + \cdots + a_n b_n$$  A 与 B 的内积值等于 A 向 B 所在直线投影的标量大小。   基变换 基：类比于我们所知的X,Y坐标轴，如果我们需要描述向量，首先需要确定一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PCA降维">
+<meta property="og:url" content="https://zenty-me.github.io/posts/44cb4915/index.html">
+<meta property="og:site_name" content="Zenty&#39;s Blog">
+<meta property="og:description" content="前置知识向量内积数学公式：$$(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} &#x3D; a_1 b_1 + a_2 b_2 + \cdots + a_n b_n$$  A 与 B 的内积值等于 A 向 B 所在直线投影的标量大小。   基变换 基：类比于我们所知的X,Y坐标轴，如果我们需要描述向量，首先需要确定一">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zenty-me.github.io/img/avatar.png">
+<meta property="article:published_time" content="2026-08-10T06:32:28.000Z">
+<meta property="article:modified_time" content="2026-08-10T08:30:25.172Z">
+<meta property="article:author" content="Zenty">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zenty-me.github.io/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "PCA降维",
+  "url": "https://zenty-me.github.io/posts/44cb4915/",
+  "image": "https://zenty-me.github.io/img/avatar.png",
+  "datePublished": "2026-08-10T06:32:28.000Z",
+  "dateModified": "2026-08-10T08:30:25.172Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Zenty",
+      "url": "https://zenty-me.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zenty-me.github.io/posts/44cb4915/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.9/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@700&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: Zenty","link":"链接: ","source":"来源: Zenty's Blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'PCA降维',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">欢迎光临...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (true) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div class="bg-animation" id="web_bg" style="background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fas fa-bookmark"></i><span> 书签</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/top-bg.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Zenty's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">PCA降维</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fas fa-bookmark"></i><span> 书签</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">PCA降维</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-10T06:32:28.000Z" title="发表于 2026-08-10 14:32:28">2026-08-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-10T08:30:25.172Z" title="更新于 2026-08-10 16:30:25">2026-08-10</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><div id="post-outdate-notice" data="{&quot;limitDay&quot;:365,&quot;messagePrev&quot;:&quot;距离上次更新已经&quot;,&quot;messageNext&quot;:&quot;天，文章内容可能已过时。&quot;,&quot;postUpdate&quot;:&quot;2026-08-10 16:30:25&quot;}" hidden></div><h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><h2 id="向量内积"><a href="#向量内积" class="headerlink" title="向量内积"></a>向量内积</h2><p><strong>数学公式：</strong><br>$$<br>(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} &#x3D; a_1 b_1 + a_2 b_2 + \cdots + a_n b_n<br>$$</p>
+<blockquote>
+<p><strong>A 与 B 的内积值等于 A 向 B 所在直线投影的标量大小。</strong></p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/Zenty-Me/blog-images@main/img/20260810145442522.png"></p>
+<h2 id="基变换"><a href="#基变换" class="headerlink" title="基变换"></a>基变换</h2><blockquote>
+<p>基：类比于我们所知的X,Y坐标轴，如果我们需要描述向量，首先需要确定一组基，然后给出基所在直线上的投影值。</p>
+</blockquote>
+<p>假设我们在二维平面上有一个向量（数据点）$ x &#x3D; (3, 2) $。</p>
+<ol>
+<li><p>准备一组全新的单位正交基：$ u_1 &#x3D; \left( \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right) $ $ u_2 &#x3D; \left( -\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right) $</p>
+</li>
+<li><p>计算在新基上的坐标：</p>
+</li>
+</ol>
+<blockquote>
+<p>新坐标的第一个数 $ y_1 $（在 $ u_1 $ 轴上的投影）：</p>
+</blockquote>
+<p>$$<br>y_1 &#x3D; u_1 \cdot x &#x3D; \left( \frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 &#x3D; \frac{5}{\sqrt{2}}<br>$$</p>
+<blockquote>
+<p>新坐标的第二个数 $ y_2 $（在 $ u_2 $ 轴上的投影）：</p>
+</blockquote>
+<p>$$<br>y_2 &#x3D; u_2 \cdot x &#x3D; \left( -\frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 &#x3D; -\frac{1}{\sqrt{2}}<br>$$</p>
+<blockquote>
+<p>所以，数据点 $(3, 2)$ 在新坐标系下的新坐标就是：</p>
+</blockquote>
+<p>$$<br>\left( \frac{5}{\sqrt{2}}, -\frac{1}{\sqrt{2}} \right)<br>$$<br>3. 注意到上面的内积运算，正好可以打包写成矩阵乘以向量的形式：</p>
+<h1 id="begin-pmatrix-frac-1-sqrt-2-frac-1-sqrt-2-frac-1-sqrt-2-frac-1-sqrt-2-end-pmatrix-begin-pmatrix-3-2-end-pmatrix"><a href="#begin-pmatrix-frac-1-sqrt-2-frac-1-sqrt-2-frac-1-sqrt-2-frac-1-sqrt-2-end-pmatrix-begin-pmatrix-3-2-end-pmatrix" class="headerlink" title="$$\begin{pmatrix}\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}\end{pmatrix}\begin{pmatrix}3 \2\end{pmatrix}"></a>$$<br>\begin{pmatrix}<br>\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \<br>-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}<br>\end{pmatrix}<br>\begin{pmatrix}<br>3 \<br>2<br>\end{pmatrix}</h1><p>\begin{pmatrix}<br>\frac{5}{\sqrt{2}} \<br>-\frac{1}{\sqrt{2}}<br>\end{pmatrix}<br>$$<br>我们可以把它写成通用的表示形式：</p>
+<h1 id="begin-pmatrix-p-1-p-2-vdots-p-R-end-pmatrix-begin-pmatrix-a-1-a-2-cdots-a-M-end-pmatrix"><a href="#begin-pmatrix-p-1-p-2-vdots-p-R-end-pmatrix-begin-pmatrix-a-1-a-2-cdots-a-M-end-pmatrix" class="headerlink" title="$$\begin{pmatrix}p_1 \p_2 \\vdots \p_R\end{pmatrix}\begin{pmatrix}a_1 &amp; a_2 &amp; \cdots &amp; a_M\end{pmatrix}"></a>$$<br>\begin{pmatrix}<br>p_1 \<br>p_2 \<br>\vdots \<br>p_R<br>\end{pmatrix}<br>\begin{pmatrix}<br>a_1 &amp; a_2 &amp; \cdots &amp; a_M<br>\end{pmatrix}</h1><p>\begin{pmatrix}<br>p_1 a_1 &amp; p_1 a_2 &amp; \cdots &amp; p_1 a_M \<br>p_2 a_1 &amp; p_2 a_2 &amp; \cdots &amp; p_2 a_M \<br>\vdots &amp; \vdots &amp; \ddots &amp; \vdots \<br>p_R a_1 &amp; p_R a_2 &amp; \cdots &amp; p_R a_M<br>\end{pmatrix}<br>$$</p>
+<p>其中 $ p_i $ 是一个行向量，表示第 $ i $ 个基，$ a_j $ 是一个列向量，表示第 $ j $ 个原始数据记录。实际上也就是做了一个<strong>向量矩阵化</strong>的操作。</p>
+<blockquote>
+<p>上述分析给<strong>矩阵</strong>相乘找到了一种物理解释：<strong>两个矩阵相乘的意义是将右边矩阵中的每一列向量 $ a_j $ 变换到左边矩阵中以每一行向量为所表示的空间中去。<strong>也就是说一个矩阵可以表示一种</strong>线性变换</strong>。</p>
+</blockquote>
+<h2 id="特征值和特征向量"><a href="#特征值和特征向量" class="headerlink" title="特征值和特征向量"></a>特征值和特征向量</h2><blockquote>
+<p>简单来说，在线性代数中，矩阵代表一种<strong>空间变换</strong>（比如旋转、拉伸、剪切等）。当你用一个矩阵去乘以一个向量时，绝大多数向量的<strong>方向</strong>和<strong>长度</strong>都会发生改变。但是，对于某些“特殊”的向量，矩阵作用在它们身上时：</p>
+<p><strong>它的方向完全保持不变（或反向），仅仅是长度被缩放了。</strong></p>
+</blockquote>
+<ul>
+<li><strong>特征向量（Eigenvector）</strong>：就是这个<strong>方向保持不变的特殊向量</strong>。它代表了矩阵变换中的“不变轴”或“主导方向”。</li>
+<li><strong>特征值（Eigenvalue）</strong>：就是这个向量被<strong>缩放的倍数</strong>。它代表了矩阵在这个方向上的“作用强度”或“能量大小”</li>
+</ul>
+<h2 id="方差"><a href="#方差" class="headerlink" title="方差"></a>方差</h2><p>我们知道数值的分散程度，可以用数学上的方差来表述。一个变量的方差可以看做是每个元素与变量均值的差的平方和的均值，即：</p>
+<p>$$<br>Var(a) &#x3D; \frac{1}{m} \sum_{i&#x3D;1}^{m} (a_i - \mu)^2<br>$$</p>
+<h2 id="协方差"><a href="#协方差" class="headerlink" title="协方差"></a>协方差</h2><p>在⼀维空间中我们可⽤⽅差来表示数据的分散程度。而对於⾼维数据，我们⽤协⽅差进⾏约束，协⽅差可以表示两个变量的相关性。为了让两个变量尽可能表示更多的原始信息，我们希望它们之间不存在<strong>线性相关性</strong>，因为相关性意味着两个变量不是完全独立，必然存在重复表示的信息。</p>
+<p><strong>协⽅差公式为：</strong><br>$$<br>Cov(a, b) &#x3D; \frac{1}{m - 1} \sum_{i&#x3D;1}^{m} (a_i - \mu_a)(b_i - \mu_b)<br>$$</p>
+<h1 id="PCA降维原理"><a href="#PCA降维原理" class="headerlink" title="PCA降维原理"></a>PCA降维原理</h1><blockquote>
+<p>PCA（Principal Component Analysis） 是一种常见的数据分析方式，常用于<strong>高维数据</strong>的降维，可用于提取数据的主要特征分量。</p>
+</blockquote>
+<ol>
+<li><strong>降维的本质是矩阵变换</strong>：两个矩阵相乘 $Y &#x3D; P X$，可以让基的数量 $K$（$P$ 的行数）小于原始特征维度 $N$（$X$ 的行数），从而实现特征降维。</li>
+<li><strong>选择最大方差的方向</strong>：数据在降维后的新基（新坐标轴）上必须<strong>尽可能分散</strong>（即<strong>方差最大化</strong>），这样才能保留最多的原始信息，避免数据混在一起无法区分。 </li>
+<li><strong>消除冗余（两两协方差为 0</strong>）：为了让新特征之间不包含重复的信息，任意两个新基上的数据<strong>必须线性无关</strong>（即<strong>协方差为 0</strong>）。在几何上，这意味着新选出的 $K$ 个基必须是<strong>相互正交</strong>的。</li>
+</ol>
+<h1 id="PCA降维推导"><a href="#PCA降维推导" class="headerlink" title="PCA降维推导"></a>PCA降维推导</h1><h3 id="一、-问题定义与预处理"><a href="#一、-问题定义与预处理" class="headerlink" title="一、 问题定义与预处理"></a>一、 问题定义与预处理</h3><h4 id="1-数据表示"><a href="#1-数据表示" class="headerlink" title="1. 数据表示"></a>1. 数据表示</h4><p>假设有 $M$ 个样本，每个样本包含 $N$ 个特征。我们将第 $i$ 个样本表示为一个 $N$ 维的列向量：<br>$$<br>x_i &#x3D; \begin{bmatrix} x_{i1} \ x_{i2} \ \vdots \ x_{iN} \end{bmatrix} \in \mathbb{R}^N \quad (i &#x3D; 1, 2, \dots, M)<br>$$</p>
+<h4 id="2-去均值化（中心化）"><a href="#2-去均值化（中心化）" class="headerlink" title="2. 去均值化（中心化）"></a>2. 去均值化（中心化）</h4><blockquote>
+<p><strong>为什么 PCA 必须去均值？</strong></p>
+<ol>
+<li><strong>定位几何中心</strong>：平移数据使得数据的几何中心位于坐标原点，确保新坐标轴穿过数据中心，而不是被原点偏移“拉歪”。</li>
+<li><strong>满足代数定义</strong>：只有在均值为 0 时，矩阵积$$ \frac{1}{M} X X^{\mathrm{T}} $$才严格等于数据的<strong>协方差矩阵</strong>，使得后续的特征值分解数学推导成立。</li>
+<li><strong>过滤无关信息</strong>：剥离整体绝对偏移（均值），只关注样本之间的相对变化（方差）。</li>
+</ol>
+</blockquote>
+<p>为了简化后续计算，计算所有样本的均值向量 $\mu &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M x_i$，并将每个样本减去均值：<br>$$<br>x_i \leftarrow x_i - \mu<br>$$<br>预处理后，数据的均值为零向量，即：<br>$$<br>\frac{1}{M} \sum_{i&#x3D;1}^M x_i &#x3D; \mathbf{0}<br>$$</p>
+<h4 id="3-降维的目标"><a href="#3-降维的目标" class="headerlink" title="3. 降维的目标"></a>3. 降维的目标</h4><p>寻找一个<strong>低维空间</strong>（维数为 $K$，且 $K &lt; N$），将 $N$ 维向量 $x_i$ 映射为 $K$ 维向量 $y_i$，同时满足：</p>
+<ol>
+<li>信息损失最小（即数据投影后的<strong>方差最大</strong>）。</li>
+<li>降维后的 $K$ 个特征之间<strong>互不相关</strong>（即协方差为 0）。</li>
+</ol>
+<hr>
+<h3 id="二、-单维度投影推导（求解第一个方向）"><a href="#二、-单维度投影推导（求解第一个方向）" class="headerlink" title="二、 单维度投影推导（求解第一个方向）"></a>二、 单维度投影推导（求解第一个方向）</h3><p>先不考虑降到 $K$ 维，只考虑降到 <strong>1 维</strong>。即：寻找一个最佳的方向向量 $w \in \mathbb{R}^N$。</p>
+<h4 id="1-计算投影值"><a href="#1-计算投影值" class="headerlink" title="1. 计算投影值"></a>1. 计算投影值</h4><p>为了保证方向不因向量长度改变，限制 $w$ 为<strong>单位向量</strong>：<br>$$<br>w^T w &#x3D; 1<br>$$</p>
+<blockquote>
+<p>上标 $T$ 表示转置（Transpose）。</p>
+<ul>
+<li><p>在数学中，向量 $\mathbf{w}$ 通常默认是列向量（比如 $\mathbf{w} &#x3D; \begin{bmatrix} w_1 \ w_2 \end{bmatrix}$）。</p>
+</li>
+<li><p>转置后，$\mathbf{w}^T$ 就变成了行向量（比如 $[w_1 \quad w_2]$）。</p>
+</li>
+</ul>
+<p>这样做是为了进行矩阵乘法（内积运算）。因为行向量乘以列向量，结果是一个标量（数值）。</p>
+</blockquote>
+<p>样本 $x_i$ 投影到方向 $w$ 上的投影标量值为：<br>$$<br>y_i &#x3D; w^T x_i<br>$$</p>
+<h4 id="2-计算投影后的均值与方差"><a href="#2-计算投影后的均值与方差" class="headerlink" title="2. 计算投影后的均值与方差"></a>2. 计算投影后的均值与方差</h4><p>由于数据已经去均值（$\sum x_i &#x3D; \mathbf{0}$），投影后数据 $y_i$ 的均值也是 0：<br>$$<br>\bar{y} &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M y_i &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M w^T x_i &#x3D; w^T \left( \frac{1}{M} \sum_{i&#x3D;1}^M x_i \right) &#x3D; 0<br>$$<br>投影后数据的<strong>方差</strong>（记为 $\text{Var}$）公式为：<br>$$<br>\text{Var} &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M (y_i - \bar{y})^2 &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M (w^T x_i)^2<br>$$</p>
+<h4 id="3-引入协方差矩阵"><a href="#3-引入协方差矩阵" class="headerlink" title="3. 引入协方差矩阵"></a>3. 引入协方差矩阵</h4><p>展开方差公式中的平方项（利用标量的转置等于其本身，即 $w^T x_i &#x3D; x_i^T w$）：<br>$$<br>\text{Var} &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M (w^T x_i)(x_i^T w) &#x3D; w^T \left( \frac{1}{M} \sum_{i&#x3D;1}^M x_i x_i^T \right) w<br>$$</p>
+<blockquote>
+<p>向量转置公式：$$(AB)^T&#x3D;B^TA^T$$</p>
+</blockquote>
+<p>定义原始数据的<strong>协方差矩阵</strong> $C \in \mathbb{R}^{N \times N}$ 为：<br>$$<br>C &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M x_i x_i^T<br>$$</p>
+<blockquote>
+<p>为了直观，假设数据只有 2 个特征（比如 $ x_i &#x3D; \begin{bmatrix} a_i \ b_i \end{bmatrix} $，其中 $ a_i $ 是第 $ i $ 个人的身高，$ b_i $ 是体重，且已经去均值）：</p>
+<p>我们来看看 $ x_i x_i^T $ 算出来是什么：</p>
+<p>$$<br>x_i x_i^T &#x3D; \begin{bmatrix} a_i \ b_i \end{bmatrix} \begin{bmatrix} a_i &amp; b_i \end{bmatrix} &#x3D; \begin{bmatrix} a_i^2 &amp; a_i b_i \ b_i a_i &amp; b_i^2 \end{bmatrix}<br>$$</p>
+<p>再把它乘以 $ \frac{1}{M} \sum_{i&#x3D;1}^{M} $（即对所有样本求平均）：</p>
+<p>$$<br>C &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^{M} x_i x_i^T &#x3D; \begin{bmatrix} \frac{1}{M} \sum a_i^2 &amp; \frac{1}{M} \sum a_i b_i \ \frac{1}{M} \sum b_i a_i &amp; \frac{1}{M} \sum b_i^2 \end{bmatrix}<br>$$</p>
+<p>因为数据均值为 0，根据统计学定义：</p>
+<ol>
+<li>$ \frac{1}{M} \sum a_i^2 $ 就是身高 $ a $ 的方差。</li>
+<li>$ \frac{1}{M} \sum b_i^2 $ 就是体重 $ b $ 的方差。</li>
+<li>$ \frac{1}{M} \sum a_i b_i $ 就是身高 $ a $ 和体重 $ b $ 的协方差。</li>
+</ol>
+</blockquote>
+<p>由公式可知，$C$ 是一个<strong>实对称矩阵</strong>（$C^T &#x3D; C$）。<br>代入后，投影方差简化为：<br>$$<br>\text{Var} &#x3D; w^T C w<br>$$</p>
+<hr>
+<h3 id="三、-极值求解（使用拉格朗日乘子法）"><a href="#三、-极值求解（使用拉格朗日乘子法）" class="headerlink" title="三、 极值求解（使用拉格朗日乘子法）"></a>三、 极值求解（使用拉格朗日乘子法）</h3><p>目标：寻找 $w$，使得方差 $w^T C w$ <strong>最大</strong>，同时满足约束条件 $w^T w &#x3D; 1$。</p>
+<h4 id="1-建立拉格朗日函数"><a href="#1-建立拉格朗日函数" class="headerlink" title="1. 建立拉格朗日函数"></a>1. 建立拉格朗日函数</h4><p>引入乘子 $\lambda$，构造目标函数：<br>$$<br>f(w, \lambda) &#x3D; w^T C w - \lambda (w^T w - 1)<br>$$</p>
+<h4 id="2-对-w-求导并令其为零"><a href="#2-对-w-求导并令其为零" class="headerlink" title="2. 对 $w$ 求导并令其为零"></a>2. 对 $w$ 求导并令其为零</h4><p>利用向量微分法则（因为 $C$ 是实对称矩阵，$\frac{\partial (w^T C w)}{\partial w} &#x3D; 2Cw$）：<br>$$<br>\frac{\partial f}{\partial w} &#x3D; 2 C w - 2 \lambda w &#x3D; 0<br>$$<br>化简得到：<br>$$<br>C w &#x3D; \lambda w<br>$$<br><strong>结论 1</strong>：使得方差取得极值的方向向量 $w$，必须是协方差矩阵 $C$ 的<strong>特征向量</strong>，而 $\lambda$ 是对应的<strong>特征值</strong>。</p>
+<h4 id="3-特征值与方差的关系"><a href="#3-特征值与方差的关系" class="headerlink" title="3. 特征值与方差的关系"></a>3. 特征值与方差的关系</h4><p>将 $C w &#x3D; \lambda w$ 代回方差表达式：<br>$$<br>\text{Var} &#x3D; w^T C w &#x3D; w^T (\lambda w) &#x3D; \lambda (w^T w)<br>$$<br>因为约束条件 $w^T w &#x3D; 1$，所以：<br>$$<br>\text{Var} &#x3D; \lambda<br>$$<br><strong>结论 2</strong>：数据在方向 $w$ 上的投影方差，<strong>严格等于协方差矩阵 $C$ 的特征值 $\lambda$</strong>。</p>
+<p>因此，为了使投影方差最大，我们应当选择<strong>最大的特征值 $\lambda_1$</strong>，其对应的特征向量 $w_1$ 就是最佳的投影方向。</p>
+<hr>
+<h3 id="四、-推广到-K-维投影"><a href="#四、-推广到-K-维投影" class="headerlink" title="四、 推广到 $K$ 维投影"></a>四、 推广到 $K$ 维投影</h3><p>要求出降维后的 $K$ 个维度，我们需要按顺序求解 $K$ 个单位正交方向 $w_1, w_2, \dots, w_K$。</p>
+<ol>
+<li><strong>第一个方向 $w_1$</strong>：取最大的特征值 $\lambda_1$ 对应的特征向量，使得第一个维度方差最大。</li>
+<li><strong>第二个方向 $w_2$</strong>：在约束 $w_2^T w_2 &#x3D; 1$ 以及与 $w_1$ 正交的约束 $w_2^T w_1 &#x3D; 0$ 下，最大化 $w_2^T C w_2$。<br>同样通过拉格朗日乘子法求解，可得 $C w_2 &#x3D; \lambda_2 w_2$。<br>为了使方差尽可能大，取<strong>第二大特征值 $\lambda_2$</strong> 对应的特征向量 $w_2$。</li>
+<li><strong>第 $K$ 个方向 $w_K$</strong>：依次取前 $K$ 个最大的特征值 $\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_K$ 对应的单位特征向量 $w_1, w_2, \dots, w_K$。</li>
+</ol>
+<p>因为 $C$ 是实对称矩阵，不同特征值对应的特征向量<strong>自动相互正交</strong>（$w_i^T w_j &#x3D; 0, \forall i \neq j$），这天然满足了“新变量之间协方差为 0”的要求。</p>
+<hr>
+<h3 id="五、-最终降维计算"><a href="#五、-最终降维计算" class="headerlink" title="五、 最终降维计算"></a>五、 最终降维计算</h3><p>将选出的前 $K$ 个特征向量组合成变换矩阵 $W \in \mathbb{R}^{K \times N}$：<br>$$W &#x3D; \begin{bmatrix} w_1^T \ w_2^T \ \vdots \ w_K^T \end{bmatrix}$$</p>
+<p>对于任意一个 $N$ 维数据点 $x_i$，其降维后的 $K$ 维向量 $y_i \in \mathbb{R}^K$ 计算如下：<br>$$y_i &#x3D; W x_i$$</p>
+<p>矩阵形式下，整个数据集矩阵 $X \in \mathbb{R}^{N \times M}$ 的降维结果矩阵 $Y \in \mathbb{R}^{K \times M}$ 为：<br>$$Y &#x3D; W X$$</p>
+<h1 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h1><ol>
+<li><strong>缓解维度灾难</strong>：PCA 算法通过舍去一部分信息之后能使得样本的<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=105274409&content_type=Article&match_order=1&q=%E9%87%87%E6%A0%B7%E5%AF%86%E5%BA%A6&zhida_source=entity">采样密度</a>增大（因为维数降低了），这是缓解维度灾难的重要手段；</li>
+<li><strong>降噪</strong>：当数据受到噪声影响时，最小特征值对应的特征向量往往与噪声有关，将它们舍弃能在一定程度上起到降噪的效果；</li>
+<li><strong>过拟合</strong>：PCA 保留了主要信息，但这个主要信息只是针对训练集的，而且这个主要信息未必是重要信息。有可能舍弃了一些看似无用的信息，但是这些看似无用的信息恰好是重要信息，只是在训练集上没有很大的表现，所以 PCA 也可能加剧了<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=105274409&content_type=Article&match_order=2&q=%E8%BF%87%E6%8B%9F%E5%90%88&zhida_source=entity">过拟合</a>；</li>
+<li><strong>特征独立</strong>：PCA 不仅将<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=105274409&content_type=Article&match_order=1&q=%E6%95%B0%E6%8D%AE%E5%8E%8B%E7%BC%A9&zhida_source=entity">数据压缩</a>到低维，它也使得降维之后的数据各特征相互独立；</li>
+</ol>
+<h1 id="参考来源"><a href="#参考来源" class="headerlink" title="参考来源"></a>参考来源</h1><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/77151308">https://zhuanlan.zhihu.com/p/77151308</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://zenty-me.github.io">Zenty</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://zenty-me.github.io/posts/44cb4915/">https://zenty-me.github.io/posts/44cb4915/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://zenty-me.github.io" target="_blank">Zenty's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/78c3da92/" title="Elasticsearch使用"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Elasticsearch使用</div></div><div class="info-2"><div class="info-item-1">安装docker安装 es 拉取镜像  1docker pull elasticsearch:7.3.0   准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器  1docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0   复制需要挂载的文件夹  123docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch   修改/config...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Zenty</div><div class="author-info-description">写代码，也写点别的</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Zenty-Me"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Zenty-Me" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E5%86%85%E7%A7%AF"><span class="toc-number">1.1.</span> <span class="toc-text">向量内积</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E5%8F%98%E6%8D%A2"><span class="toc-number">1.2.</span> <span class="toc-text">基变换</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#begin-pmatrix-frac-1-sqrt-2-frac-1-sqrt-2-frac-1-sqrt-2-frac-1-sqrt-2-end-pmatrix-begin-pmatrix-3-2-end-pmatrix"><span class="toc-number">2.</span> <span class="toc-text">$$\begin{pmatrix}\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}\end{pmatrix}\begin{pmatrix}3 \2\end{pmatrix}</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#begin-pmatrix-p-1-p-2-vdots-p-R-end-pmatrix-begin-pmatrix-a-1-a-2-cdots-a-M-end-pmatrix"><span class="toc-number">3.</span> <span class="toc-text">$$\begin{pmatrix}p_1 \p_2 \\vdots \p_R\end{pmatrix}\begin{pmatrix}a_1 &amp; a_2 &amp; \cdots &amp; a_M\end{pmatrix}</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E5%80%BC%E5%92%8C%E7%89%B9%E5%BE%81%E5%90%91%E9%87%8F"><span class="toc-number">3.1.</span> <span class="toc-text">特征值和特征向量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E5%B7%AE"><span class="toc-number">3.2.</span> <span class="toc-text">方差</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%8F%E6%96%B9%E5%B7%AE"><span class="toc-number">3.3.</span> <span class="toc-text">协方差</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PCA%E9%99%8D%E7%BB%B4%E5%8E%9F%E7%90%86"><span class="toc-number">4.</span> <span class="toc-text">PCA降维原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PCA%E9%99%8D%E7%BB%B4%E6%8E%A8%E5%AF%BC"><span class="toc-number">5.</span> <span class="toc-text">PCA降维推导</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81-%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89%E4%B8%8E%E9%A2%84%E5%A4%84%E7%90%86"><span class="toc-number">5.1.</span> <span class="toc-text">一、 问题定义与预处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%95%B0%E6%8D%AE%E8%A1%A8%E7%A4%BA"><span class="toc-number">5.1.1.</span> <span class="toc-text">1. 数据表示</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%8E%BB%E5%9D%87%E5%80%BC%E5%8C%96%EF%BC%88%E4%B8%AD%E5%BF%83%E5%8C%96%EF%BC%89"><span class="toc-number">5.1.2.</span> <span class="toc-text">2. 去均值化（中心化）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E9%99%8D%E7%BB%B4%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="toc-number">5.1.3.</span> <span class="toc-text">3. 降维的目标</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81-%E5%8D%95%E7%BB%B4%E5%BA%A6%E6%8A%95%E5%BD%B1%E6%8E%A8%E5%AF%BC%EF%BC%88%E6%B1%82%E8%A7%A3%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%96%B9%E5%90%91%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">二、 单维度投影推导（求解第一个方向）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E8%AE%A1%E7%AE%97%E6%8A%95%E5%BD%B1%E5%80%BC"><span class="toc-number">5.2.1.</span> <span class="toc-text">1. 计算投影值</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E8%AE%A1%E7%AE%97%E6%8A%95%E5%BD%B1%E5%90%8E%E7%9A%84%E5%9D%87%E5%80%BC%E4%B8%8E%E6%96%B9%E5%B7%AE"><span class="toc-number">5.2.2.</span> <span class="toc-text">2. 计算投影后的均值与方差</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%BC%95%E5%85%A5%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5"><span class="toc-number">5.2.3.</span> <span class="toc-text">3. 引入协方差矩阵</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81-%E6%9E%81%E5%80%BC%E6%B1%82%E8%A7%A3%EF%BC%88%E4%BD%BF%E7%94%A8%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">三、 极值求解（使用拉格朗日乘子法）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%BB%BA%E7%AB%8B%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%87%BD%E6%95%B0"><span class="toc-number">5.3.1.</span> <span class="toc-text">1. 建立拉格朗日函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%AF%B9-w-%E6%B1%82%E5%AF%BC%E5%B9%B6%E4%BB%A4%E5%85%B6%E4%B8%BA%E9%9B%B6"><span class="toc-number">5.3.2.</span> <span class="toc-text">2. 对 $w$ 求导并令其为零</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E7%89%B9%E5%BE%81%E5%80%BC%E4%B8%8E%E6%96%B9%E5%B7%AE%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">5.3.3.</span> <span class="toc-text">3. 特征值与方差的关系</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81-%E6%8E%A8%E5%B9%BF%E5%88%B0-K-%E7%BB%B4%E6%8A%95%E5%BD%B1"><span class="toc-number">5.4.</span> <span class="toc-text">四、 推广到 $K$ 维投影</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81-%E6%9C%80%E7%BB%88%E9%99%8D%E7%BB%B4%E8%AE%A1%E7%AE%97"><span class="toc-number">5.5.</span> <span class="toc-text">五、 最终降维计算</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%A7%E8%B4%A8"><span class="toc-number">6.</span> <span class="toc-text">性质</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%9D%A5%E6%BA%90"><span class="toc-number">7.</span> <span class="toc-text">参考来源</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Zenty</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div><div class="footer_custom_text"><p>心之所向，素履以往</p></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.9/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      true
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
