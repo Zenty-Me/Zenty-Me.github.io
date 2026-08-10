@@ -3,40 +3,84 @@
   <entry>
     <title>PCA降维</title>
     <url>/posts/44cb4915/</url>
-    <content><![CDATA[前置知识向量内积数学公式：$$(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} &#x3D; a_1 b_1 + a_2 b_2 + \cdots + a_n b_n$$
+    <content><![CDATA[前置知识
+向量内积
+数学公式：
+(a1,a2,⋯ ,an)⋅(b1,b2,⋯ ,bn)T=a1b1+a2b2+⋯+anbn(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} = a_1 b_1 + a_2 b_2 + \cdots + a_n b_n
+(a1​,a2​,⋯,an​)⋅(b1​,b2​,⋯,bn​)T=a1​b1​+a2​b2​+⋯+an​bn​
 
 A 与 B 的内积值等于 A 向 B 所在直线投影的标量大小。
 
 
 基变换
+
 基：类比于我们所知的X,Y坐标轴，如果我们需要描述向量，首先需要确定一组基，然后给出基所在直线上的投影值。
 
-假设我们在二维平面上有一个向量（数据点）$ x &#x3D; (3, 2) $。
+假设我们在二维平面上有一个向量（数据点）x=(3,2)x = (3, 2)x=(3,2)。
 
-准备一组全新的单位正交基：$ u_1 &#x3D; \left( \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right) $ $ u_2 &#x3D; \left( -\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right) $
+
+准备一组全新的单位正交基：u1=(12,12)u_1 = \left( \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u1​=(2​1​,2​1​) u2=(−12,12)u_2 = \left( -\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u2​=(−2​1​,2​1​)
+
 
 计算在新基上的坐标：
 
 
 
-新坐标的第一个数 $ y_1 $（在 $ u_1 $ 轴上的投影）：
+新坐标的第一个数 y1y_1y1​（在 u1u_1u1​ 轴上的投影）：
 
-$$y_1 &#x3D; u_1 \cdot x &#x3D; \left( \frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 &#x3D; \frac{5}{\sqrt{2}}$$
+y1=u1⋅x=(12)×3+(12)×2=52y_1 = u_1 \cdot x = \left( \frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = \frac{5}{\sqrt{2}}
+y1​=u1​⋅x=(2​1​)×3+(2​1​)×2=2​5​
 
-新坐标的第二个数 $ y_2 $（在 $ u_2 $ 轴上的投影）：
+新坐标的第二个数 y2y_2y2​（在 u2u_2u2​ 轴上的投影）：
 
-$$y_2 &#x3D; u_2 \cdot x &#x3D; \left( -\frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 &#x3D; -\frac{1}{\sqrt{2}}$$
+y2=u2⋅x=(−12)×3+(12)×2=−12y_2 = u_2 \cdot x = \left( -\frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = -\frac{1}{\sqrt{2}}
+y2​=u2​⋅x=(−2​1​)×3+(2​1​)×2=−2​1​
 
-所以，数据点 $(3, 2)$ 在新坐标系下的新坐标就是：
+所以，数据点 (3,2)(3, 2)(3,2) 在新坐标系下的新坐标就是：
 
-$$\left( \frac{5}{\sqrt{2}}, -\frac{1}{\sqrt{2}} \right)$$3. 注意到上面的内积运算，正好可以打包写成矩阵乘以向量的形式：
-$$\begin{pmatrix}\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}\end{pmatrix}\begin{pmatrix}3 \2\end{pmatrix}\begin{pmatrix}\frac{5}{\sqrt{2}} \-\frac{1}{\sqrt{2}}\end{pmatrix}$$我们可以把它写成通用的表示形式：
-$$\begin{pmatrix}p_1 \p_2 \\vdots \p_R\end{pmatrix}\begin{pmatrix}a_1 &amp; a_2 &amp; \cdots &amp; a_M\end{pmatrix}\begin{pmatrix}p_1 a_1 &amp; p_1 a_2 &amp; \cdots &amp; p_1 a_M \p_2 a_1 &amp; p_2 a_2 &amp; \cdots &amp; p_2 a_M \\vdots &amp; \vdots &amp; \ddots &amp; \vdots \p_R a_1 &amp; p_R a_2 &amp; \cdots &amp; p_R a_M\end{pmatrix}$$
-其中 $ p_i $ 是一个行向量，表示第 $ i $ 个基，$ a_j $ 是一个列向量，表示第 $ j $ 个原始数据记录。实际上也就是做了一个向量矩阵化的操作。
+(52,−12)\left( \frac{5}{\sqrt{2}}, -\frac{1}{\sqrt{2}} \right)
+(2​5​,−2​1​)
 
-上述分析给矩阵相乘找到了一种物理解释：两个矩阵相乘的意义是将右边矩阵中的每一列向量 $ a_j $ 变换到左边矩阵中以每一行向量为所表示的空间中去。也就是说一个矩阵可以表示一种线性变换。
+注意到上面的内积运算，正好可以打包写成矩阵乘以向量的形式：
+
+(1212−1212)(32)=(52−12)\begin{pmatrix}
+\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \\
+-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}
+\end{pmatrix}
+\begin{pmatrix}
+3 \\
+2
+\end{pmatrix}
+=
+\begin{pmatrix}
+\frac{5}{\sqrt{2}} \\
+-\frac{1}{\sqrt{2}}
+\end{pmatrix}
+(2​1​−2​1​​2​1​2​1​​)(32​)=(2​5​−2​1​​)
+我们可以把它写成通用的表示形式：
+(p1p2⋮pR)(a1a2⋯aM)=(p1a1p1a2⋯p1aMp2a1p2a2⋯p2aM⋮⋮⋱⋮pRa1pRa2⋯pRaM)\begin{pmatrix}
+p_1 \\
+p_2 \\
+\vdots \\
+p_R
+\end{pmatrix}
+\begin{pmatrix}
+a_1 &amp; a_2 &amp; \cdots &amp; a_M
+\end{pmatrix}
+=
+\begin{pmatrix}
+p_1 a_1 &amp; p_1 a_2 &amp; \cdots &amp; p_1 a_M \\
+p_2 a_1 &amp; p_2 a_2 &amp; \cdots &amp; p_2 a_M \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+p_R a_1 &amp; p_R a_2 &amp; \cdots &amp; p_R a_M
+\end{pmatrix}
+​p1​p2​⋮pR​​​(a1​​a2​​⋯​aM​​)=​p1​a1​p2​a1​⋮pR​a1​​p1​a2​p2​a2​⋮pR​a2​​⋯⋯⋱⋯​p1​aM​p2​aM​⋮pR​aM​​​
+其中 pip_ipi​ 是一个行向量，表示第 iii 个基，aja_jaj​ 是一个列向量，表示第 jjj 个原始数据记录。实际上也就是做了一个向量矩阵化的操作。
+
+上述分析给矩阵相乘找到了一种物理解释：两个矩阵相乘的意义是将右边矩阵中的每一列向量 aja_jaj​ 变换到左边矩阵中以每一行向量为所表示的空间中去。也就是说一个矩阵可以表示一种线性变换。
 
 特征值和特征向量
+
 简单来说，在线性代数中，矩阵代表一种空间变换（比如旋转、拉伸、剪切等）。当你用一个矩阵去乘以一个向量时，绝大多数向量的方向和长度都会发生改变。但是，对于某些“特殊”的向量，矩阵作用在它们身上时：
 它的方向完全保持不变（或反向），仅仅是长度被缩放了。
 
@@ -44,111 +88,496 @@ $$\begin{pmatrix}p_1 \p_2 \\vdots \p_R\end{pmatrix}\begin{pmatrix}a_1 &amp; a_2 
 特征向量（Eigenvector）：就是这个方向保持不变的特殊向量。它代表了矩阵变换中的“不变轴”或“主导方向”。
 特征值（Eigenvalue）：就是这个向量被缩放的倍数。它代表了矩阵在这个方向上的“作用强度”或“能量大小”
 
-方差我们知道数值的分散程度，可以用数学上的方差来表述。一个变量的方差可以看做是每个元素与变量均值的差的平方和的均值，即：
-$$Var(a) &#x3D; \frac{1}{m} \sum_{i&#x3D;1}^{m} (a_i - \mu)^2$$
-协方差在⼀维空间中我们可⽤⽅差来表示数据的分散程度。而对於⾼维数据，我们⽤协⽅差进⾏约束，协⽅差可以表示两个变量的相关性。为了让两个变量尽可能表示更多的原始信息，我们希望它们之间不存在线性相关性，因为相关性意味着两个变量不是完全独立，必然存在重复表示的信息。
-协⽅差公式为：$$Cov(a, b) &#x3D; \frac{1}{m - 1} \sum_{i&#x3D;1}^{m} (a_i - \mu_a)(b_i - \mu_b)$$
+方差
+我们知道数值的分散程度，可以用数学上的方差来表述。一个变量的方差可以看做是每个元素与变量均值的差的平方和的均值，即：
+Var(a)=1m∑i=1m(ai−μ)2Var(a) = \frac{1}{m} \sum_{i=1}^{m} (a_i - \mu)^2
+Var(a)=m1​i=1∑m​(ai​−μ)2
+协方差
+在⼀维空间中我们可⽤⽅差来表示数据的分散程度。而对於⾼维数据，我们⽤协⽅差进⾏约束，协⽅差可以表示两个变量的相关性。为了让两个变量尽可能表示更多的原始信息，我们希望它们之间不存在线性相关性，因为相关性意味着两个变量不是完全独立，必然存在重复表示的信息。
+协⽅差公式为：
+Cov(a,b)=1m−1∑i=1m(ai−μa)(bi−μb)Cov(a, b) = \frac{1}{m - 1} \sum_{i=1}^{m} (a_i - \mu_a)(b_i - \mu_b)
+Cov(a,b)=m−11​i=1∑m​(ai​−μa​)(bi​−μb​)
 PCA降维原理
+
 PCA（Principal Component Analysis） 是一种常见的数据分析方式，常用于高维数据的降维，可用于提取数据的主要特征分量。
 
 
-降维的本质是矩阵变换：两个矩阵相乘 $Y &#x3D; P X$，可以让基的数量 $K$（$P$ 的行数）小于原始特征维度 $N$（$X$ 的行数），从而实现特征降维。
-选择最大方差的方向：数据在降维后的新基（新坐标轴）上必须尽可能分散（即方差最大化），这样才能保留最多的原始信息，避免数据混在一起无法区分。 
-消除冗余（两两协方差为 0）：为了让新特征之间不包含重复的信息，任意两个新基上的数据必须线性无关（即协方差为 0）。在几何上，这意味着新选出的 $K$ 个基必须是相互正交的。
+降维的本质是矩阵变换：两个矩阵相乘 Y=PXY = P XY=PX，可以让基的数量 KKK（PPP 的行数）小于原始特征维度 NNN（XXX 的行数），从而实现特征降维。
+选择最大方差的方向：数据在降维后的新基（新坐标轴）上必须尽可能分散（即方差最大化），这样才能保留最多的原始信息，避免数据混在一起无法区分。
+消除冗余（两两协方差为 0）：为了让新特征之间不包含重复的信息，任意两个新基上的数据必须线性无关（即协方差为 0）。在几何上，这意味着新选出的 KKK 个基必须是相互正交的。
 
-PCA降维推导一、 问题定义与预处理1. 数据表示假设有 $M$ 个样本，每个样本包含 $N$ 个特征。我们将第 $i$ 个样本表示为一个 $N$ 维的列向量：$$x_i &#x3D; \begin{bmatrix} x_{i1} \ x_{i2} \ \vdots \ x_{iN} \end{bmatrix} \in \mathbb{R}^N \quad (i &#x3D; 1, 2, \dots, M)$$
+PCA降维推导
+一、 问题定义与预处理
+1. 数据表示
+假设有 MMM 个样本，每个样本包含 NNN 个特征。我们将第 iii 个样本表示为一个 NNN 维的列向量：
+xi=[xi1xi2⋮xiN]∈RN(i=1,2,…,M)x_i = \begin{bmatrix} x_{i1} \\ x_{i2} \\ \vdots \\ x_{iN} \end{bmatrix} \in \mathbb{R}^N \quad (i = 1, 2, \dots, M)
+xi​=​xi1​xi2​⋮xiN​​​∈RN(i=1,2,…,M)
 2. 去均值化（中心化）
+
 为什么 PCA 必须去均值？
 
 定位几何中心：平移数据使得数据的几何中心位于坐标原点，确保新坐标轴穿过数据中心，而不是被原点偏移“拉歪”。
-满足代数定义：只有在均值为 0 时，矩阵积$$ \frac{1}{M} X X^{\mathrm{T}} $$才严格等于数据的协方差矩阵，使得后续的特征值分解数学推导成立。
+满足代数定义：只有在均值为 0 时，矩阵积1MXXT\frac{1}{M} X X^{\mathrm{T}}M1​XXT才严格等于数据的协方差矩阵，使得后续的特征值分解数学推导成立。
 过滤无关信息：剥离整体绝对偏移（均值），只关注样本之间的相对变化（方差）。
 
 
-为了简化后续计算，计算所有样本的均值向量 $\mu &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M x_i$，并将每个样本减去均值：$$x_i \leftarrow x_i - \mu$$预处理后，数据的均值为零向量，即：$$\frac{1}{M} \sum_{i&#x3D;1}^M x_i &#x3D; \mathbf{0}$$
-3. 降维的目标寻找一个低维空间（维数为 $K$，且 $K &lt; N$），将 $N$ 维向量 $x_i$ 映射为 $K$ 维向量 $y_i$，同时满足：
+为了简化后续计算，计算所有样本的均值向量 μ=1M∑i=1Mxi\mu = \frac{1}{M} \sum_{i=1}^M x_iμ=M1​∑i=1M​xi​，并将每个样本减去均值：
+xi←xi−μx_i \leftarrow x_i - \mu
+xi​←xi​−μ
+预处理后，数据的均值为零向量，即：
+1M∑i=1Mxi=0\frac{1}{M} \sum_{i=1}^M x_i = \mathbf{0}
+M1​i=1∑M​xi​=0
+3. 降维的目标
+寻找一个低维空间（维数为 KKK，且 K&lt;NK &lt; NK&lt;N），将 NNN 维向量 xix_ixi​ 映射为 KKK 维向量 yiy_iyi​，同时满足：
 
 信息损失最小（即数据投影后的方差最大）。
-降维后的 $K$ 个特征之间互不相关（即协方差为 0）。
+降维后的 KKK 个特征之间互不相关（即协方差为 0）。
 
 
-二、 单维度投影推导（求解第一个方向）先不考虑降到 $K$ 维，只考虑降到 1 维。即：寻找一个最佳的方向向量 $w \in \mathbb{R}^N$。
-1. 计算投影值为了保证方向不因向量长度改变，限制 $w$ 为单位向量：$$w^T w &#x3D; 1$$
+二、 单维度投影推导（求解第一个方向）
+先不考虑降到 KKK 维，只考虑降到 1 维。即：寻找一个最佳的方向向量 w∈RNw \in \mathbb{R}^Nw∈RN。
+1. 计算投影值
+为了保证方向不因向量长度改变，限制 www 为单位向量：
+wTw=1w^T w = 1
+wTw=1
 
-上标 $T$ 表示转置（Transpose）。
+上标 TTT 表示转置（Transpose）。
 
-在数学中，向量 $\mathbf{w}$ 通常默认是列向量（比如 $\mathbf{w} &#x3D; \begin{bmatrix} w_1 \ w_2 \end{bmatrix}$）。
 
-转置后，$\mathbf{w}^T$ 就变成了行向量（比如 $[w_1 \quad w_2]$）。
+在数学中，向量 w\mathbf{w}w 通常默认是列向量（比如 w=[w1w2]\mathbf{w} = \begin{bmatrix} w_1 \\ w_2 \end{bmatrix}w=[w1​w2​​]）。
+
+
+转置后，wT\mathbf{w}^TwT 就变成了行向量（比如 [w1w2][w_1 \quad w_2][w1​w2​]）。
 
 
 这样做是为了进行矩阵乘法（内积运算）。因为行向量乘以列向量，结果是一个标量（数值）。
 
-样本 $x_i$ 投影到方向 $w$ 上的投影标量值为：$$y_i &#x3D; w^T x_i$$
-2. 计算投影后的均值与方差由于数据已经去均值（$\sum x_i &#x3D; \mathbf{0}$），投影后数据 $y_i$ 的均值也是 0：$$\bar{y} &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M y_i &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M w^T x_i &#x3D; w^T \left( \frac{1}{M} \sum_{i&#x3D;1}^M x_i \right) &#x3D; 0$$投影后数据的方差（记为 $\text{Var}$）公式为：$$\text{Var} &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M (y_i - \bar{y})^2 &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M (w^T x_i)^2$$
-3. 引入协方差矩阵展开方差公式中的平方项（利用标量的转置等于其本身，即 $w^T x_i &#x3D; x_i^T w$）：$$\text{Var} &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M (w^T x_i)(x_i^T w) &#x3D; w^T \left( \frac{1}{M} \sum_{i&#x3D;1}^M x_i x_i^T \right) w$$
+样本 xix_ixi​ 投影到方向 www 上的投影标量值为：
+yi=wTxiy_i = w^T x_i
+yi​=wTxi​
+2. 计算投影后的均值与方差
+由于数据已经去均值（∑xi=0\sum x_i = \mathbf{0}∑xi​=0），投影后数据 yiy_iyi​ 的均值也是 0：
+yˉ=1M∑i=1Myi=1M∑i=1MwTxi=wT(1M∑i=1Mxi)=0\bar{y} = \frac{1}{M} \sum_{i=1}^M y_i = \frac{1}{M} \sum_{i=1}^M w^T x_i = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i \right) = 0
+yˉ​=M1​i=1∑M​yi​=M1​i=1∑M​wTxi​=wT(M1​i=1∑M​xi​)=0
+投影后数据的方差（记为 Var\text{Var}Var）公式为：
+Var=1M∑i=1M(yi−yˉ)2=1M∑i=1M(wTxi)2\text{Var} = \frac{1}{M} \sum_{i=1}^M (y_i - \bar{y})^2 = \frac{1}{M} \sum_{i=1}^M (w^T x_i)^2
+Var=M1​i=1∑M​(yi​−yˉ​)2=M1​i=1∑M​(wTxi​)2
+3. 引入协方差矩阵
+展开方差公式中的平方项（利用标量的转置等于其本身，即 wTxi=xiTww^T x_i = x_i^T wwTxi​=xiT​w）：
+Var=1M∑i=1M(wTxi)(xiTw)=wT(1M∑i=1MxixiT)w\text{Var} = \frac{1}{M} \sum_{i=1}^M (w^T x_i)(x_i^T w) = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i x_i^T \right) w
+Var=M1​i=1∑M​(wTxi​)(xiT​w)=wT(M1​i=1∑M​xi​xiT​)w
 
-向量转置公式：$$(AB)^T&#x3D;B^TA^T$$
+向量转置公式：(AB)T=BTAT(AB)^T=B^TA^T(AB)T=BTAT
 
-定义原始数据的协方差矩阵 $C \in \mathbb{R}^{N \times N}$ 为：$$C &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^M x_i x_i^T$$
+定义原始数据的协方差矩阵 C∈RN×NC \in \mathbb{R}^{N \times N}C∈RN×N 为：
+C=1M∑i=1MxixiTC = \frac{1}{M} \sum_{i=1}^M x_i x_i^T
+C=M1​i=1∑M​xi​xiT​
 
-为了直观，假设数据只有 2 个特征（比如 $ x_i &#x3D; \begin{bmatrix} a_i \ b_i \end{bmatrix} $，其中 $ a_i $ 是第 $ i $ 个人的身高，$ b_i $ 是体重，且已经去均值）：
-我们来看看 $ x_i x_i^T $ 算出来是什么：
-$$x_i x_i^T &#x3D; \begin{bmatrix} a_i \ b_i \end{bmatrix} \begin{bmatrix} a_i &amp; b_i \end{bmatrix} &#x3D; \begin{bmatrix} a_i^2 &amp; a_i b_i \ b_i a_i &amp; b_i^2 \end{bmatrix}$$
-再把它乘以 $ \frac{1}{M} \sum_{i&#x3D;1}^{M} $（即对所有样本求平均）：
-$$C &#x3D; \frac{1}{M} \sum_{i&#x3D;1}^{M} x_i x_i^T &#x3D; \begin{bmatrix} \frac{1}{M} \sum a_i^2 &amp; \frac{1}{M} \sum a_i b_i \ \frac{1}{M} \sum b_i a_i &amp; \frac{1}{M} \sum b_i^2 \end{bmatrix}$$
+为了直观，假设数据只有 2 个特征（比如 xi=[aibi]x_i = \begin{bmatrix} a_i \\ b_i \end{bmatrix}xi​=[ai​bi​​]，其中 aia_iai​ 是第 iii 个人的身高，bib_ibi​ 是体重，且已经去均值）：
+我们来看看 xixiTx_i x_i^Txi​xiT​ 算出来是什么：
+xixiT=[aibi][aibi]=[ai2aibibiaibi2]x_i x_i^T = \begin{bmatrix} a_i \\ b_i \end{bmatrix} \begin{bmatrix} a_i &amp; b_i \end{bmatrix} = \begin{bmatrix} a_i^2 &amp; a_i b_i \\ b_i a_i &amp; b_i^2 \end{bmatrix}
+xi​xiT​=[ai​bi​​][ai​​bi​​]=[ai2​bi​ai​​ai​bi​bi2​​]
+再把它乘以 1M∑i=1M\frac{1}{M} \sum_{i=1}^{M}M1​∑i=1M​（即对所有样本求平均）：
+C=1M∑i=1MxixiT=[1M∑ai21M∑aibi1M∑biai1M∑bi2]C = \frac{1}{M} \sum_{i=1}^{M} x_i x_i^T = \begin{bmatrix} \frac{1}{M} \sum a_i^2 &amp; \frac{1}{M} \sum a_i b_i \\ \frac{1}{M} \sum b_i a_i &amp; \frac{1}{M} \sum b_i^2 \end{bmatrix}
+C=M1​i=1∑M​xi​xiT​=[M1​∑ai2​M1​∑bi​ai​​M1​∑ai​bi​M1​∑bi2​​]
 因为数据均值为 0，根据统计学定义：
 
-$ \frac{1}{M} \sum a_i^2 $ 就是身高 $ a $ 的方差。
-$ \frac{1}{M} \sum b_i^2 $ 就是体重 $ b $ 的方差。
-$ \frac{1}{M} \sum a_i b_i $ 就是身高 $ a $ 和体重 $ b $ 的协方差。
+1M∑ai2\frac{1}{M} \sum a_i^2M1​∑ai2​ 就是身高 aaa 的方差。
+1M∑bi2\frac{1}{M} \sum b_i^2M1​∑bi2​ 就是体重 bbb 的方差。
+1M∑aibi\frac{1}{M} \sum a_i b_iM1​∑ai​bi​ 就是身高 aaa 和体重 bbb 的协方差。
 
 
-由公式可知，$C$ 是一个实对称矩阵（$C^T &#x3D; C$）。代入后，投影方差简化为：$$\text{Var} &#x3D; w^T C w$$
+由公式可知，CCC 是一个实对称矩阵（CT=CC^T = CCT=C）。
+代入后，投影方差简化为：
+Var=wTCw\text{Var} = w^T C w
+Var=wTCw
 
-三、 极值求解（使用拉格朗日乘子法）目标：寻找 $w$，使得方差 $w^T C w$ 最大，同时满足约束条件 $w^T w &#x3D; 1$。
-1. 建立拉格朗日函数引入乘子 $\lambda$，构造目标函数：$$f(w, \lambda) &#x3D; w^T C w - \lambda (w^T w - 1)$$
-2. 对 $w$ 求导并令其为零利用向量微分法则（因为 $C$ 是实对称矩阵，$\frac{\partial (w^T C w)}{\partial w} &#x3D; 2Cw$）：$$\frac{\partial f}{\partial w} &#x3D; 2 C w - 2 \lambda w &#x3D; 0$$化简得到：$$C w &#x3D; \lambda w$$结论 1：使得方差取得极值的方向向量 $w$，必须是协方差矩阵 $C$ 的特征向量，而 $\lambda$ 是对应的特征值。
-3. 特征值与方差的关系将 $C w &#x3D; \lambda w$ 代回方差表达式：$$\text{Var} &#x3D; w^T C w &#x3D; w^T (\lambda w) &#x3D; \lambda (w^T w)$$因为约束条件 $w^T w &#x3D; 1$，所以：$$\text{Var} &#x3D; \lambda$$结论 2：数据在方向 $w$ 上的投影方差，严格等于协方差矩阵 $C$ 的特征值 $\lambda$。
-因此，为了使投影方差最大，我们应当选择最大的特征值 $\lambda_1$，其对应的特征向量 $w_1$ 就是最佳的投影方向。
+三、 极值求解（使用拉格朗日乘子法）
+目标：寻找 www，使得方差 wTCww^T C wwTCw 最大，同时满足约束条件 wTw=1w^T w = 1wTw=1。
+1. 建立拉格朗日函数
+引入乘子 λ\lambdaλ，构造目标函数：
+f(w,λ)=wTCw−λ(wTw−1)f(w, \lambda) = w^T C w - \lambda (w^T w - 1)
+f(w,λ)=wTCw−λ(wTw−1)
+2. 对 www 求导并令其为零
+利用向量微分法则（因为 CCC 是实对称矩阵，∂(wTCw)∂w=2Cw\frac{\partial (w^T C w)}{\partial w} = 2Cw∂w∂(wTCw)​=2Cw）：
+∂f∂w=2Cw−2λw=0\frac{\partial f}{\partial w} = 2 C w - 2 \lambda w = 0
+∂w∂f​=2Cw−2λw=0
+化简得到：
+Cw=λwC w = \lambda w
+Cw=λw
+结论 1：使得方差取得极值的方向向量 www，必须是协方差矩阵 CCC 的特征向量，而 λ\lambdaλ 是对应的特征值。
+3. 特征值与方差的关系
+将 Cw=λwC w = \lambda wCw=λw 代回方差表达式：
+Var=wTCw=wT(λw)=λ(wTw)\text{Var} = w^T C w = w^T (\lambda w) = \lambda (w^T w)
+Var=wTCw=wT(λw)=λ(wTw)
+因为约束条件 wTw=1w^T w = 1wTw=1，所以：
+Var=λ\text{Var} = \lambda
+Var=λ
+结论 2：数据在方向 www 上的投影方差，严格等于协方差矩阵 CCC 的特征值 λ\lambdaλ。
+因此，为了使投影方差最大，我们应当选择最大的特征值 λ1\lambda_1λ1​，其对应的特征向量 w1w_1w1​ 就是最佳的投影方向。
 
-四、 推广到 $K$ 维投影要求出降维后的 $K$ 个维度，我们需要按顺序求解 $K$ 个单位正交方向 $w_1, w_2, \dots, w_K$。
+四、 推广到 KKK 维投影
+要求出降维后的 KKK 个维度，我们需要按顺序求解 KKK 个单位正交方向 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
 
-第一个方向 $w_1$：取最大的特征值 $\lambda_1$ 对应的特征向量，使得第一个维度方差最大。
-第二个方向 $w_2$：在约束 $w_2^T w_2 &#x3D; 1$ 以及与 $w_1$ 正交的约束 $w_2^T w_1 &#x3D; 0$ 下，最大化 $w_2^T C w_2$。同样通过拉格朗日乘子法求解，可得 $C w_2 &#x3D; \lambda_2 w_2$。为了使方差尽可能大，取第二大特征值 $\lambda_2$ 对应的特征向量 $w_2$。
-第 $K$ 个方向 $w_K$：依次取前 $K$ 个最大的特征值 $\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_K$ 对应的单位特征向量 $w_1, w_2, \dots, w_K$。
+第一个方向 w1w_1w1​：取最大的特征值 λ1\lambda_1λ1​ 对应的特征向量，使得第一个维度方差最大。
+第二个方向 w2w_2w2​：在约束 w2Tw2=1w_2^T w_2 = 1w2T​w2​=1 以及与 w1w_1w1​ 正交的约束 w2Tw1=0w_2^T w_1 = 0w2T​w1​=0 下，最大化 w2TCw2w_2^T C w_2w2T​Cw2​。
+同样通过拉格朗日乘子法求解，可得 Cw2=λ2w2C w_2 = \lambda_2 w_2Cw2​=λ2​w2​。
+为了使方差尽可能大，取第二大特征值 λ2\lambda_2λ2​ 对应的特征向量 w2w_2w2​。
+第 KKK 个方向 wKw_KwK​：依次取前 KKK 个最大的特征值 λ1≥λ2≥⋯≥λK\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_Kλ1​≥λ2​≥⋯≥λK​ 对应的单位特征向量 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
 
-因为 $C$ 是实对称矩阵，不同特征值对应的特征向量自动相互正交（$w_i^T w_j &#x3D; 0, \forall i \neq j$），这天然满足了“新变量之间协方差为 0”的要求。
+因为 CCC 是实对称矩阵，不同特征值对应的特征向量自动相互正交（wiTwj=0,∀i≠jw_i^T w_j = 0, \forall i \neq jwiT​wj​=0,∀i=j），这天然满足了“新变量之间协方差为 0”的要求。
 
-五、 最终降维计算将选出的前 $K$ 个特征向量组合成变换矩阵 $W \in \mathbb{R}^{K \times N}$：$$W &#x3D; \begin{bmatrix} w_1^T \ w_2^T \ \vdots \ w_K^T \end{bmatrix}$$
-对于任意一个 $N$ 维数据点 $x_i$，其降维后的 $K$ 维向量 $y_i \in \mathbb{R}^K$ 计算如下：$$y_i &#x3D; W x_i$$
-矩阵形式下，整个数据集矩阵 $X \in \mathbb{R}^{N \times M}$ 的降维结果矩阵 $Y \in \mathbb{R}^{K \times M}$ 为：$$Y &#x3D; W X$$
+五、 最终降维计算
+将选出的前 KKK 个特征向量组合成变换矩阵 W∈RK×NW \in \mathbb{R}^{K \times N}W∈RK×N：
+W=[w1Tw2T⋮wKT]W = \begin{bmatrix} w_1^T \\ w_2^T \\ \vdots \\ w_K^T \end{bmatrix}
+W=​w1T​w2T​⋮wKT​​​
+对于任意一个 NNN 维数据点 xix_ixi​，其降维后的 KKK 维向量 yi∈RKy_i \in \mathbb{R}^Kyi​∈RK 计算如下：
+yi=Wxiy_i = W x_i
+yi​=Wxi​
+矩阵形式下，整个数据集矩阵 X∈RN×MX \in \mathbb{R}^{N \times M}X∈RN×M 的降维结果矩阵 Y∈RK×MY \in \mathbb{R}^{K \times M}Y∈RK×M 为：
+Y=WXY = W X
+Y=WX
 性质
+
 缓解维度灾难：PCA 算法通过舍去一部分信息之后能使得样本的采样密度增大（因为维数降低了），这是缓解维度灾难的重要手段；
 降噪：当数据受到噪声影响时，最小特征值对应的特征向量往往与噪声有关，将它们舍弃能在一定程度上起到降噪的效果；
 过拟合：PCA 保留了主要信息，但这个主要信息只是针对训练集的，而且这个主要信息未必是重要信息。有可能舍弃了一些看似无用的信息，但是这些看似无用的信息恰好是重要信息，只是在训练集上没有很大的表现，所以 PCA 也可能加剧了过拟合；
 特征独立：PCA 不仅将数据压缩到低维，它也使得降维之后的数据各特征相互独立；
 
-参考来源https://zhuanlan.zhihu.com/p/77151308
+参考来源
+https://zhuanlan.zhihu.com/p/77151308
 ]]></content>
       <categories>
         <category>AI飞升</category>
       </categories>
   </entry>
   <entry>
+    <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
+    <url>/posts/35a7b521/</url>
+    <content><![CDATA[本篇面向完全没接触过代码的同学。跟着做完，你会得到一个有独立网址（你的名字.github.io）、能写文章、手机电脑都能看的个人博客。
+一、先认识几个概念
+别急着动手，花两分钟搞清楚我们在做什么。
+
+
+
+名词
+是什么
+在本教程里干嘛
+
+
+
+
+Hexo
+一个博客生成工具
+把你写的 Markdown 文章变成网页
+
+
+Butterfly
+一个博客主题（皮肤）
+让博客好看
+
+
+Node.js
+运行环境
+Hexo 依赖它才能运行
+
+
+Git
+版本控制工具
+把博客推送到网上
+
+
+GitHub
+代码托管平台
+免费存放你的博客
+
+
+GitHub Pages
+GitHub 的建站服务
+让别人能通过网址访问你的博客
+
+
+
+一句话流程：用 Hexo 在本地写文章 → 用 Git 推到 GitHub → GitHub Pages 自动发布 → 全网可访问。
+二、准备工作
+1. 注册 GitHub 账号
+打开 https://github.com/ 注册账号。用户名要记住，因为你的博客网址会是 用户名.github.io。
+2. 安装 Node.js
+去 https://nodejs.org/ 下载 LTS（长期支持版），一路下一步安装即可。
+安装完打开命令行（Windows 按 Win+R 输入 cmd 回车），输入：
+node -vnpm -v
+能看到版本号就说明装好了。
+
+💡 国内用户如果后面安装很慢，可以换淘宝镜像：
+npm config set registry https://registry.npmmirror.com
+
+3. 安装 Git
+去 https://git-scm.com/ 下载安装，一路下一步。验证：
+git --version
+三、安装 Hexo
+在命令行执行：
+npm install -g hexo-cli
+-g 表示全局安装，装一次到处能用。验证：
+hexo version
+四、初始化博客
+先在电脑上新建一个空文件夹放博客（比如 D:\blog），然后命令行进入这个文件夹，执行：
+hexo initnpm install
+等一会儿，会生成这些文件：
+blog/├── _config.yml        # 站点配置文件（改站名、作者、部署等）├── package.json├── source/            # 文章和资源都放这里│   └── _posts/        # 文章目录（你写的文章在这）└── themes/            # 主题目录
+五、本地预览
+hexo server
+浏览器打开 http://localhost:4000/ ，看到一个默认博客就成功了。按 Ctrl+C 停止。
+六、安装 Butterfly 主题
+在博客根目录执行（推荐用 npm 安装，升级方便、不会有嵌套 git 仓库的坑）：
+npm install hexo-theme-butterfly --save
+再装主题需要的两个渲染依赖：
+npm install hexo-renderer-pug hexo-renderer-stylus --save
+打开 _config.yml，找到 theme 字段改成：
+theme: butterfly
+
+💡 接着在博客根目录新建一个文件 _config.butterfly.yml，把 node_modules/hexo-theme-butterfly/_config.yml 里的内容全部复制过去。以后改主题配置就改这个文件，升级主题不会丢配置。本文说的&quot;主题配置&quot;都指它。
+
+再次 hexo server 预览，能看到 Butterfly 的样式就对了。
+七、站点基础配置（_config.yml）
+打开 _config.yml，改这几项：
+title: 我的博客                     # 站点标题subtitle: &quot;&quot;description: &quot;&quot;author: 你的名字                    # 作者名（全站署名读这里）language: zh-CNtimezone: Asia/Shanghaiurl: https://用户名.github.io       # 换成你的 GitHub 用户名permalink: :year/:month/:day/:title/
+
+permalink 是文章网址格式，上面是默认值。想用更短的固定网址，可参考《文章分类、置顶与短链配置》装 abbrlink 插件。
+
+八、主题配置（_config.butterfly.yml）
+这里只列最常用的几项，完整外观配置见《如何配置网站外观与个人信息》。
+导航菜单：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标。图标去 https://fontawesome.com/icons 搜，复制 class 名。
+头像： 准备一张正方形图片放到 source/img/avatar.png（没有 img 文件夹就新建），然后：
+avatar:  img: /img/avatar.png  effect: false       # true 会一直转圈，一般关掉
+建菜单对应页面： 菜单里写了的页面要手动建，否则点进去 404：
+hexo new page tagshexo new page categorieshexo new page archiveshexo new page about
+然后编辑 source/tags/index.md，开头加上 type: tags；source/categories/index.md 加 type: categories。归档页和关于页不用加。
+九、写第一篇文章
+hexo new &quot;我的第一篇文章&quot;
+会在 source/_posts/ 生成 我的第一篇文章.md。用 Typora 或任意编辑器打开，开头是 front-matter（两行 --- 之间的配置）：
+---title: 我的第一篇文章date: 2026-08-06 14:30:00tags:  - 随笔categories:  - 生活---
+下面用 Markdown 写正文，常用语法：
+# 大标题## 二级标题普通段落直接写。- 列表项一- 列表项二**加粗** *斜体* `行内代码`[链接文字](https://example.com)![图片说明](图片名.png)
+写完 hexo server 预览效果。
+十、部署到 GitHub Pages
+最后一步，把博客发布到网上。
+1. 新建仓库
+在 GitHub 点 New repository，名字必须是 用户名.github.io（用户名换成你的）。选 Public，其他不勾，创建。
+2. 配置 SSH（让电脑有权推送到 GitHub）
+git config --global user.name &quot;你的名字&quot;git config --global user.email &quot;你的邮箱&quot;ssh-keygen -t ed25519 -C &quot;你的邮箱&quot;
+一路回车。然后打开生成的公钥文件（Windows 路径 C:\Users\你的用户名\.ssh\id_ed25519.pub），用记事本打开，复制全部内容。
+到 GitHub → 右上角头像 → Settings → SSH and GPG keys → New SSH key，Title 随便填，Key 粘贴刚才复制的内容，保存。
+验证：
+ssh -T git@github.com
+第一次问 yes/no 输 yes。看到 Hi 用户名! 就成功了。
+3. 安装部署插件
+npm install hexo-deployer-git --save
+4. 配置部署信息
+打开 _config.yml，翻到最下面的 deploy，改成：
+deploy:  type: git  repo: git@github.com:用户名/用户名.github.io.git  branch: main
+
+用户名要换成你自己的。repo 地址也能在 GitHub 仓库页面点 Code → SSH 复制。
+
+5. 一键发布
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+三个命令的作用：
+
+
+
+命令
+作用
+
+
+
+
+hexo clean
+清理缓存
+
+
+hexo g
+生成静态网页
+
+
+hexo d
+推送到 GitHub
+
+
+
+第一次推送可能要确认，输 yes。等 1-2 分钟，访问 https://用户名.github.io/ 就能看到你的博客了！
+十一、日常使用
+博客搭好后，日常写文章就三步：
+hexo new &quot;新文章&quot;                  # 1. 建文章# （用编辑器写内容）hexo clean &amp;&amp; hexo g &amp;&amp; hexo d     # 2. 发布
+想先看看效果不发布，用 hexo server 本地预览。
+完整的写作发布流程（图片处理、草稿、本地预览细节）见《Hexo 博客发布笔记完整教程》。
+十二、进阶推荐
+博客跑起来后，可以接着折腾：
+
+《如何配置网站外观与个人信息》——改背景、菜单、社交链接、公告
+《文章分类、置顶与短链配置》——文章自动归类、置顶、固定短网址
+《如何添加书签》——做个网址收藏页
+
+十三、常见问题
+Q：hexo server 打不开 localhost:4000？
+看命令行有没有报错。端口可能被占用，换一个：hexo server -p 5000。
+Q：部署报错 Permission denied (publickey)？
+SSH 没配好。重新按第十步生成 key 并添加到 GitHub，确认 ssh -T git@github.com 能通过。
+Q：部署成功了但访问 404？
+按顺序检查：仓库名是不是严格的 用户名.github.io；仓库是不是 Public；去仓库 Settings → Pages 看是否已开启。
+Q：部署后看到的还是旧内容？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可去仓库 Actions 页面看部署状态。
+Q：中文文章网址又长又丑？
+默认网址带中文和日期。装 hexo-abbrlink 插件可生成 8 位固定短链，详见《文章分类、置顶与短链配置》。
+Q：图片显示不出来？
+在 _config.yml 设置 post_asset_folder: true，图片放文章同名文件夹，用裸文件名引用 ![](图片.png)。详见《Hexo 博客发布笔记完整教程》。
+小结
+
+
+
+步骤
+命令 / 操作
+
+
+
+
+装环境
+Node.js + Git
+
+
+装 Hexo
+npm install -g hexo-cli
+
+
+建博客
+hexo init
+
+
+装主题
+npm install hexo-theme-butterfly --save + 改 theme: butterfly
+
+
+改配置
+_config.yml + _config.butterfly.yml
+
+
+写文章
+hexo new &quot;标题&quot;
+
+
+发布
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+
+
+搭一次，以后写文章只需要后两行。祝写作愉快。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何添加书签</title>
+    <url>/posts/3ffe122/</url>
+    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
+一、书签数据文件
+所有书签数据存放在：
+source/_data/link.yml
+用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
+二、文件结构
+文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
+- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
+三、添加书签到已有分类
+在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
+- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
+注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
+四、新建分类
+在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
+- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
+新分类前面留一个空行和上个分类隔开。
+五、缩进规则（重要）
+YAML 对缩进敏感，必须用空格，不能用 Tab：
+
+
+
+层级
+内容
+缩进
+
+
+
+
+1
+class_name
+0 空格（顶格）
+
+
+2
+class_desc / link_list
+2 空格
+
+
+3
+name
+4 空格
+
+
+4
+link / avatar / descr
+6 空格
+
+
+
+六、图标自动获取
+avatar 字段填网站自己的 favicon，格式固定：
+https://网站域名/favicon.ico
+例如：
+
+GitHub → https://github.com/favicon.ico
+掘金 → https://juejin.cn/favicon.ico
+
+不用手动下载图标，浏览器会自动加载网站图标。
+七、删除书签
+找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
+八、部署上线
+改完 link.yml 后，执行：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+
+GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+九、完整示例
+下面是一个包含两个分类的完整 link.yml 示例：
+- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>书签</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hexo 博客发布笔记完整教程</title>
     <url>/posts/b9c5d664/</url>
     <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章hexo new &quot;文章标题&quot;
-
+一、新建文章
+hexo new &quot;文章标题&quot;
 执行后会在 source/_posts/ 下生成两个东西：
 
 文章标题.md：Markdown 文章文件
 文章标题/：同名文件夹，用于存放图片等资源
 
-二、文章结构（Front-matter）文章开头 --- 之间是 front-matter，用于配置文章元信息：
+二、文章结构（Front-matter）
+文章开头 --- 之间是 front-matter，用于配置文章元信息：
 ---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-
 常用字段说明：
 
 
@@ -156,6 +585,7 @@ $ \frac{1}{M} \sum a_i b_i $ 就是身高 $ a $ 和体重 $ b $ 的协方差。
 字段
 作用
 必填
+
 
 
 
@@ -189,43 +619,46 @@ description
 否
 
 
-三、写作与图片处理用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式文章里用裸文件名引用图片：
-![图片说明](图片名.png)
 
+三、写作与图片处理
+用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则
+本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式
+文章里用裸文件名引用图片：
+![图片说明](图片名.png)
 
 ⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
 
-Typora 配置建议如果用 Typora 写作，推荐这样配置：
+Typora 配置建议
+如果用 Typora 写作，推荐这样配置：
 
 偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
 路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 .&#x2F;“ 和 “应用上述规则到所有插入的图片”
+勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
 
 这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览hexo server
-
+四、本地预览
+hexo server
 访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
 预览草稿：
 hexo server --draft
-
 按 Ctrl+C 停止服务。
 
 修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
 
-五、部署到 GitHub Pages写完满意后，一键部署：
+五、部署到 GitHub Pages
+写完满意后，一键部署：
 hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-
 简写形式：
 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
 各步骤作用：
 
 
 
 命令
 作用
+
 
 
 
@@ -241,29 +674,30 @@ hexo deploy
 把 public/ 推送到 GitHub 仓库
 
 
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客部署完成后访问主页：
-https://zenty-me.github.io/
 
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客
+部署完成后访问主页：
+https://zenty-me.github.io/
 文章地址格式：
 https://zenty-me.github.io/年/月/日/文章标题/
 
-
 GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
 
-七、草稿机制不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+七、草稿机制
+不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
 新建草稿：
 hexo new draft &quot;草稿标题&quot;
-
 把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
 hexo publish &quot;草稿标题&quot;
-
 发布后记得执行部署命令。
 八、常用命令速查
 
 
+
 命令
 作用
+
 
 
 
@@ -311,17 +745,23 @@ hexo version
 查看版本
 
 
-简写：g &#x3D; generate，s &#x3D; server，d &#x3D; deploy，c &#x3D; clean
-九、常见问题1. 修改配置后预览没变化？改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？按顺序检查：
+
+简写：g = generate，s = server，d = deploy，c = clean
+九、常见问题
+1. 修改配置后预览没变化？
+改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？
+按顺序检查：
 
 确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
 确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
 确认 _config.yml 里 post_asset_folder: true 已开启
 确认 marked 配置了 postAsset: true
 
-3. 部署后看不到更新？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+3. 部署后看不到更新？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？
+_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
 
 以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
 ]]></content>
@@ -334,145 +774,75 @@ hexo version
       </tags>
   </entry>
   <entry>
-    <title>如何添加书签</title>
-    <url>/posts/3ffe122/</url>
-    <content><![CDATA[本站的书签页（&#x2F;links&#x2F;）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
-一、书签数据文件所有书签数据存放在：
-source/_data/link.yml
-
-用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
-二、文件结构文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
-- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
-
-三、添加书签到已有分类在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
-- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
-
-注意 name 前面是 4 个空格，link&#x2F;avatar&#x2F;descr 前面是 6 个空格，和同分类下其他书签对齐。
-四、新建分类在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
-- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
-
-新分类前面留一个空行和上个分类隔开。
-五、缩进规则（重要）YAML 对缩进敏感，必须用空格，不能用 Tab：
-
-
-
-层级
-内容
-缩进
-
-
-
-1
-class_name
-0 空格（顶格）
-
-
-2
-class_desc &#x2F; link_list
-2 空格
-
-
-3
-name
-4 空格
-
-
-4
-link &#x2F; avatar &#x2F; descr
-6 空格
-
-
-六、图标自动获取avatar 字段填网站自己的 favicon，格式固定：
-https://网站域名/favicon.ico
-
-例如：
-
-GitHub → https://github.com/favicon.ico
-掘金 → https://juejin.cn/favicon.ico
-
-不用手动下载图标，浏览器会自动加载网站图标。
-七、删除书签找到对应书签的 4 行（name&#x2F;link&#x2F;avatar&#x2F;descr），整段删除即可。注意不要破坏周围书签的缩进。
-八、部署上线改完 link.yml 后，执行：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
-
-GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-九、完整示例下面是一个包含两个分类的完整 link.yml 示例：
-- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
-
-照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>书签</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>文章分类、置顶与短链配置</title>
     <url>/posts/1784a007/</url>
     <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
-一、文件夹自动归类（auto_category）装了 hexo-auto-category 插件，文件夹名 &#x3D; 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
-用法在 source/_posts/ 下建文件夹，文章放进去：
+一、文件夹自动归类（auto_category）
+装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
+用法
+在 source/_posts/ 下建文件夹，文章放进去：
 source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
-
 上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
 注意
+
 手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
 _posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
 建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
 
-配置（已设好，一般不用改）_config.yml 里：
+配置（已设好，一般不用改）
+_config.yml 里：
 auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
-
 想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
-二、置顶排序（sticky）首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
+二、置顶排序（sticky）
+首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
 ---title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
-
 规则
+
 有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
 没 sticky 的文章：按日期倒序排在置顶文章之后
 sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
 
-示例本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
-三、永久短链（abbrlink）装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
+示例
+本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
+三、永久短链（abbrlink）
+装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
 https://zenty-me.github.io/posts/b9c5d664/
-
 为什么用短链
+
 永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
 简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
 适合分享：短链好看，外链稳定
 
 工作机制
+
 第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
 之后这个值永久不变，URL 固定为 /posts/abbrlink值/
 不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
 
-配置（已设好）_config.yml 里：
+配置（已设好）
+_config.yml 里：
 permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
-
-四、系列文章（series）写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
-归入系列在 front-matter 加 series: 系列名，同名的就是一个系列：
+四、系列文章（series）
+写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
+归入系列
+在 front-matter 加 series: 系列名，同名的就是一个系列：
 ---title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
-
 加完后该文章自动获得：
 
-文章底部：显示系列内的「上一篇 &#x2F; 下一篇」导航（不是全站按时间的）
+文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
 侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
 
-自定义顺序默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
+自定义顺序
+默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
 ---title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
-
 series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
 排序规则
 
 
+
 情况
 排序方式
+
 
 
 
@@ -484,11 +854,13 @@ series_order 是独立字段，不影响文章日期、归档页、首页排序�
 按 date 排序
 
 
+
 配置在 _config.butterfly.yml：
 series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
-
-示例本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
-五、日常写笔记流程结合三个机制，写一篇新笔记的完整流程：
+示例
+本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
+五、日常写笔记流程
+结合三个机制，写一篇新笔记的完整流程：
 
 建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
 移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
@@ -501,8 +873,10 @@ series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;�
 小结
 
 
+
 需求
 怎么做
+
 
 
 
@@ -534,6 +908,7 @@ front-matter 加 series: 系列名
 front-matter 加 series_order: 数字（越小越靠前）
 
 
+
 一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
 ]]></content>
       <categories>
@@ -545,311 +920,55 @@ front-matter 加 series_order: 数字（越小越靠前）
       </tags>
   </entry>
   <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置2.1 github新建仓库+token获取
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
-    <url>/posts/35a7b521/</url>
-    <content><![CDATA[本篇面向完全没接触过代码的同学。跟着做完，你会得到一个有独立网址（你的名字.github.io）、能写文章、手机电脑都能看的个人博客。
-一、先认识几个概念别急着动手，花两分钟搞清楚我们在做什么。
-
-
-
-名词
-是什么
-在本教程里干嘛
-
-
-
-Hexo
-一个博客生成工具
-把你写的 Markdown 文章变成网页
-
-
-Butterfly
-一个博客主题（皮肤）
-让博客好看
-
-
-Node.js
-运行环境
-Hexo 依赖它才能运行
-
-
-Git
-版本控制工具
-把博客推送到网上
-
-
-GitHub
-代码托管平台
-免费存放你的博客
-
-
-GitHub Pages
-GitHub 的建站服务
-让别人能通过网址访问你的博客
-
-
-一句话流程：用 Hexo 在本地写文章 → 用 Git 推到 GitHub → GitHub Pages 自动发布 → 全网可访问。
-二、准备工作1. 注册 GitHub 账号打开 https://github.com/ 注册账号。用户名要记住，因为你的博客网址会是 用户名.github.io。
-2. 安装 Node.js去 https://nodejs.org/ 下载 LTS（长期支持版），一路下一步安装即可。
-安装完打开命令行（Windows 按 Win+R 输入 cmd 回车），输入：
-node -vnpm -v
-
-能看到版本号就说明装好了。
-
-💡 国内用户如果后面安装很慢，可以换淘宝镜像：
-npm config set registry https://registry.npmmirror.com
-3. 安装 Git去 https://git-scm.com/ 下载安装，一路下一步。验证：
-git --version
-
-三、安装 Hexo在命令行执行：
-npm install -g hexo-cli
-
--g 表示全局安装，装一次到处能用。验证：
-hexo version
-
-四、初始化博客先在电脑上新建一个空文件夹放博客（比如 D:\blog），然后命令行进入这个文件夹，执行：
-hexo initnpm install
-
-等一会儿，会生成这些文件：
-blog/├── _config.yml        # 站点配置文件（改站名、作者、部署等）├── package.json├── source/            # 文章和资源都放这里│   └── _posts/        # 文章目录（你写的文章在这）└── themes/            # 主题目录
-
-五、本地预览hexo server
-
-浏览器打开 http://localhost:4000/ ，看到一个默认博客就成功了。按 Ctrl+C 停止。
-六、安装 Butterfly 主题在博客根目录执行（推荐用 npm 安装，升级方便、不会有嵌套 git 仓库的坑）：
-npm install hexo-theme-butterfly --save
-
-再装主题需要的两个渲染依赖：
-npm install hexo-renderer-pug hexo-renderer-stylus --save
-
-打开 _config.yml，找到 theme 字段改成：
-theme: butterfly
-
-
-💡 接着在博客根目录新建一个文件 _config.butterfly.yml，把 node_modules/hexo-theme-butterfly/_config.yml 里的内容全部复制过去。以后改主题配置就改这个文件，升级主题不会丢配置。本文说的”主题配置”都指它。
-
-再次 hexo server 预览，能看到 Butterfly 的样式就对了。
-七、站点基础配置（_config.yml）打开 _config.yml，改这几项：
-title: 我的博客                     # 站点标题subtitle: &quot;&quot;description: &quot;&quot;author: 你的名字                    # 作者名（全站署名读这里）language: zh-CNtimezone: Asia/Shanghaiurl: https://用户名.github.io       # 换成你的 GitHub 用户名permalink: :year/:month/:day/:title/
-
-
-permalink 是文章网址格式，上面是默认值。想用更短的固定网址，可参考《文章分类、置顶与短链配置》装 abbrlink 插件。
-
-八、主题配置（_config.butterfly.yml）这里只列最常用的几项，完整外观配置见《如何配置网站外观与个人信息》。
-导航菜单：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  关于: /about/ || fas fa-heart
-
-格式是 显示名: 路径 || 图标。图标去 https://fontawesome.com/icons 搜，复制 class 名。
-头像： 准备一张正方形图片放到 source/img/avatar.png（没有 img 文件夹就新建），然后：
-avatar:  img: /img/avatar.png  effect: false       # true 会一直转圈，一般关掉
-
-建菜单对应页面： 菜单里写了的页面要手动建，否则点进去 404：
-hexo new page tagshexo new page categorieshexo new page archiveshexo new page about
-
-然后编辑 source/tags/index.md，开头加上 type: tags；source/categories/index.md 加 type: categories。归档页和关于页不用加。
-九、写第一篇文章hexo new &quot;我的第一篇文章&quot;
-
-会在 source/_posts/ 生成 我的第一篇文章.md。用 Typora 或任意编辑器打开，开头是 front-matter（两行 --- 之间的配置）：
----title: 我的第一篇文章date: 2026-08-06 14:30:00tags:  - 随笔categories:  - 生活---
-
-下面用 Markdown 写正文，常用语法：
-# 大标题## 二级标题普通段落直接写。- 列表项一- 列表项二**加粗** *斜体* `行内代码`[链接文字](https://example.com)![图片说明](图片名.png)
-
-写完 hexo server 预览效果。
-十、部署到 GitHub Pages最后一步，把博客发布到网上。
-1. 新建仓库在 GitHub 点 New repository，名字必须是 用户名.github.io（用户名换成你的）。选 Public，其他不勾，创建。
-2. 配置 SSH（让电脑有权推送到 GitHub）git config --global user.name &quot;你的名字&quot;git config --global user.email &quot;你的邮箱&quot;ssh-keygen -t ed25519 -C &quot;你的邮箱&quot;
-
-一路回车。然后打开生成的公钥文件（Windows 路径 C:\Users\你的用户名\.ssh\id_ed25519.pub），用记事本打开，复制全部内容。
-到 GitHub → 右上角头像 → Settings → SSH and GPG keys → New SSH key，Title 随便填，Key 粘贴刚才复制的内容，保存。
-验证：
-ssh -T git@github.com
-
-第一次问 yes&#x2F;no 输 yes。看到 Hi 用户名! 就成功了。
-3. 安装部署插件npm install hexo-deployer-git --save
-
-4. 配置部署信息打开 _config.yml，翻到最下面的 deploy，改成：
-deploy:  type: git  repo: git@github.com:用户名/用户名.github.io.git  branch: main
-
-
-用户名要换成你自己的。repo 地址也能在 GitHub 仓库页面点 Code → SSH 复制。
-
-5. 一键发布hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-三个命令的作用：
-
-
-
-命令
-作用
-
-
-
-hexo clean
-清理缓存
-
-
-hexo g
-生成静态网页
-
-
-hexo d
-推送到 GitHub
-
-
-第一次推送可能要确认，输 yes。等 1-2 分钟，访问 https://用户名.github.io/ 就能看到你的博客了！
-十一、日常使用博客搭好后，日常写文章就三步：
-hexo new &quot;新文章&quot;                  # 1. 建文章# （用编辑器写内容）hexo clean &amp;&amp; hexo g &amp;&amp; hexo d     # 2. 发布
-
-想先看看效果不发布，用 hexo server 本地预览。
-完整的写作发布流程（图片处理、草稿、本地预览细节）见《Hexo 博客发布笔记完整教程》。
-十二、进阶推荐博客跑起来后，可以接着折腾：
-
-《如何配置网站外观与个人信息》——改背景、菜单、社交链接、公告
-《文章分类、置顶与短链配置》——文章自动归类、置顶、固定短网址
-《如何添加书签》——做个网址收藏页
-
-十三、常见问题Q：hexo server 打不开 localhost:4000？看命令行有没有报错。端口可能被占用，换一个：hexo server -p 5000。
-Q：部署报错 Permission denied (publickey)？SSH 没配好。重新按第十步生成 key 并添加到 GitHub，确认 ssh -T git@github.com 能通过。
-Q：部署成功了但访问 404？按顺序检查：仓库名是不是严格的 用户名.github.io；仓库是不是 Public；去仓库 Settings → Pages 看是否已开启。
-Q：部署后看到的还是旧内容？GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可去仓库 Actions 页面看部署状态。
-Q：中文文章网址又长又丑？默认网址带中文和日期。装 hexo-abbrlink 插件可生成 8 位固定短链，详见《文章分类、置顶与短链配置》。
-Q：图片显示不出来？在 _config.yml 设置 post_asset_folder: true，图片放文章同名文件夹，用裸文件名引用 ![](图片.png)。详见《Hexo 博客发布笔记完整教程》。
-小结
-
-
-步骤
-命令 &#x2F; 操作
-
-
-
-装环境
-Node.js + Git
-
-
-装 Hexo
-npm install -g hexo-cli
-
-
-建博客
-hexo init
-
-
-装主题
-npm install hexo-theme-butterfly --save + 改 theme: butterfly
-
-
-改配置
-_config.yml + _config.butterfly.yml
-
-
-写文章
-hexo new &quot;标题&quot;
-
-
-发布
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-
-搭一次，以后写文章只需要后两行。祝写作愉快。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-        <tag>Butterfly</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Elasticsearch使用</title>
     <url>/posts/78c3da92/</url>
-    <content><![CDATA[安装docker安装 es
+    <content><![CDATA[安装
+docker安装 es
+
 拉取镜像
 
 docker pull elasticsearch:7.3.0
-
 
 准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
 
 docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
 
-
 复制需要挂载的文件夹
 
 docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
-
 
 修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
 
 cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
 
-
 删除刚刚创建的容器
 
 docker rm -f es7
-
 
 新建容器，使用挂载的文件夹
 
 docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
 
-
 浏览器访问 http://localhost:9200/ 如下：
 
 
 可视化工具 Kibana 安装
+
 拉取镜像
 
 docker pull kibana:7.3.0
-
 
 准备和挂载的文件夹，先运行一个容器
 
 docker run -d --name kibana -p 5601:5601 kibana:7.3.0
 
-
 复制配置到挂载的文件夹
 
 docker cp kibana:/usr/share/kibana/config E:\docker\kibana
 
-
 编辑配置文件 kibana.yml 如下
 
 server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
-
 
 如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
 
@@ -858,9 +977,7 @@ server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http:/
 删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
 
 docker rm -f kibana
-
 docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
-
 
 浏览器访问 http://localhost:5601 即可访问控制台
 
@@ -873,91 +990,93 @@ Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个�
 响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
 
 
-Elasticsearch 基本请求格式Elasticsearch 提供 REST API，常见请求格式如下：
+Elasticsearch 基本请求格式
+Elasticsearch 提供 REST API，常见请求格式如下：
 GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
+Elasticsearch 基础语法学习
+1. 创建索引
 
-Elasticsearch 基础语法学习1. 创建索引
 创建一个名为 users 的索引。
 
 PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
 
+2. 新增文档
+指定 ID 新增
+PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+自动生成 ID 新增
+POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
+3. 根据 ID 查询文档
+GET /users/_doc/1
 
-2. 新增文档指定 ID 新增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-
-自动生成 ID 新增POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
-
-3. 根据 ID 查询文档GET /users/_doc/1
-
-
-4. 搜索文档查询所有文档GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
-
+4. 搜索文档
+查询所有文档
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
 条件搜索
+
 查询 name 包含 张 的文档：
 
 GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
-
 精确查询
+
 查询 email 等于指定值：
 
 GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
-
 范围查询
+
 查询年龄大于等于 20 的文档：
 
 GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
-
-分页查询GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
-
+分页查询
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
 含义：
 
 from：从第几条开始
 size：每页返回多少条
 
-5. 更新文档局部更新只更新某个字段：
+5. 更新文档
+局部更新
+只更新某个字段：
 POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+增加字段
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
 
-增加字段POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
-
-
-6. 删除文档删除 ID 为 1 的文档：
+6. 删除文档
+删除 ID 为 1 的文档：
 DELETE /users/_doc/1
 
-
-7. 删除索引删除整个 users 索引：
+7. 删除索引
+删除整个 users 索引：
 DELETE /users
 
-
-8. 查看索引是否存在HEAD /users
-
+8. 查看索引是否存在
+HEAD /users
 如果存在，返回状态码：
 200
-
 如果不存在，返回：
 404
 
-
-9. 查看索引信息GET /users
-
+9. 查看索引信息
+GET /users
 查看索引 mapping：
 GET /users/_mapping
-
 查看索引 settings：
 GET /users/_settings
 
-
-10. 最小可用 CRUD 总结增PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-
-查GET /users/_doc/1
-
-改POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-
-删DELETE /users/_doc/1
-
+10. 最小可用 CRUD 总结
+增
+PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+查
+GET /users/_doc/1
+改
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+删
+DELETE /users/_doc/1
 
 记住这个格式就行：
 PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
+倒排索引
+认识
 
-倒排索引认识
 倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
 
 
@@ -974,6 +1093,7 @@ PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       �
 
 关键词
 文档 ID
+
 
 
 
@@ -1005,13 +1125,16 @@ elasticsearch
 3
 
 
+
 当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
-构建过程1. 分词（Tokenization）
+构建过程
+1. 分词（Tokenization）
+
 分词是将文本内容拆分为独立的单词或短语，例如：
 
 原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
-
 2. 归一化（Normalization）
+
 归一化是对分词结果进行标准化处理，包括：
 
 
@@ -1020,47 +1143,89 @@ elasticsearch
 词干提取：将词汇归为基本形式，如 running → run。
 
 3. 创建倒排索引
+
 根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
 
 &#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
 
-
 此时，倒排索引已经完成，后续的搜索操作会以此为基础。
 
-ik 中文分词器插件安装
+ik 中文分词器插件
+安装
+
 打开终端进入 es7 容器的内部
 
 docker exec -it es7 /bin/sh
-
 
 执行安装命令
 
 bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
 
-
 安装完成后，执行如下命令，退出容器：
 
 exit
-
 
 然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
 
 docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
 
-
 重启容器
 
 docker restart es7
+分词模式
+智能化分词 - ik_smart
+POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
 
-分词模式智能化分词 - ik_smartPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
-
-
-最细粒度分词 - ik_max_wordPOST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
-
+最细粒度分词 - ik_max_word
+POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
 
 ]]></content>
       <categories>
         <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>docker</title>
+    <url>/posts/f255ffad/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置
+2.1 github新建仓库+token获取
+
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
       </categories>
   </entry>
   <entry>
@@ -1075,6 +1240,7 @@ docker restart es7
 
 
 
+
 _config.yml
 Hexo 站点级配置（站名、作者、语言、部署等）
 
@@ -1083,36 +1249,37 @@ _config.butterfly.yml
 Butterfly 主题配置（头像、背景、菜单、侧边栏等）
 
 
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
 
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息
+编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
 
 title：浏览器标签页和首页大标题都读这里
 description：搜索引擎抓取的站点描述，写一句话介绍即可
 author：改一次，全站的作者署名、版权信息都会同步
 
-二、头像编辑 _config.butterfly.yml：
+二、头像
+编辑 _config.butterfly.yml：
 avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-
 图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
 
-支持 png &#x2F; jpg &#x2F; webp，建议用正方形图，否则会被裁切。
+支持 png / jpg / webp，建议用正方形图，否则会被裁切。
 
-三、网站背景背景在 _config.butterfly.yml 的 background 字段：
+三、网站背景
+背景在 _config.butterfly.yml 的 background 字段：
 # 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-
 本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）顶部图是每页面顶部那张大横图：
+四、顶部图（Top Img）
+顶部图是每页面顶部那张大横图：
 disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-
 图片放到 source/img/top-bg.webp（或你指定的路径）。
 
 单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
 
-五、导航菜单菜单在 _config.butterfly.yml 顶部：
+五、导航菜单
+菜单在 _config.butterfly.yml 顶部：
 menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-
 格式是 显示名: 路径 || 图标class。
 
 显示名：菜单上显示的文字
@@ -1120,36 +1287,36 @@ menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /
 图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
 
 新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接侧边栏的社交图标：
+六、社交链接
+侧边栏的社交图标：
 social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-
 格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
 social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-
-七、侧边栏作者卡片侧边栏那个带头像和按钮的卡片：
+七、侧边栏作者卡片
+侧边栏那个带头像和按钮的卡片：
 card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-
 description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）favicon: /img/favicon.png
-
+八、Favicon（浏览器标签页小图标）
+favicon: /img/favicon.png
 图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+九、图片资源放哪
+所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
 source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-
 引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+十、图片灯箱（lightbox）
+文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
 在 _config.butterfly.yml 里：
 lightbox: fancybox
-
 一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
 
 写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
 
-十一、部署生效任何配置改完后，三连部署：
+十一、部署生效
+任何配置改完后，三连部署：
 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
 等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
 小结
+
 
 
 想改什么
@@ -1157,15 +1324,16 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
 
 
 
-站点名 &#x2F; 作者名 &#x2F; SEO 描述
-_config.yml 的 title &#x2F; author &#x2F; description
+
+站点名 / 作者名 / SEO 描述
+_config.yml 的 title / author / description
 
 
 头像
 _config.butterfly.yml 的 avatar.img + 放图到 source/img/
 
 
-背景色 &#x2F; 渐变
+背景色 / 渐变
 _config.butterfly.yml 的 background
 
 
@@ -1193,6 +1361,7 @@ _config.butterfly.yml 的 lightbox: fancybox
 _config.butterfly.yml 的 favicon
 
 
+
 记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
 ]]></content>
       <categories>
@@ -1200,14 +1369,98 @@ _config.butterfly.yml 的 favicon
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>教程</tag>
         <tag>Butterfly</tag>
+        <tag>教程</tag>
       </tags>
   </entry>
   <entry>
-    <title>docker</title>
-    <url>/posts/f255ffad/</url>
-    <content><![CDATA[]]></content>
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+
+
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+
+
+
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
+
+
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
+
+
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
+
+
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
+
+
+易混淆的术语
+接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+
+
+QPS vs. RPS
+
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+
+
+TPS vs. RPS
+
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+
+
+
+VU (并发用户) 和 TPS 换算
+
+公式描述：TPS = VU/RT，（RT单位：秒）。
+
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比
+目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeter
+Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
+
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
+
+ApacheBench
+ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
+
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrk
+wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
       <categories>
         <category>开发</category>
       </categories>
@@ -1215,13 +1468,19 @@ _config.butterfly.yml 的 favicon
   <entry>
     <title>缓存技术常见问题及解决</title>
     <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题缓存雪崩认识
- 当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
+    <content><![CDATA[缓存技术常见的问题
+缓存雪崩
+认识
+
+当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
 
 解决方案
+
 为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
 
-缓存穿透认识
+缓存穿透
+认识
+
 解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
 
 举个栗子:
@@ -1229,13 +1488,16 @@ _config.butterfly.yml 的 favicon
 假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
 
 解决方案
+
 为了应对上述情况，可以选择如下两种策略：
+
 
 
 当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
 
 这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
 为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
+
 
 
 引入布隆过滤器；
@@ -1251,98 +1513,26 @@ _config.butterfly.yml 的 favicon
 
 
 
-缓存击穿认识
+缓存击穿
+认识
+
 解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
 
-解决方案为了应对上述情况，可以选择如下方案：
+解决方案
+为了应对上述情况，可以选择如下方案：
+
 
 缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+
 
 加分布式锁；
 
 当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
 
 
+
 引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
 
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
-
-
-
-VU (并发用户) 和 TPS 换算
-公式描述：TPS &#x3D; VU&#x2F;RT，（RT单位：秒）。
-
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeterApache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
-
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
-
-ApacheBenchApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
-
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
-
-wrkwrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
-
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
 
 ]]></content>
       <categories>
