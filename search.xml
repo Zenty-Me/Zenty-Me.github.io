@@ -252,6 +252,89 @@ https://zhuanlan.zhihu.com/p/77151308
       </categories>
   </entry>
   <entry>
+    <title>如何添加书签</title>
+    <url>/posts/3ffe122/</url>
+    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
+一、书签数据文件
+所有书签数据存放在：
+source/_data/link.yml
+用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
+二、文件结构
+文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
+- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
+三、添加书签到已有分类
+在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
+- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
+注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
+四、新建分类
+在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
+- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
+新分类前面留一个空行和上个分类隔开。
+五、缩进规则（重要）
+YAML 对缩进敏感，必须用空格，不能用 Tab：
+
+
+
+层级
+内容
+缩进
+
+
+
+
+1
+class_name
+0 空格（顶格）
+
+
+2
+class_desc / link_list
+2 空格
+
+
+3
+name
+4 空格
+
+
+4
+link / avatar / descr
+6 空格
+
+
+
+六、图标自动获取
+avatar 字段填网站自己的 favicon，格式固定：
+https://网站域名/favicon.ico
+例如：
+
+GitHub → https://github.com/favicon.ico
+掘金 → https://juejin.cn/favicon.ico
+
+不用手动下载图标，浏览器会自动加载网站图标。
+七、删除书签
+找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
+八、部署上线
+改完 link.yml 后，执行：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+
+GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+九、完整示例
+下面是一个包含两个分类的完整 link.yml 示例：
+- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>书签</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
     <url>/posts/35a7b521/</url>
     <content><![CDATA[本篇面向完全没接触过代码的同学。跟着做完，你会得到一个有独立网址（你的名字.github.io）、能写文章、手机电脑都能看的个人博客。
@@ -479,89 +562,6 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
         <tag>Hexo</tag>
         <tag>Butterfly</tag>
         <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何添加书签</title>
-    <url>/posts/3ffe122/</url>
-    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
-一、书签数据文件
-所有书签数据存放在：
-source/_data/link.yml
-用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
-二、文件结构
-文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
-- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
-三、添加书签到已有分类
-在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
-- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
-注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
-四、新建分类
-在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
-- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
-新分类前面留一个空行和上个分类隔开。
-五、缩进规则（重要）
-YAML 对缩进敏感，必须用空格，不能用 Tab：
-
-
-
-层级
-内容
-缩进
-
-
-
-
-1
-class_name
-0 空格（顶格）
-
-
-2
-class_desc / link_list
-2 空格
-
-
-3
-name
-4 空格
-
-
-4
-link / avatar / descr
-6 空格
-
-
-
-六、图标自动获取
-avatar 字段填网站自己的 favicon，格式固定：
-https://网站域名/favicon.ico
-例如：
-
-GitHub → https://github.com/favicon.ico
-掘金 → https://juejin.cn/favicon.ico
-
-不用手动下载图标，浏览器会自动加载网站图标。
-七、删除书签
-找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
-八、部署上线
-改完 link.yml 后，执行：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
-
-GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-九、完整示例
-下面是一个包含两个分类的完整 link.yml 示例：
-- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
-照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>书签</tag>
       </tags>
   </entry>
   <entry>
@@ -920,6 +920,187 @@ front-matter 加 series_order: 数字（越小越靠前）
       </tags>
   </entry>
   <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置
+2.1 github新建仓库+token获取
+
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>如何配置网站外观与个人信息</title>
+    <url>/posts/9fa0ea99/</url>
+    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
+
+
+
+文件
+作用
+
+
+
+
+_config.yml
+Hexo 站点级配置（站名、作者、语言、部署等）
+
+
+_config.butterfly.yml
+Butterfly 主题配置（头像、背景、菜单、侧边栏等）
+
+
+
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息
+编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
+
+title：浏览器标签页和首页大标题都读这里
+description：搜索引擎抓取的站点描述，写一句话介绍即可
+author：改一次，全站的作者署名、版权信息都会同步
+
+二、头像
+编辑 _config.butterfly.yml：
+avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
+图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
+
+支持 png / jpg / webp，建议用正方形图，否则会被裁切。
+
+三、网站背景
+背景在 _config.butterfly.yml 的 background 字段：
+# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
+本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
+四、顶部图（Top Img）
+顶部图是每页面顶部那张大横图：
+disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
+图片放到 source/img/top-bg.webp（或你指定的路径）。
+
+单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
+
+五、导航菜单
+菜单在 _config.butterfly.yml 顶部：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标class。
+
+显示名：菜单上显示的文字
+路径：页面的 URL，比如 /tags/
+图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
+
+新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
+六、社交链接
+侧边栏的社交图标：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
+格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
+七、侧边栏作者卡片
+侧边栏那个带头像和按钮的卡片：
+card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
+description 是作者名下面那一行小字，改成自己的签名即可。
+八、Favicon（浏览器标签页小图标）
+favicon: /img/favicon.png
+图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
+九、图片资源放哪
+所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
+引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
+十、图片灯箱（lightbox）
+文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+在 _config.butterfly.yml 里：
+lightbox: fancybox
+一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
+
+写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
+
+十一、部署生效
+任何配置改完后，三连部署：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
+小结
+
+
+
+想改什么
+改哪里
+
+
+
+
+站点名 / 作者名 / SEO 描述
+_config.yml 的 title / author / description
+
+
+头像
+_config.butterfly.yml 的 avatar.img + 放图到 source/img/
+
+
+背景色 / 渐变
+_config.butterfly.yml 的 background
+
+
+顶部图
+_config.butterfly.yml 的 default_top_img 等
+
+
+导航菜单
+_config.butterfly.yml 的 menu
+
+
+社交图标
+_config.butterfly.yml 的 social
+
+
+作者签名
+_config.butterfly.yml 的 card_author.description
+
+
+图片点击放大
+_config.butterfly.yml 的 lightbox: fancybox
+
+
+标签页小图标
+_config.butterfly.yml 的 favicon
+
+
+
+记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Elasticsearch使用</title>
     <url>/posts/78c3da92/</url>
     <content><![CDATA[安装
@@ -1191,187 +1372,6 @@ POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text
       <categories>
         <category>开发</category>
       </categories>
-  </entry>
-  <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置
-2.1 github新建仓库+token获取
-
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>如何配置网站外观与个人信息</title>
-    <url>/posts/9fa0ea99/</url>
-    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
-
-
-
-文件
-作用
-
-
-
-
-_config.yml
-Hexo 站点级配置（站名、作者、语言、部署等）
-
-
-_config.butterfly.yml
-Butterfly 主题配置（头像、背景、菜单、侧边栏等）
-
-
-
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息
-编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
-
-title：浏览器标签页和首页大标题都读这里
-description：搜索引擎抓取的站点描述，写一句话介绍即可
-author：改一次，全站的作者署名、版权信息都会同步
-
-二、头像
-编辑 _config.butterfly.yml：
-avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
-
-支持 png / jpg / webp，建议用正方形图，否则会被裁切。
-
-三、网站背景
-背景在 _config.butterfly.yml 的 background 字段：
-# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）
-顶部图是每页面顶部那张大横图：
-disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-图片放到 source/img/top-bg.webp（或你指定的路径）。
-
-单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
-
-五、导航菜单
-菜单在 _config.butterfly.yml 顶部：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标class。
-
-显示名：菜单上显示的文字
-路径：页面的 URL，比如 /tags/
-图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
-
-新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接
-侧边栏的社交图标：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-七、侧边栏作者卡片
-侧边栏那个带头像和按钮的卡片：
-card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）
-favicon: /img/favicon.png
-图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪
-所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
-source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）
-文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
-在 _config.butterfly.yml 里：
-lightbox: fancybox
-一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
-
-写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
-
-十一、部署生效
-任何配置改完后，三连部署：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
-小结
-
-
-
-想改什么
-改哪里
-
-
-
-
-站点名 / 作者名 / SEO 描述
-_config.yml 的 title / author / description
-
-
-头像
-_config.butterfly.yml 的 avatar.img + 放图到 source/img/
-
-
-背景色 / 渐变
-_config.butterfly.yml 的 background
-
-
-顶部图
-_config.butterfly.yml 的 default_top_img 等
-
-
-导航菜单
-_config.butterfly.yml 的 menu
-
-
-社交图标
-_config.butterfly.yml 的 social
-
-
-作者签名
-_config.butterfly.yml 的 card_author.description
-
-
-图片点击放大
-_config.butterfly.yml 的 lightbox: fancybox
-
-
-标签页小图标
-_config.butterfly.yml 的 favicon
-
-
-
-记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
   </entry>
   <entry>
     <title>性能测试</title>
