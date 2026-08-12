@@ -252,6 +252,279 @@ https://zhuanlan.zhihu.com/p/77151308
       </categories>
   </entry>
   <entry>
+    <title>Elasticsearch使用</title>
+    <url>/posts/78c3da92/</url>
+    <content><![CDATA[安装
+docker安装 es
+
+拉取镜像
+
+docker pull elasticsearch:7.3.0
+
+准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
+
+复制需要挂载的文件夹
+
+docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
+
+修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
+
+cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
+
+删除刚刚创建的容器
+
+docker rm -f es7
+
+新建容器，使用挂载的文件夹
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
+
+浏览器访问 http://localhost:9200/ 如下：
+
+
+可视化工具 Kibana 安装
+
+拉取镜像
+
+docker pull kibana:7.3.0
+
+准备和挂载的文件夹，先运行一个容器
+
+docker run -d --name kibana -p 5601:5601 kibana:7.3.0
+
+复制配置到挂载的文件夹
+
+docker cp kibana:/usr/share/kibana/config E:\docker\kibana
+
+编辑配置文件 kibana.yml 如下
+
+server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
+
+如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
+
+
+
+删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
+
+docker rm -f kibana
+docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
+
+浏览器访问 http://localhost:5601 即可访问控制台
+
+
+Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
+
+命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
+历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
+语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
+响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
+
+
+Elasticsearch 基本请求格式
+Elasticsearch 提供 REST API，常见请求格式如下：
+GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
+Elasticsearch 基础语法学习
+1. 创建索引
+
+创建一个名为 users 的索引。
+
+PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
+
+2. 新增文档
+指定 ID 新增
+PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+自动生成 ID 新增
+POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
+3. 根据 ID 查询文档
+GET /users/_doc/1
+
+4. 搜索文档
+查询所有文档
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
+条件搜索
+
+查询 name 包含 张 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
+精确查询
+
+查询 email 等于指定值：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
+范围查询
+
+查询年龄大于等于 20 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
+分页查询
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
+含义：
+
+from：从第几条开始
+size：每页返回多少条
+
+5. 更新文档
+局部更新
+只更新某个字段：
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+增加字段
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
+
+6. 删除文档
+删除 ID 为 1 的文档：
+DELETE /users/_doc/1
+
+7. 删除索引
+删除整个 users 索引：
+DELETE /users
+
+8. 查看索引是否存在
+HEAD /users
+如果存在，返回状态码：
+200
+如果不存在，返回：
+404
+
+9. 查看索引信息
+GET /users
+查看索引 mapping：
+GET /users/_mapping
+查看索引 settings：
+GET /users/_settings
+
+10. 最小可用 CRUD 总结
+增
+PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+查
+GET /users/_doc/1
+改
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+删
+DELETE /users/_doc/1
+
+记住这个格式就行：
+PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
+倒排索引
+认识
+
+倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
+
+
+简单示例：
+假设我们有以下文档，分别对应一条中文句子：
+
+文档 1: Elasticsearch 是分布式引擎
+文档 2: 分布式系统的核心是搜索
+文档 3: 搜索引擎的未来是智能化
+
+倒排索引将这些文档转化为如下形式：
+
+
+
+关键词
+文档 ID
+
+
+
+
+elasticsearch
+1
+
+
+分布式
+1, 2
+
+
+系统
+2
+
+
+核心
+2
+
+
+搜索
+2, 3
+
+
+引擎
+1, 3
+
+
+智能化
+3
+
+
+
+当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
+构建过程
+1. 分词（Tokenization）
+
+分词是将文本内容拆分为独立的单词或短语，例如：
+
+原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
+2. 归一化（Normalization）
+
+归一化是对分词结果进行标准化处理，包括：
+
+
+转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
+去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
+词干提取：将词汇归为基本形式，如 running → run。
+
+3. 创建倒排索引
+
+根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
+
+&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
+
+此时，倒排索引已经完成，后续的搜索操作会以此为基础。
+
+ik 中文分词器插件
+安装
+
+打开终端进入 es7 容器的内部
+
+docker exec -it es7 /bin/sh
+
+执行安装命令
+
+bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
+
+安装完成后，执行如下命令，退出容器：
+
+exit
+
+然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
+
+docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
+
+重启容器
+
+docker restart es7
+分词模式
+智能化分词 - ik_smart
+POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
+
+最细粒度分词 - ik_max_word
+POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>docker</title>
+    <url>/posts/f255ffad/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
     <title>如何添加书签</title>
     <url>/posts/3ffe122/</url>
     <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
@@ -333,6 +606,172 @@ GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或
         <tag>Hexo</tag>
         <tag>书签</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+
+
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+
+
+
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
+
+
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
+
+
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
+
+
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
+
+
+易混淆的术语
+接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+
+
+QPS vs. RPS
+
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+
+
+TPS vs. RPS
+
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+
+
+
+VU (并发用户) 和 TPS 换算
+
+公式描述：TPS = VU/RT，（RT单位：秒）。
+
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比
+目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeter
+Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
+
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
+
+ApacheBench
+ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
+
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrk
+wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>缓存技术常见问题及解决</title>
+    <url>/posts/aad9f202/</url>
+    <content><![CDATA[缓存技术常见的问题
+缓存雪崩
+认识
+
+当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
+
+解决方案
+
+为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
+
+缓存穿透
+认识
+
+解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
+
+举个栗子:
+
+假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
+
+解决方案
+
+为了应对上述情况，可以选择如下两种策略：
+
+
+
+当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
+
+这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
+为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
+
+
+
+引入布隆过滤器；
+
+布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
+布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
+
+将数据库中的所有用户数据加入布隆过滤器中；
+当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
+若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
+若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
+
+
+
+
+缓存击穿
+认识
+
+解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
+
+解决方案
+为了应对上述情况，可以选择如下方案：
+
+
+缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+
+
+加分布式锁；
+
+当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
+
+
+
+引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
+
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
   </entry>
   <entry>
     <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
@@ -711,14 +1150,6 @@ front-matter 加 series_order: 数字（越小越靠前）
       </tags>
   </entry>
   <entry>
-    <title>docker</title>
-    <url>/posts/f255ffad/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Hexo 博客发布笔记完整教程</title>
     <url>/posts/b9c5d664/</url>
     <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
@@ -928,621 +1359,10 @@ _drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题
       </tags>
   </entry>
   <entry>
-    <title>如何配置网站外观与个人信息</title>
-    <url>/posts/9fa0ea99/</url>
-    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
-
-
-
-文件
-作用
-
-
-
-
-_config.yml
-Hexo 站点级配置（站名、作者、语言、部署等）
-
-
-_config.butterfly.yml
-Butterfly 主题配置（头像、背景、菜单、侧边栏等）
-
-
-
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息
-编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
-
-title：浏览器标签页和首页大标题都读这里
-description：搜索引擎抓取的站点描述，写一句话介绍即可
-author：改一次，全站的作者署名、版权信息都会同步
-
-二、头像
-编辑 _config.butterfly.yml：
-avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
-
-支持 png / jpg / webp，建议用正方形图，否则会被裁切。
-
-三、网站背景
-背景在 _config.butterfly.yml 的 background 字段：
-# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）
-顶部图是每页面顶部那张大横图：
-disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-图片放到 source/img/top-bg.webp（或你指定的路径）。
-
-单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
-
-五、导航菜单
-菜单在 _config.butterfly.yml 顶部：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标class。
-
-显示名：菜单上显示的文字
-路径：页面的 URL，比如 /tags/
-图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
-
-新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接
-侧边栏的社交图标：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-七、侧边栏作者卡片
-侧边栏那个带头像和按钮的卡片：
-card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）
-favicon: /img/favicon.png
-图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪
-所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
-source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）
-文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
-在 _config.butterfly.yml 里：
-lightbox: fancybox
-一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
-
-写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
-
-十一、部署生效
-任何配置改完后，三连部署：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
-小结
-
-
-
-想改什么
-改哪里
-
-
-
-
-站点名 / 作者名 / SEO 描述
-_config.yml 的 title / author / description
-
-
-头像
-_config.butterfly.yml 的 avatar.img + 放图到 source/img/
-
-
-背景色 / 渐变
-_config.butterfly.yml 的 background
-
-
-顶部图
-_config.butterfly.yml 的 default_top_img 等
-
-
-导航菜单
-_config.butterfly.yml 的 menu
-
-
-社交图标
-_config.butterfly.yml 的 social
-
-
-作者签名
-_config.butterfly.yml 的 card_author.description
-
-
-图片点击放大
-_config.butterfly.yml 的 lightbox: fancybox
-
-
-标签页小图标
-_config.butterfly.yml 的 favicon
-
-
-
-记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Elasticsearch使用</title>
-    <url>/posts/78c3da92/</url>
-    <content><![CDATA[安装
-docker安装 es
-
-拉取镜像
-
-docker pull elasticsearch:7.3.0
-
-准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
-
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
-
-复制需要挂载的文件夹
-
-docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
-
-修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
-
-cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
-
-删除刚刚创建的容器
-
-docker rm -f es7
-
-新建容器，使用挂载的文件夹
-
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
-
-浏览器访问 http://localhost:9200/ 如下：
-
-
-可视化工具 Kibana 安装
-
-拉取镜像
-
-docker pull kibana:7.3.0
-
-准备和挂载的文件夹，先运行一个容器
-
-docker run -d --name kibana -p 5601:5601 kibana:7.3.0
-
-复制配置到挂载的文件夹
-
-docker cp kibana:/usr/share/kibana/config E:\docker\kibana
-
-编辑配置文件 kibana.yml 如下
-
-server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
-
-如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
-
-
-
-删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
-
-docker rm -f kibana
-docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
-
-浏览器访问 http://localhost:5601 即可访问控制台
-
-
-Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
-
-命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
-历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
-语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
-响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
-
-
-Elasticsearch 基本请求格式
-Elasticsearch 提供 REST API，常见请求格式如下：
-GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
-Elasticsearch 基础语法学习
-1. 创建索引
-
-创建一个名为 users 的索引。
-
-PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
-
-2. 新增文档
-指定 ID 新增
-PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-自动生成 ID 新增
-POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
-3. 根据 ID 查询文档
-GET /users/_doc/1
-
-4. 搜索文档
-查询所有文档
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
-条件搜索
-
-查询 name 包含 张 的文档：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
-精确查询
-
-查询 email 等于指定值：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
-范围查询
-
-查询年龄大于等于 20 的文档：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
-分页查询
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
-含义：
-
-from：从第几条开始
-size：每页返回多少条
-
-5. 更新文档
-局部更新
-只更新某个字段：
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-增加字段
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
-
-6. 删除文档
-删除 ID 为 1 的文档：
-DELETE /users/_doc/1
-
-7. 删除索引
-删除整个 users 索引：
-DELETE /users
-
-8. 查看索引是否存在
-HEAD /users
-如果存在，返回状态码：
-200
-如果不存在，返回：
-404
-
-9. 查看索引信息
-GET /users
-查看索引 mapping：
-GET /users/_mapping
-查看索引 settings：
-GET /users/_settings
-
-10. 最小可用 CRUD 总结
-增
-PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-查
-GET /users/_doc/1
-改
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-删
-DELETE /users/_doc/1
-
-记住这个格式就行：
-PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
-倒排索引
-认识
-
-倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
-
-
-简单示例：
-假设我们有以下文档，分别对应一条中文句子：
-
-文档 1: Elasticsearch 是分布式引擎
-文档 2: 分布式系统的核心是搜索
-文档 3: 搜索引擎的未来是智能化
-
-倒排索引将这些文档转化为如下形式：
-
-
-
-关键词
-文档 ID
-
-
-
-
-elasticsearch
-1
-
-
-分布式
-1, 2
-
-
-系统
-2
-
-
-核心
-2
-
-
-搜索
-2, 3
-
-
-引擎
-1, 3
-
-
-智能化
-3
-
-
-
-当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
-构建过程
-1. 分词（Tokenization）
-
-分词是将文本内容拆分为独立的单词或短语，例如：
-
-原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
-2. 归一化（Normalization）
-
-归一化是对分词结果进行标准化处理，包括：
-
-
-转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
-去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
-词干提取：将词汇归为基本形式，如 running → run。
-
-3. 创建倒排索引
-
-根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
-
-&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
-
-此时，倒排索引已经完成，后续的搜索操作会以此为基础。
-
-ik 中文分词器插件
-安装
-
-打开终端进入 es7 容器的内部
-
-docker exec -it es7 /bin/sh
-
-执行安装命令
-
-bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
-
-安装完成后，执行如下命令，退出容器：
-
-exit
-
-然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
-
-docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
-
-重启容器
-
-docker restart es7
-分词模式
-智能化分词 - ik_smart
-POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
-
-最细粒度分词 - ik_max_word
-POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置
-2.1 github新建仓库+token获取
-
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>缓存技术常见问题及解决</title>
-    <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题
-缓存雪崩
-认识
-
-当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
-
-解决方案
-
-为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
-
-缓存穿透
-认识
-
-解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
-
-举个栗子:
-
-假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
-
-解决方案
-
-为了应对上述情况，可以选择如下两种策略：
-
-
-
-当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
-
-这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
-为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
-
-
-
-引入布隆过滤器；
-
-布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
-布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
-
-将数据库中的所有用户数据加入布隆过滤器中；
-当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
-若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
-若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
-
-
-
-
-缓存击穿
-认识
-
-解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
-
-解决方案
-为了应对上述情况，可以选择如下方案：
-
-
-缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
-
-
-加分布式锁；
-
-当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
-
-
-
-引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
-
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语
-接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
-
-
-
-VU (并发用户) 和 TPS 换算
-
-公式描述：TPS = VU/RT，（RT单位：秒）。
-
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比
-目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeter
-Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
-
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
-
-ApacheBench
-ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
-
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
-
-wrk
-wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
-
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-  </entry>
-  <entry>
     <title>MySql</title>
     <url>/posts/6cac71de/</url>
-    <content><![CDATA[DDL
+    <content><![CDATA[基础
+DDL
 数据库操作
 查询所有数据库：
 show databases;
@@ -1731,7 +1551,6 @@ insert into (字段名1，字段名2，...) values(值1，值2,..),(值1，值2,
 update 表名 set 字段名1=值1，字段名2=值2，... [where 条件];
 删除数据
 delete from 表名 [where 条件];
-
 DQL
 基础查询
 查询多个字段：
@@ -1819,7 +1638,7 @@ not 或者 ！
 聚合函数：
 语法
 select 聚合函数(字段列表) from 表名;null值不参与聚合函数的运算
-**常见的聚合函数:
+常见的聚合函数:
 
 
 
@@ -1852,7 +1671,7 @@ sum
 
 分组查询
 select 字段列表 from 表名 [where 条件] group by 分组字段名 [having 分组后的过滤条件];
-**where和having的区别：
+where和having的区别：
 
 执行时间不同：where是分组之前进行过滤,不满足where条件，不参与分组，而having是分组之后再对结果进行过滤
 判断时间不同：where不能对聚合函数进行判断，而having可以
@@ -1860,9 +1679,11 @@ select 字段列表 from 表名 [where 条件] group by 分组字段名 [having 
 
 排序查询
 select 字段列表 from 表名 order by 字段1 排序方式1,字段2 排序方式2;
-**排序方式：
-ASC:升序（默认值）
+排序方式：
+
+ASC: 升序（默认值）
 DESC:降序
+
 分页查询
 select 字段列表 from 表名 limit 起始索引,查询记录数;
 
@@ -1927,8 +1748,192 @@ grant 权限列表 on 数据库.表名 to &#x27;用户名&#x27;@&#x27;主机名&
 撤销权限
 revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机名&#x27;;
 ]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
       <tags>
         <tag>MySQL</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>如何配置网站外观与个人信息</title>
+    <url>/posts/9fa0ea99/</url>
+    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
+
+
+
+文件
+作用
+
+
+
+
+_config.yml
+Hexo 站点级配置（站名、作者、语言、部署等）
+
+
+_config.butterfly.yml
+Butterfly 主题配置（头像、背景、菜单、侧边栏等）
+
+
+
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息
+编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
+
+title：浏览器标签页和首页大标题都读这里
+description：搜索引擎抓取的站点描述，写一句话介绍即可
+author：改一次，全站的作者署名、版权信息都会同步
+
+二、头像
+编辑 _config.butterfly.yml：
+avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
+图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
+
+支持 png / jpg / webp，建议用正方形图，否则会被裁切。
+
+三、网站背景
+背景在 _config.butterfly.yml 的 background 字段：
+# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
+本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
+四、顶部图（Top Img）
+顶部图是每页面顶部那张大横图：
+disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
+图片放到 source/img/top-bg.webp（或你指定的路径）。
+
+单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
+
+五、导航菜单
+菜单在 _config.butterfly.yml 顶部：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标class。
+
+显示名：菜单上显示的文字
+路径：页面的 URL，比如 /tags/
+图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
+
+新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
+六、社交链接
+侧边栏的社交图标：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
+格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
+七、侧边栏作者卡片
+侧边栏那个带头像和按钮的卡片：
+card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
+description 是作者名下面那一行小字，改成自己的签名即可。
+八、Favicon（浏览器标签页小图标）
+favicon: /img/favicon.png
+图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
+九、图片资源放哪
+所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
+引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
+十、图片灯箱（lightbox）
+文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+在 _config.butterfly.yml 里：
+lightbox: fancybox
+一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
+
+写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
+
+十一、部署生效
+任何配置改完后，三连部署：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
+小结
+
+
+
+想改什么
+改哪里
+
+
+
+
+站点名 / 作者名 / SEO 描述
+_config.yml 的 title / author / description
+
+
+头像
+_config.butterfly.yml 的 avatar.img + 放图到 source/img/
+
+
+背景色 / 渐变
+_config.butterfly.yml 的 background
+
+
+顶部图
+_config.butterfly.yml 的 default_top_img 等
+
+
+导航菜单
+_config.butterfly.yml 的 menu
+
+
+社交图标
+_config.butterfly.yml 的 social
+
+
+作者签名
+_config.butterfly.yml 的 card_author.description
+
+
+图片点击放大
+_config.butterfly.yml 的 lightbox: fancybox
+
+
+标签页小图标
+_config.butterfly.yml 的 favicon
+
+
+
+记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置
+2.1 github新建仓库+token获取
+
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
   </entry>
 </search>
