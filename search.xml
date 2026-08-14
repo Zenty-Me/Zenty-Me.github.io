@@ -335,269 +335,150 @@ GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或
       </tags>
   </entry>
   <entry>
-    <title>Elasticsearch使用</title>
-    <url>/posts/78c3da92/</url>
-    <content><![CDATA[安装
-docker安装 es
+    <title>文章分类、置顶与短链配置</title>
+    <url>/posts/1784a007/</url>
+    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
+一、文件夹自动归类（auto_category）
+装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
+用法
+在 source/_posts/ 下建文件夹，文章放进去：
+source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
+上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
+注意
 
-拉取镜像
+手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
+_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
+建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
 
-docker pull elasticsearch:7.3.0
+配置（已设好，一般不用改）
+_config.yml 里：
+auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
+想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
+二、置顶排序（sticky）
+首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
+---title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
+规则
 
-准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
+有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
+没 sticky 的文章：按日期倒序排在置顶文章之后
+sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
 
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
+示例
+本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
+三、永久短链（abbrlink）
+装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
+https://zenty-me.github.io/posts/b9c5d664/
+为什么用短链
 
-复制需要挂载的文件夹
+永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
+简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
+适合分享：短链好看，外链稳定
 
-docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
+工作机制
 
-修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
+第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
+之后这个值永久不变，URL 固定为 /posts/abbrlink值/
+不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
 
-cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
+配置（已设好）
+_config.yml 里：
+permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
+四、系列文章（series）
+写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
+归入系列
+在 front-matter 加 series: 系列名，同名的就是一个系列：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
+加完后该文章自动获得：
 
-删除刚刚创建的容器
+文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
+侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
 
-docker rm -f es7
+自定义顺序
+默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
+series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
+排序规则
 
-新建容器，使用挂载的文件夹
 
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
 
-浏览器访问 http://localhost:9200/ 如下：
+情况
+排序方式
 
 
-可视化工具 Kibana 安装
 
-拉取镜像
 
-docker pull kibana:7.3.0
+系列里有任一篇带 series_order
+按 series_order 数字升序（没加的排最后）
 
-准备和挂载的文件夹，先运行一个容器
 
-docker run -d --name kibana -p 5601:5601 kibana:7.3.0
+全都没加 series_order
+按 date 排序
 
-复制配置到挂载的文件夹
 
-docker cp kibana:/usr/share/kibana/config E:\docker\kibana
 
-编辑配置文件 kibana.yml 如下
+配置在 _config.butterfly.yml：
+series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
+示例
+本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
+五、日常写笔记流程
+结合三个机制，写一篇新笔记的完整流程：
 
-server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
+建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
+移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
+（可选）置顶：在 front-matter 加 sticky: 100
+（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
+编辑：Typora 写正文
+部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
 
-如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
+分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
+小结
 
 
 
-删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
+需求
+怎么做
 
-docker rm -f kibana
-docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
 
-浏览器访问 http://localhost:5601 即可访问控制台
 
 
-Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
+给文章归类
+把 md 文件放进 _posts/分类名/ 文件夹
 
-命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
-历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
-语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
-响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
 
+新建分类
+在 _posts/ 下新建文件夹并放入文章
 
-Elasticsearch 基本请求格式
-Elasticsearch 提供 REST API，常见请求格式如下：
-GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
-Elasticsearch 基础语法学习
-1. 创建索引
 
-创建一个名为 users 的索引。
+置顶文章
+front-matter 加 sticky: 100
 
-PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
 
-2. 新增文档
-指定 ID 新增
-PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-自动生成 ID 新增
-POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
-3. 根据 ID 查询文档
-GET /users/_doc/1
+文章 URL
+自动生成 /posts/xxxxxxxx/，不用管
 
-4. 搜索文档
-查询所有文档
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
-条件搜索
 
-查询 name 包含 张 的文档：
+多级分类
+auto_category.depth 改大、multiple: true
 
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
-精确查询
 
-查询 email 等于指定值：
+组成系列文章
+front-matter 加 series: 系列名
 
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
-范围查询
 
-查询年龄大于等于 20 的文档：
+指定系列内顺序
+front-matter 加 series_order: 数字（越小越靠前）
 
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
-分页查询
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
-含义：
 
-from：从第几条开始
-size：每页返回多少条
 
-5. 更新文档
-局部更新
-只更新某个字段：
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-增加字段
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
-
-6. 删除文档
-删除 ID 为 1 的文档：
-DELETE /users/_doc/1
-
-7. 删除索引
-删除整个 users 索引：
-DELETE /users
-
-8. 查看索引是否存在
-HEAD /users
-如果存在，返回状态码：
-200
-如果不存在，返回：
-404
-
-9. 查看索引信息
-GET /users
-查看索引 mapping：
-GET /users/_mapping
-查看索引 settings：
-GET /users/_settings
-
-10. 最小可用 CRUD 总结
-增
-PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-查
-GET /users/_doc/1
-改
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-删
-DELETE /users/_doc/1
-
-记住这个格式就行：
-PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
-倒排索引
-认识
-
-倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
-
-
-简单示例：
-假设我们有以下文档，分别对应一条中文句子：
-
-文档 1: Elasticsearch 是分布式引擎
-文档 2: 分布式系统的核心是搜索
-文档 3: 搜索引擎的未来是智能化
-
-倒排索引将这些文档转化为如下形式：
-
-
-
-关键词
-文档 ID
-
-
-
-
-elasticsearch
-1
-
-
-分布式
-1, 2
-
-
-系统
-2
-
-
-核心
-2
-
-
-搜索
-2, 3
-
-
-引擎
-1, 3
-
-
-智能化
-3
-
-
-
-当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
-构建过程
-1. 分词（Tokenization）
-
-分词是将文本内容拆分为独立的单词或短语，例如：
-
-原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
-2. 归一化（Normalization）
-
-归一化是对分词结果进行标准化处理，包括：
-
-
-转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
-去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
-词干提取：将词汇归为基本形式，如 running → run。
-
-3. 创建倒排索引
-
-根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
-
-&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
-
-此时，倒排索引已经完成，后续的搜索操作会以此为基础。
-
-ik 中文分词器插件
-安装
-
-打开终端进入 es7 容器的内部
-
-docker exec -it es7 /bin/sh
-
-执行安装命令
-
-bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
-
-安装完成后，执行如下命令，退出容器：
-
-exit
-
-然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
-
-docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
-
-重启容器
-
-docker restart es7
-分词模式
-智能化分词 - ik_smart
-POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
-
-最细粒度分词 - ik_max_word
-POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
-
+一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
 ]]></content>
       <categories>
-        <category>开发</category>
+        <category>博客搭建</category>
       </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
   </entry>
   <entry>
     <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
@@ -825,8 +706,8 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>Butterfly</tag>
         <tag>教程</tag>
+        <tag>Butterfly</tag>
       </tags>
   </entry>
   <entry>
@@ -1037,359 +918,6 @@ _drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题
         <tag>Hexo</tag>
         <tag>教程</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>如何配置网站外观与个人信息</title>
-    <url>/posts/9fa0ea99/</url>
-    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
-
-
-
-文件
-作用
-
-
-
-
-_config.yml
-Hexo 站点级配置（站名、作者、语言、部署等）
-
-
-_config.butterfly.yml
-Butterfly 主题配置（头像、背景、菜单、侧边栏等）
-
-
-
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息
-编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
-
-title：浏览器标签页和首页大标题都读这里
-description：搜索引擎抓取的站点描述，写一句话介绍即可
-author：改一次，全站的作者署名、版权信息都会同步
-
-二、头像
-编辑 _config.butterfly.yml：
-avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
-
-支持 png / jpg / webp，建议用正方形图，否则会被裁切。
-
-三、网站背景
-背景在 _config.butterfly.yml 的 background 字段：
-# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）
-顶部图是每页面顶部那张大横图：
-disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-图片放到 source/img/top-bg.webp（或你指定的路径）。
-
-单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
-
-五、导航菜单
-菜单在 _config.butterfly.yml 顶部：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标class。
-
-显示名：菜单上显示的文字
-路径：页面的 URL，比如 /tags/
-图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
-
-新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接
-侧边栏的社交图标：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-七、侧边栏作者卡片
-侧边栏那个带头像和按钮的卡片：
-card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）
-favicon: /img/favicon.png
-图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪
-所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
-source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）
-文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
-在 _config.butterfly.yml 里：
-lightbox: fancybox
-一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
-
-写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
-
-十一、部署生效
-任何配置改完后，三连部署：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
-小结
-
-
-
-想改什么
-改哪里
-
-
-
-
-站点名 / 作者名 / SEO 描述
-_config.yml 的 title / author / description
-
-
-头像
-_config.butterfly.yml 的 avatar.img + 放图到 source/img/
-
-
-背景色 / 渐变
-_config.butterfly.yml 的 background
-
-
-顶部图
-_config.butterfly.yml 的 default_top_img 等
-
-
-导航菜单
-_config.butterfly.yml 的 menu
-
-
-社交图标
-_config.butterfly.yml 的 social
-
-
-作者签名
-_config.butterfly.yml 的 card_author.description
-
-
-图片点击放大
-_config.butterfly.yml 的 lightbox: fancybox
-
-
-标签页小图标
-_config.butterfly.yml 的 favicon
-
-
-
-记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>XXL-Job分布式任务调度平台</title>
-    <url>/posts/9d7f76ba/</url>
-    <content><![CDATA[介绍
-XXL-JOB 是一个轻量级分布式任务调度框架，通过中心化的调度器（支持集群）统一管理任务，解决 Spring@Scheduled在分布式环境下的任务重复执行问题，并提供任务分片、失败重试、可视化监控等功能。
-核心点：分布式协调 + 避免重复执行 + 运维友好
-
-开源地址：https://www.xuxueli.com/xxl-job/
-
-使用
-环境准备和初始化
-
-源码下载：https://gitee.com/xuxueli0323/xxl-job
-找到初始化数据库文件并执行
-
-
-
-修改配置
-
-
-调度中心配置文件地址：/xxl-job/xxl-job-admin/src/main/resources/application.properties
-该配置文件当下需要重点修改一下数据源的配置。主要修改：url、username、password。
-
-
-
-启动项目
-
-
-
-访问调度中心
-
-地址：http://localhost:8080，端口号可自己在配置文件中指定
-账号：admin
-密码：123456
-
-配置部署&quot;执行器项目&quot;
-新建项目
-
-添加依赖并配置
-
-注意版本尽量和你下载的源码的版本一致
-
-&lt;dependency&gt;  &lt;groupId&gt;com.xuxueli&lt;/groupId&gt;  &lt;artifactId&gt;xxl-job-core&lt;/artifactId&gt;  &lt;version&gt;3.0.0&lt;/version&gt;&lt;/dependency&gt;
-
-配置
-
-xxl:  job:    adminAddresses: http://127.0.0.1:8081 # xxl-job 调度中心部署根地址，如调度中心集群部署存在多个地址则用逗号分隔    accessToken: default_token # 需要和 xxl-job 上创建的 token 保持一致    appName: test # 需要和 xxl-job 上创建的执行器名称保持一致    ip: # 执行器 ip, 为空表示自动获取 ip    port: 10001 # 执行器端口号    logPath: /data/applogs/xxl-job/jobhandler # 执行器日志存放路径    logRetentionDays: 30 # 日志保留时间（单位：天）
-新建执行器和任务
-
-
-新建config文件夹：读取配置并注入使用
-
-配置类
-
-package com.zzh.xxxjobdemo.config;import lombok.Data;import org.springframework.boot.context.properties.ConfigurationProperties;import org.springframework.stereotype.Component;@ConfigurationProperties(prefix = XxlJobProperties.PREFIX)@Component@Datapublic class XxlJobProperties &#123;    public static final String PREFIX = &quot;xxl.job&quot;;    private String adminAddresses;    private String accessToken;    private String appName;    private String ip;    private int port;    private String logPath;    private int logRetentionDays = 30;&#125;
-
-注入使用
-
-package com.zzh.xxxjobdemo.config;import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;import jakarta.annotation.Resource;import lombok.extern.slf4j.Slf4j;import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;@Configuration@Slf4jpublic class XxlJobConfig &#123;    @Resource    private XxlJobProperties xxlJobProperties;    /**     * 初始化执行器     * @return     */    @Bean    public XxlJobSpringExecutor xxlJobExecutor() &#123;        log.info(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; xxl-job config init.&quot;);        XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();        xxlJobSpringExecutor.setAdminAddresses(xxlJobProperties.getAdminAddresses());        xxlJobSpringExecutor.setAppname(xxlJobProperties.getAppName());        xxlJobSpringExecutor.setIp(xxlJobProperties.getIp());        xxlJobSpringExecutor.setPort(xxlJobProperties.getPort());        xxlJobSpringExecutor.setAccessToken(xxlJobProperties.getAccessToken());        xxlJobSpringExecutor.setLogPath(xxlJobProperties.getLogPath());        xxlJobSpringExecutor.setLogRetentionDays(xxlJobProperties.getLogRetentionDays());        return xxlJobSpringExecutor;    &#125;&#125;
-
-新建一个任务类
-
-package com.zzh.xxxjobdemo.job;import com.xxl.job.core.handler.annotation.XxlJob;import org.springframework.stereotype.Component;import java.util.Date;@Componentpublic class SimpleXxlJob &#123;    @XxlJob(&quot;demoJobHandler&quot;)    public void demoJobHandler() throws Exception&#123;        System.out.println(&quot;执行定时任务，执行时间：&quot; + new Date());    &#125;&#125;
-demoJobHandler 和创建任务时的 JobHandler 保持一致
-执行
-
-在任务管理界面选中任务并选择执行一次
-
-
-
-日志
-
-
-
-GLUE 模式使用
-
-先在 demo 项目中注入一个 service 类后并重启项目
-
-package com.zzh.xxxjobdemo.service;import org.springframework.stereotype.Service;@Servicepublic class HelloService &#123;    public void doSome()&#123;        System.out.println(&quot;do some!&quot;);    &#125;    public void doOther()&#123;        System.out.println(&quot;do other!&quot;);    &#125;&#125;
-
-新建一个任务，选择 GLUE 模式
-
-
-
-编辑代码
-
-
-package com.xxl.job.service.handler;import com.xxl.job.core.context.XxlJobHelper;import com.xxl.job.core.handler.IJobHandler;import org.springframework.beans.factory.annotation.Autowired;import com.zzh.xxxjobdemo.service.HelloService;public class DemoGlueJobHandler extends IJobHandler &#123;      // 注入业务实现类  	@Autowired  	private HelloService helloService;	@Override	public void execute() throws Exception &#123;		helloService.doSome();	&#125;&#125;
-
-点击执行任务即可
-
-
-路由策略
-在IDE中模拟集群
-
-
-修改配置，添加 VM Options 选项，配置实例启动端口和执行器监听端口
-
--Dserver.port=8088 -Dxxl.job.port=10010
-
-修改路由策略为轮询
-
-
-在后台管理界面执行两次任务，可以观察到每一个实例都执行了一次
-
-
-其他策略
-
-第一个：直接选任务列表里的第一个机器干活。
-最后一个：直接选任务列表里的最后一个机器干活。
-轮询：轮流让每台机器干活，大家排队，一人一次。
-随机：随便抽一台机器干活，全凭运气。
-一致性HASH：同样的任务永远找同一台机器干，避免换来换去。
-最不经常使用：挑平时干活最少的机器去干，雨露均沾。
-最近最久未使用：挑最闲的机器（好久没干活的）去干。
-故障转移：如果一台机器挂了，自动换另一台好的继续干。
-忙碌转移：如果一台机器正忙着，就找其他闲着的机器干。
-分片广播：让所有机器一起干同一个活，各自分一小块任务。
-
-分片功能
-需求：自指定的节假日，需要给平台所有用户发送祝福短信
-在分片广播方面涉及到两个概念：
-
-分片总数：一共有多少台
-分片索引：当前这台机器的下标（下标从0开始）
-
-准备
-
-数据库文件生成提示词
-
-你是一名 MySQL 数据库专家和数据生成专家。请帮我编写一个脚本，用于生成包含建表 SQL 以及 5000 条模拟数据的 SQL 文件。### 一、 表结构要求 (DDL)- **数据库/ Schema**: `xxl_job`- **表名**: `t_user_mobile_plan`- **Engine/字符集**: `InnoDB`, `utf8mb4`, 排序规则 `utf8mb4_0900_ai_ci`- **字段定义**:  1. `id`: bigint, NOT NULL, AUTO_INCREMENT, 主键, 注释 &#x27;主键&#x27;  2. `username`: varchar(50), NOT NULL, 注释 &#x27;用户名&#x27;  3. `nickname`: varchar(50), NULL DEFAULT NULL, 注释 &#x27;昵称&#x27;  4. `phone`: varchar(20), NOT NULL, 注释 &#x27;手机号码&#x27;  5. `info`: varchar(500), NULL DEFAULT NULL, 注释 &#x27;备注&#x27;- **其他**: 包含 `DROP TABLE IF EXISTS `t_user_mobile_plan`;` 语句，并在脚本开头和结尾分别加上 `SET FOREIGN_KEY_CHECKS = 0;` 和 `SET FOREIGN_KEY_CHECKS = 1;`。设置建表后的 `AUTO_INCREMENT = 5001`。### 二、 数据生成规则 (5000条，ID 从 1 到 5000)1. **`id`**: 从 1 递增至 5000。2. **`username`**: 格式为 `user_&#123;id&#125;`（如 `user_1`, `user_2`）。3. **`nickname`**: 格式为 `用户&#123;id&#125;`（如 `用户1`, `用户2`）。4. **`phone`**: 生成符合中国大陆手机号规则的数据（如 131, 151, 181 开头，按 ID 规律递增或合理伪随机生成 11 位号码）。5. **`info`**: 根据 `id % 5` 的余数按如下规律循环填入：   - `id % 5 == 1`: `&quot;普通用户，创建于批次&#123;batch&#125;&quot;` （其中 batch 计算公式为: (id - 1) // 100 + 1，即 1~100 为批次1，101~200 为批次2，以此类推）   - `id % 5 == 2`: `&quot;测试账号，序号：&#123;id&#125;&quot;`   - `id % 5 == 3`: `&quot;无特殊备注&quot;`   - `id % 5 == 4`: `&quot;手机套餐用户，编号：&#123;id&#125;&quot;`   - `id % 5 == 0`: `&quot;VIP客户，第&#123;id&#125;号用户&quot;`### 三、 输出要求由于 5000 条 SQL 超过了单次回答的字数限制，请提供以下 2 种实现方式：1. **Python 生成脚本**：提供一段完整的 Python 代码，运行后可直接生成目标 `.sql` 文件。2. **MySQL 存储过程**：提供一段可以在 MySQL 中直接执行的存储过程代码，调用后自动创建表并插入这 5000 条数据。3. **SQL 示例**：展示前 10 条和最后 5 条生成的 `INSERT INTO` SQL 语句样例。
-
-添加依赖
-
-&lt;!--mybatis依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.mybatis.spring.boot&lt;/groupId&gt;  &lt;artifactId&gt;mybatis-spring-boot-starter&lt;/artifactId&gt;  &lt;version&gt;3.0.4&lt;/version&gt;&lt;/dependency&gt;&lt;!--mysql依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;com.mysql&lt;/groupId&gt;  &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;  &lt;scope&gt;runtime&lt;/scope&gt;&lt;/dependency&gt;&lt;!--lombok依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;  &lt;artifactId&gt;lombok&lt;/artifactId&gt;  &lt;optional&gt;true&lt;/optional&gt;&lt;/dependency&gt;
-
-数据库配置
-
-spring:  datasource:    type: com.zaxxer.hikari.HikariDataSource    driver-class-name: com.mysql.cj.jdbc.Driver    url: jdbc:mysql://localhost:3306/xxl_job_demo    name: root    password: xxxxxx
-
-启动类上添加扫描类
-
-@MapperScan(basePackages = &quot;com.zzh.xxxjobdemo.mapper&quot;)@SpringBootApplicationpublic class XxxJobDemoApplication &#123;    public static void main(String[] args) &#123;        SpringApplication.run(XxxJobDemoApplication.class, args);    &#125;&#125;
-
-实体类
-
-@Datapublic class UserMobilePlan &#123;    // 主键    private Long id;    // 用户名    private String username;    // 昵称    private String nickname;    // 手机号码    private String phone;    // 备注    private String info;&#125;
-
-mapper 类
-
-public interface UserMobilePlanMapper &#123;    @Select(&quot;select * from t_user_mobile_plan&quot;)    List&lt;UserMobilePlan&gt; selectAll();    @Select(&quot;select * from t_user_mobile_plan where mod(id, #&#123;shardTotal&#125;) = #&#123;shardIndex&#125;&quot;)    List&lt;UserMobilePlan&gt; selectByMod(@Param(&quot;shardIndex&quot;) int shardIndex, @Param(&quot;shardTotal&quot;) int shardTotal);&#125;
-
-Job 类
-
-@Componentpublic class SendJob &#123;    @Resource    private  UserMobilePlanMapper userMobilePlanMapper;    @XxlJob(&quot;sendMsgHandler&quot;)    public void sendMsgHandler()&#123;        // 分片总数        int shardTotal = XxlJobHelper.getShardTotal();        // 分片索引        int shardIndex = XxlJobHelper.getShardIndex();        // 查询数据        List&lt;UserMobilePlan&gt; userMobilePlans = null;        if(shardTotal == 1) &#123;            userMobilePlans = userMobilePlanMapper.selectAll();        &#125;else&#123;            userMobilePlans = userMobilePlanMapper.selectByMod(shardIndex, shardTotal);        &#125;        // 处理数据        System.out.println(&quot;开始执行任务时间：&quot; + new Date() + &quot;，需要处理的数据总量：&quot; + userMobilePlans.size());        long begin = System.currentTimeMillis();        userMobilePlans.forEach(item -&gt; &#123;            try &#123;                TimeUnit.MICROSECONDS.sleep(10);            &#125; catch (InterruptedException e) &#123;                throw new RuntimeException(e);            &#125;        &#125;);        System.out.println(&quot;结束执行任务时间：&quot; + new Date());        long end = System.currentTimeMillis();        System.out.println(&quot;处理任务总耗时&quot; + (end - begin) + &quot;毫秒&quot;);    &#125;&#125;
-新建任务
-
-启动执行
-
-启动两个实例，并启动任务，观察输出
-
-
-]]></content>
-  </entry>
-  <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置
-2.1 github新建仓库+token获取
-
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>docker</title>
-    <url>/posts/f255ffad/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
   </entry>
   <entry>
     <title>MySql</title>
@@ -1789,142 +1317,405 @@ revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机�
       </tags>
   </entry>
   <entry>
-    <title>文章分类、置顶与短链配置</title>
-    <url>/posts/1784a007/</url>
-    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
-一、文件夹自动归类（auto_category）
-装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
-用法
-在 source/_posts/ 下建文件夹，文章放进去：
-source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
-上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
-注意
+    <title>Elasticsearch使用</title>
+    <url>/posts/78c3da92/</url>
+    <content><![CDATA[安装
+docker安装 es
 
-手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
-_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
-建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
+拉取镜像
 
-配置（已设好，一般不用改）
-_config.yml 里：
-auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
-想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
-二、置顶排序（sticky）
-首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
----title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
-规则
+docker pull elasticsearch:7.3.0
 
-有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
-没 sticky 的文章：按日期倒序排在置顶文章之后
-sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
+准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
 
-示例
-本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
-三、永久短链（abbrlink）
-装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
-https://zenty-me.github.io/posts/b9c5d664/
-为什么用短链
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
 
-永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
-简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
-适合分享：短链好看，外链稳定
+复制需要挂载的文件夹
 
-工作机制
+docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
 
-第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
-之后这个值永久不变，URL 固定为 /posts/abbrlink值/
-不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
+修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
 
-配置（已设好）
-_config.yml 里：
-permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
-四、系列文章（series）
-写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
-归入系列
-在 front-matter 加 series: 系列名，同名的就是一个系列：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
-加完后该文章自动获得：
+cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
 
-文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
-侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
+删除刚刚创建的容器
 
-自定义顺序
-默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
-series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
-排序规则
+docker rm -f es7
+
+新建容器，使用挂载的文件夹
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
+
+浏览器访问 http://localhost:9200/ 如下：
+
+
+可视化工具 Kibana 安装
+
+拉取镜像
+
+docker pull kibana:7.3.0
+
+准备和挂载的文件夹，先运行一个容器
+
+docker run -d --name kibana -p 5601:5601 kibana:7.3.0
+
+复制配置到挂载的文件夹
+
+docker cp kibana:/usr/share/kibana/config E:\docker\kibana
+
+编辑配置文件 kibana.yml 如下
+
+server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
+
+如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
 
 
 
-情况
-排序方式
+删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
+
+docker rm -f kibana
+docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
+
+浏览器访问 http://localhost:5601 即可访问控制台
+
+
+Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
+
+命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
+历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
+语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
+响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
+
+
+Elasticsearch 基本请求格式
+Elasticsearch 提供 REST API，常见请求格式如下：
+GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
+Elasticsearch 基础语法学习
+1. 创建索引
+
+创建一个名为 users 的索引。
+
+PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
+
+2. 新增文档
+指定 ID 新增
+PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+自动生成 ID 新增
+POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
+3. 根据 ID 查询文档
+GET /users/_doc/1
+
+4. 搜索文档
+查询所有文档
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
+条件搜索
+
+查询 name 包含 张 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
+精确查询
+
+查询 email 等于指定值：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
+范围查询
+
+查询年龄大于等于 20 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
+分页查询
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
+含义：
+
+from：从第几条开始
+size：每页返回多少条
+
+5. 更新文档
+局部更新
+只更新某个字段：
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+增加字段
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
+
+6. 删除文档
+删除 ID 为 1 的文档：
+DELETE /users/_doc/1
+
+7. 删除索引
+删除整个 users 索引：
+DELETE /users
+
+8. 查看索引是否存在
+HEAD /users
+如果存在，返回状态码：
+200
+如果不存在，返回：
+404
+
+9. 查看索引信息
+GET /users
+查看索引 mapping：
+GET /users/_mapping
+查看索引 settings：
+GET /users/_settings
+
+10. 最小可用 CRUD 总结
+增
+PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+查
+GET /users/_doc/1
+改
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+删
+DELETE /users/_doc/1
+
+记住这个格式就行：
+PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
+倒排索引
+认识
+
+倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
+
+
+简单示例：
+假设我们有以下文档，分别对应一条中文句子：
+
+文档 1: Elasticsearch 是分布式引擎
+文档 2: 分布式系统的核心是搜索
+文档 3: 搜索引擎的未来是智能化
+
+倒排索引将这些文档转化为如下形式：
+
+
+
+关键词
+文档 ID
 
 
 
 
-系列里有任一篇带 series_order
-按 series_order 数字升序（没加的排最后）
+elasticsearch
+1
 
 
-全都没加 series_order
-按 date 排序
+分布式
+1, 2
+
+
+系统
+2
+
+
+核心
+2
+
+
+搜索
+2, 3
+
+
+引擎
+1, 3
+
+
+智能化
+3
 
 
 
-配置在 _config.butterfly.yml：
-series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
-示例
-本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
-五、日常写笔记流程
-结合三个机制，写一篇新笔记的完整流程：
+当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
+构建过程
+1. 分词（Tokenization）
 
-建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
-移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
-（可选）置顶：在 front-matter 加 sticky: 100
-（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
-编辑：Typora 写正文
-部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+分词是将文本内容拆分为独立的单词或短语，例如：
 
-分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
+原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
+2. 归一化（Normalization）
+
+归一化是对分词结果进行标准化处理，包括：
+
+
+转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
+去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
+词干提取：将词汇归为基本形式，如 running → run。
+
+3. 创建倒排索引
+
+根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
+
+&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
+
+此时，倒排索引已经完成，后续的搜索操作会以此为基础。
+
+ik 中文分词器插件
+安装
+
+打开终端进入 es7 容器的内部
+
+docker exec -it es7 /bin/sh
+
+执行安装命令
+
+bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
+
+安装完成后，执行如下命令，退出容器：
+
+exit
+
+然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
+
+docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
+
+重启容器
+
+docker restart es7
+分词模式
+智能化分词 - ik_smart
+POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
+
+最细粒度分词 - ik_max_word
+POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>如何配置网站外观与个人信息</title>
+    <url>/posts/9fa0ea99/</url>
+    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
+
+
+
+文件
+作用
+
+
+
+
+_config.yml
+Hexo 站点级配置（站名、作者、语言、部署等）
+
+
+_config.butterfly.yml
+Butterfly 主题配置（头像、背景、菜单、侧边栏等）
+
+
+
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息
+编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
+
+title：浏览器标签页和首页大标题都读这里
+description：搜索引擎抓取的站点描述，写一句话介绍即可
+author：改一次，全站的作者署名、版权信息都会同步
+
+二、头像
+编辑 _config.butterfly.yml：
+avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
+图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
+
+支持 png / jpg / webp，建议用正方形图，否则会被裁切。
+
+三、网站背景
+背景在 _config.butterfly.yml 的 background 字段：
+# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
+本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
+四、顶部图（Top Img）
+顶部图是每页面顶部那张大横图：
+disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
+图片放到 source/img/top-bg.webp（或你指定的路径）。
+
+单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
+
+五、导航菜单
+菜单在 _config.butterfly.yml 顶部：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标class。
+
+显示名：菜单上显示的文字
+路径：页面的 URL，比如 /tags/
+图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
+
+新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
+六、社交链接
+侧边栏的社交图标：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
+格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
+七、侧边栏作者卡片
+侧边栏那个带头像和按钮的卡片：
+card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
+description 是作者名下面那一行小字，改成自己的签名即可。
+八、Favicon（浏览器标签页小图标）
+favicon: /img/favicon.png
+图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
+九、图片资源放哪
+所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
+引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
+十、图片灯箱（lightbox）
+文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+在 _config.butterfly.yml 里：
+lightbox: fancybox
+一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
+
+写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
+
+十一、部署生效
+任何配置改完后，三连部署：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
 小结
 
 
 
-需求
-怎么做
+想改什么
+改哪里
 
 
 
 
-给文章归类
-把 md 文件放进 _posts/分类名/ 文件夹
+站点名 / 作者名 / SEO 描述
+_config.yml 的 title / author / description
 
 
-新建分类
-在 _posts/ 下新建文件夹并放入文章
+头像
+_config.butterfly.yml 的 avatar.img + 放图到 source/img/
 
 
-置顶文章
-front-matter 加 sticky: 100
+背景色 / 渐变
+_config.butterfly.yml 的 background
 
 
-文章 URL
-自动生成 /posts/xxxxxxxx/，不用管
+顶部图
+_config.butterfly.yml 的 default_top_img 等
 
 
-多级分类
-auto_category.depth 改大、multiple: true
+导航菜单
+_config.butterfly.yml 的 menu
 
 
-组成系列文章
-front-matter 加 series: 系列名
+社交图标
+_config.butterfly.yml 的 social
 
 
-指定系列内顺序
-front-matter 加 series_order: 数字（越小越靠前）
+作者签名
+_config.butterfly.yml 的 card_author.description
+
+
+图片点击放大
+_config.butterfly.yml 的 lightbox: fancybox
+
+
+标签页小图标
+_config.butterfly.yml 的 favicon
 
 
 
-一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
+记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
 ]]></content>
       <categories>
         <category>博客搭建</category>
@@ -1932,78 +1723,216 @@ front-matter 加 series_order: 数字（越小越靠前）
       <tags>
         <tag>Hexo</tag>
         <tag>教程</tag>
+        <tag>Butterfly</tag>
       </tags>
   </entry>
   <entry>
-    <title>缓存技术常见问题及解决</title>
-    <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题
-缓存雪崩
-认识
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
 
-当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
 
-解决方案
+2. 配置
+2.1 github新建仓库+token获取
 
-为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
-
-缓存穿透
-认识
-
-解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
-
-举个栗子:
-
-假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
-
-解决方案
-
-为了应对上述情况，可以选择如下两种策略：
+新建一个公开的仓库，eg：images-test
 
 
 
-当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
-
-这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
-为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
+在设置页面申请token
 
 
 
-引入布隆过滤器；
+2.2 PicList配置
 
-布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
-布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
-
-将数据库中的所有用户数据加入布隆过滤器中；
-当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
-若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
-若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
+打开下载好的PicList，对图床进行配置
 
 
 
-
-缓存击穿
-认识
-
-解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
-
-解决方案
-为了应对上述情况，可以选择如下方案：
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
 
 
-缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+3. 使用
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>XXL-Job分布式任务调度平台</title>
+    <url>/posts/9d7f76ba/</url>
+    <content><![CDATA[介绍
+XXL-JOB 是一个轻量级分布式任务调度框架，通过中心化的调度器（支持集群）统一管理任务，解决 Spring@Scheduled在分布式环境下的任务重复执行问题，并提供任务分片、失败重试、可视化监控等功能。
+核心点：分布式协调 + 避免重复执行 + 运维友好
+
+开源地址：https://www.xuxueli.com/xxl-job/
+
+使用
+环境准备和初始化
+
+源码下载：https://gitee.com/xuxueli0323/xxl-job
+找到初始化数据库文件并执行
 
 
-加分布式锁；
 
-当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
-
+修改配置
 
 
-引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
+调度中心配置文件地址：/xxl-job/xxl-job-admin/src/main/resources/application.properties
+该配置文件当下需要重点修改一下数据源的配置。主要修改：url、username、password。
+
+
+
+启动项目
+
+
+
+访问调度中心
+
+地址：http://localhost:8080，端口号可自己在配置文件中指定
+账号：admin
+密码：123456
+
+配置部署&quot;执行器项目&quot;
+新建项目
+
+添加依赖并配置
+
+注意版本尽量和你下载的源码的版本一致
+
+&lt;dependency&gt;  &lt;groupId&gt;com.xuxueli&lt;/groupId&gt;  &lt;artifactId&gt;xxl-job-core&lt;/artifactId&gt;  &lt;version&gt;3.0.0&lt;/version&gt;&lt;/dependency&gt;
+
+配置
+
+xxl:  job:    adminAddresses: http://127.0.0.1:8081 # xxl-job 调度中心部署根地址，如调度中心集群部署存在多个地址则用逗号分隔    accessToken: default_token # 需要和 xxl-job 上创建的 token 保持一致    appName: test # 需要和 xxl-job 上创建的执行器名称保持一致    ip: # 执行器 ip, 为空表示自动获取 ip    port: 10001 # 执行器端口号    logPath: /data/applogs/xxl-job/jobhandler # 执行器日志存放路径    logRetentionDays: 30 # 日志保留时间（单位：天）
+新建执行器和任务
+
+
+新建config文件夹：读取配置并注入使用
+
+配置类
+
+package com.zzh.xxxjobdemo.config;import lombok.Data;import org.springframework.boot.context.properties.ConfigurationProperties;import org.springframework.stereotype.Component;@ConfigurationProperties(prefix = XxlJobProperties.PREFIX)@Component@Datapublic class XxlJobProperties &#123;    public static final String PREFIX = &quot;xxl.job&quot;;    private String adminAddresses;    private String accessToken;    private String appName;    private String ip;    private int port;    private String logPath;    private int logRetentionDays = 30;&#125;
+
+注入使用
+
+package com.zzh.xxxjobdemo.config;import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;import jakarta.annotation.Resource;import lombok.extern.slf4j.Slf4j;import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;@Configuration@Slf4jpublic class XxlJobConfig &#123;    @Resource    private XxlJobProperties xxlJobProperties;    /**     * 初始化执行器     * @return     */    @Bean    public XxlJobSpringExecutor xxlJobExecutor() &#123;        log.info(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; xxl-job config init.&quot;);        XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();        xxlJobSpringExecutor.setAdminAddresses(xxlJobProperties.getAdminAddresses());        xxlJobSpringExecutor.setAppname(xxlJobProperties.getAppName());        xxlJobSpringExecutor.setIp(xxlJobProperties.getIp());        xxlJobSpringExecutor.setPort(xxlJobProperties.getPort());        xxlJobSpringExecutor.setAccessToken(xxlJobProperties.getAccessToken());        xxlJobSpringExecutor.setLogPath(xxlJobProperties.getLogPath());        xxlJobSpringExecutor.setLogRetentionDays(xxlJobProperties.getLogRetentionDays());        return xxlJobSpringExecutor;    &#125;&#125;
+
+新建一个任务类
+
+package com.zzh.xxxjobdemo.job;import com.xxl.job.core.handler.annotation.XxlJob;import org.springframework.stereotype.Component;import java.util.Date;@Componentpublic class SimpleXxlJob &#123;    @XxlJob(&quot;demoJobHandler&quot;)    public void demoJobHandler() throws Exception&#123;        System.out.println(&quot;执行定时任务，执行时间：&quot; + new Date());    &#125;&#125;
+demoJobHandler 和创建任务时的 JobHandler 保持一致
+执行
+
+在任务管理界面选中任务并选择执行一次
+
+
+
+日志
+
+
+
+GLUE 模式使用
+
+先在 demo 项目中注入一个 service 类后并重启项目
+
+package com.zzh.xxxjobdemo.service;import org.springframework.stereotype.Service;@Servicepublic class HelloService &#123;    public void doSome()&#123;        System.out.println(&quot;do some!&quot;);    &#125;    public void doOther()&#123;        System.out.println(&quot;do other!&quot;);    &#125;&#125;
+
+新建一个任务，选择 GLUE 模式
+
+
+
+编辑代码
+
+
+package com.xxl.job.service.handler;import com.xxl.job.core.context.XxlJobHelper;import com.xxl.job.core.handler.IJobHandler;import org.springframework.beans.factory.annotation.Autowired;import com.zzh.xxxjobdemo.service.HelloService;public class DemoGlueJobHandler extends IJobHandler &#123;      // 注入业务实现类  	@Autowired  	private HelloService helloService;	@Override	public void execute() throws Exception &#123;		helloService.doSome();	&#125;&#125;
+
+点击执行任务即可
+
+
+路由策略
+在IDE中模拟集群
+
+
+修改配置，添加 VM Options 选项，配置实例启动端口和执行器监听端口
+
+-Dserver.port=8088 -Dxxl.job.port=10010
+
+修改路由策略为轮询
+
+
+在后台管理界面执行两次任务，可以观察到每一个实例都执行了一次
+
+
+其他策略
+
+第一个：直接选任务列表里的第一个机器干活。
+最后一个：直接选任务列表里的最后一个机器干活。
+轮询：轮流让每台机器干活，大家排队，一人一次。
+随机：随便抽一台机器干活，全凭运气。
+一致性HASH：同样的任务永远找同一台机器干，避免换来换去。
+最不经常使用：挑平时干活最少的机器去干，雨露均沾。
+最近最久未使用：挑最闲的机器（好久没干活的）去干。
+故障转移：如果一台机器挂了，自动换另一台好的继续干。
+忙碌转移：如果一台机器正忙着，就找其他闲着的机器干。
+分片广播：让所有机器一起干同一个活，各自分一小块任务。
+
+分片功能
+需求：自指定的节假日，需要给平台所有用户发送祝福短信
+在分片广播方面涉及到两个概念：
+
+分片总数：一共有多少台
+分片索引：当前这台机器的下标（下标从0开始）
+
+准备
+
+数据库文件生成提示词
+
+你是一名 MySQL 数据库专家和数据生成专家。请帮我编写一个脚本，用于生成包含建表 SQL 以及 5000 条模拟数据的 SQL 文件。### 一、 表结构要求 (DDL)- **数据库/ Schema**: `xxl_job`- **表名**: `t_user_mobile_plan`- **Engine/字符集**: `InnoDB`, `utf8mb4`, 排序规则 `utf8mb4_0900_ai_ci`- **字段定义**:  1. `id`: bigint, NOT NULL, AUTO_INCREMENT, 主键, 注释 &#x27;主键&#x27;  2. `username`: varchar(50), NOT NULL, 注释 &#x27;用户名&#x27;  3. `nickname`: varchar(50), NULL DEFAULT NULL, 注释 &#x27;昵称&#x27;  4. `phone`: varchar(20), NOT NULL, 注释 &#x27;手机号码&#x27;  5. `info`: varchar(500), NULL DEFAULT NULL, 注释 &#x27;备注&#x27;- **其他**: 包含 `DROP TABLE IF EXISTS `t_user_mobile_plan`;` 语句，并在脚本开头和结尾分别加上 `SET FOREIGN_KEY_CHECKS = 0;` 和 `SET FOREIGN_KEY_CHECKS = 1;`。设置建表后的 `AUTO_INCREMENT = 5001`。### 二、 数据生成规则 (5000条，ID 从 1 到 5000)1. **`id`**: 从 1 递增至 5000。2. **`username`**: 格式为 `user_&#123;id&#125;`（如 `user_1`, `user_2`）。3. **`nickname`**: 格式为 `用户&#123;id&#125;`（如 `用户1`, `用户2`）。4. **`phone`**: 生成符合中国大陆手机号规则的数据（如 131, 151, 181 开头，按 ID 规律递增或合理伪随机生成 11 位号码）。5. **`info`**: 根据 `id % 5` 的余数按如下规律循环填入：   - `id % 5 == 1`: `&quot;普通用户，创建于批次&#123;batch&#125;&quot;` （其中 batch 计算公式为: (id - 1) // 100 + 1，即 1~100 为批次1，101~200 为批次2，以此类推）   - `id % 5 == 2`: `&quot;测试账号，序号：&#123;id&#125;&quot;`   - `id % 5 == 3`: `&quot;无特殊备注&quot;`   - `id % 5 == 4`: `&quot;手机套餐用户，编号：&#123;id&#125;&quot;`   - `id % 5 == 0`: `&quot;VIP客户，第&#123;id&#125;号用户&quot;`### 三、 输出要求由于 5000 条 SQL 超过了单次回答的字数限制，请提供以下 2 种实现方式：1. **Python 生成脚本**：提供一段完整的 Python 代码，运行后可直接生成目标 `.sql` 文件。2. **MySQL 存储过程**：提供一段可以在 MySQL 中直接执行的存储过程代码，调用后自动创建表并插入这 5000 条数据。3. **SQL 示例**：展示前 10 条和最后 5 条生成的 `INSERT INTO` SQL 语句样例。
+
+添加依赖
+
+&lt;!--mybatis依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.mybatis.spring.boot&lt;/groupId&gt;  &lt;artifactId&gt;mybatis-spring-boot-starter&lt;/artifactId&gt;  &lt;version&gt;3.0.4&lt;/version&gt;&lt;/dependency&gt;&lt;!--mysql依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;com.mysql&lt;/groupId&gt;  &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;  &lt;scope&gt;runtime&lt;/scope&gt;&lt;/dependency&gt;&lt;!--lombok依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;  &lt;artifactId&gt;lombok&lt;/artifactId&gt;  &lt;optional&gt;true&lt;/optional&gt;&lt;/dependency&gt;
+
+数据库配置
+
+spring:  datasource:    type: com.zaxxer.hikari.HikariDataSource    driver-class-name: com.mysql.cj.jdbc.Driver    url: jdbc:mysql://localhost:3306/xxl_job_demo    name: root    password: xxxxxx
+
+启动类上添加扫描类
+
+@MapperScan(basePackages = &quot;com.zzh.xxxjobdemo.mapper&quot;)@SpringBootApplicationpublic class XxxJobDemoApplication &#123;    public static void main(String[] args) &#123;        SpringApplication.run(XxxJobDemoApplication.class, args);    &#125;&#125;
+
+实体类
+
+@Datapublic class UserMobilePlan &#123;    // 主键    private Long id;    // 用户名    private String username;    // 昵称    private String nickname;    // 手机号码    private String phone;    // 备注    private String info;&#125;
+
+mapper 类
+
+public interface UserMobilePlanMapper &#123;    @Select(&quot;select * from t_user_mobile_plan&quot;)    List&lt;UserMobilePlan&gt; selectAll();    @Select(&quot;select * from t_user_mobile_plan where mod(id, #&#123;shardTotal&#125;) = #&#123;shardIndex&#125;&quot;)    List&lt;UserMobilePlan&gt; selectByMod(@Param(&quot;shardIndex&quot;) int shardIndex, @Param(&quot;shardTotal&quot;) int shardTotal);&#125;
+
+Job 类
+
+@Componentpublic class SendJob &#123;    @Resource    private  UserMobilePlanMapper userMobilePlanMapper;    @XxlJob(&quot;sendMsgHandler&quot;)    public void sendMsgHandler()&#123;        // 分片总数        int shardTotal = XxlJobHelper.getShardTotal();        // 分片索引        int shardIndex = XxlJobHelper.getShardIndex();        // 查询数据        List&lt;UserMobilePlan&gt; userMobilePlans = null;        if(shardTotal == 1) &#123;            userMobilePlans = userMobilePlanMapper.selectAll();        &#125;else&#123;            userMobilePlans = userMobilePlanMapper.selectByMod(shardIndex, shardTotal);        &#125;        // 处理数据        System.out.println(&quot;开始执行任务时间：&quot; + new Date() + &quot;，需要处理的数据总量：&quot; + userMobilePlans.size());        long begin = System.currentTimeMillis();        userMobilePlans.forEach(item -&gt; &#123;            try &#123;                TimeUnit.MICROSECONDS.sleep(10);            &#125; catch (InterruptedException e) &#123;                throw new RuntimeException(e);            &#125;        &#125;);        System.out.println(&quot;结束执行任务时间：&quot; + new Date());        long end = System.currentTimeMillis();        System.out.println(&quot;处理任务总耗时&quot; + (end - begin) + &quot;毫秒&quot;);    &#125;&#125;
+新建任务
+
+启动执行
+
+启动两个实例，并启动任务，观察输出
 
 
 ]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>docker</title>
+    <url>/posts/f255ffad/</url>
+    <content><![CDATA[]]></content>
       <categories>
         <category>开发</category>
       </categories>
@@ -2094,6 +2023,80 @@ wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
 单机压测工具，无分布式施压能力。
 只支持HTTP协议。
 无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>缓存技术常见问题及解决</title>
+    <url>/posts/aad9f202/</url>
+    <content><![CDATA[缓存技术常见的问题
+缓存雪崩
+认识
+
+当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
+
+解决方案
+
+为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
+
+缓存穿透
+认识
+
+解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
+
+举个栗子:
+
+假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
+
+解决方案
+
+为了应对上述情况，可以选择如下两种策略：
+
+
+
+当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
+
+这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
+为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
+
+
+
+引入布隆过滤器；
+
+布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
+布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
+
+将数据库中的所有用户数据加入布隆过滤器中；
+当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
+若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
+若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
+
+
+
+
+缓存击穿
+认识
+
+解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
+
+解决方案
+为了应对上述情况，可以选择如下方案：
+
+
+缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+
+
+加分布式锁；
+
+当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
+
+
+
+引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
+
 
 ]]></content>
       <categories>
