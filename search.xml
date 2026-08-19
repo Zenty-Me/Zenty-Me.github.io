@@ -252,6 +252,114 @@ https://zhuanlan.zhihu.com/p/77151308
       </categories>
   </entry>
   <entry>
+    <title>解决lmstudio下载模型卡顿问题</title>
+    <url>/posts/17dd0035/</url>
+    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
+引言
+在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
+本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
+一、准备工作
+在开始之前，请确保：
+
+安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
+注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
+了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
+
+二、从魔搭社区下载模型
+魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
+方式一：网页直接下载（最直观）
+
+进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
+搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
+进入模型详情页：点击目标模型，进入其详情页面。
+进入文件列表：点击页面中的“模型文件”标签。
+选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
+
+
+提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
+
+方式二：命令行CLI下载（推荐）
+魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
+首先安装modelscope库：
+pip install modelscope
+然后使用以下命令下载：
+modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
+示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
+modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
+方式三：Python SDK下载
+如果你更习惯使用Python，也可以使用SDK进行下载：
+from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
+三、导入LM Studio
+下载好模型文件后，有两种方式将其导入LM Studio。
+方式一：使用 lms import 命令（最推荐）
+LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
+
+
+打开终端（Windows用户可使用PowerShell或CMD）。
+
+
+执行导入命令：
+基本导入（默认会移动文件）：
+lms import /path/to/your/model.gguf
+保留原文件（复制一份）：
+lms import /path/to/your/model.gguf --copy
+创建符号链接（不复制也不移动，在原位置创建引用）：
+lms import /path/to/your/model.gguf --symbolic-link
+这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
+
+
+根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
+
+
+方式二：手动放置文件（备选）
+如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
+
+
+找到LM Studio的模型目录：
+
+Windows: C:\Users\你的用户名\.lmstudio\models\
+macOS/Linux: ~/.lmstudio/models/
+
+你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
+
+
+创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
+.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
+如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
+
+
+刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
+
+
+
+注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
+
+四、验证与使用
+导入成功后，在LM Studio中：
+
+点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
+点击模型进行加载。
+切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
+
+提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
+五、常见问题与技巧
+Q：下载的模型在LM Studio中无法识别？
+A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
+Q：LM Studio内置下载速度太慢怎么办？
+A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
+Q：如何选择合适量化版本的模型？
+A：一般来说：
+
+q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
+q8_0：质量更好，体积也更大
+f16：接近原始精度，但又大又慢
+
+如果显存有限（如8GB），推荐使用Q4量化版本。
+结语
+通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
+]]></content>
+  </entry>
+  <entry>
     <title>如何添加书签</title>
     <url>/posts/3ffe122/</url>
     <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
@@ -332,6 +440,403 @@ GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或
       <tags>
         <tag>Hexo</tag>
         <tag>书签</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySql</title>
+    <url>/posts/6cac71de/</url>
+    <content><![CDATA[基础
+DDL
+数据库操作
+查询所有数据库：
+show databases;
+查询当前数据库：
+select database();
+创建数据库：
+create database &#123;if not exists&#125; 数据库名;
+删除数据库：
+drop database &#123;if exists&#125; 数据库名;
+切换数据库：
+use 数据库名;
+
+表操作
+查询当前数据库所有表：
+show tables;
+查看指定表的结构：
+desc 表名;
+查询指定表的建表语句：
+show create table 表名;
+创建表结构：
+create table 表名&#123;	字段1 字段1类型 [comment 字段1注释],	字段2 字段2类型 [comment 字段2注释],	字段3 字段3类型 [comment 字段3注释],	字段4 字段4类型 [comment 字段4注释],	....	字段n 字段n类型 [comment 字段n注释]&#125;[comment 表注释];
+[]内为可选参数
+
+修改表：
+添加：
+alter table 表名 add 字段名 类型(长度) [comment 注释] [约束];
+修改数据类型：
+alter table 表名 modify 字段名 新数据类型(长度);
+修改字段名和字段类型：
+alter table 表名 change 旧字段名 新字段名 类型(长度) [comment 注释] [约束];
+删除字段：
+alter table 表名 drop 字段名;
+修改表名：
+alter table 表名 rename to 新表名;
+删除表：
+drop table [if exists] 表名;
+删除指定表并重新创建：
+truncate table 表名;删除的时候表中的所有数据都会被删除
+
+数据类型：
+数值类型：
+
+
+
+类型
+描述
+
+
+
+
+tinyint
+小整数值
+
+
+smallint
+大整数值
+
+
+mediumint
+大整数值
+
+
+int/integer
+大整数值
+
+
+bigint
+极大整数值
+
+
+float
+单精度浮点数值
+
+
+double
+双精度浮点数值
+
+
+decimal
+小数值
+
+
+
+字符串类型：
+
+
+
+类型
+描述
+
+
+
+
+char
+定长字符串
+
+
+varchar
+变长字符串
+
+
+tinyblob
+不超过255个字符的二进制数据
+
+
+tinytext
+短文本字符串
+
+
+blob
+二进制形式长文本数据
+
+
+text
+长文本数据
+
+
+mediumblob
+二进制形式中文本数据
+
+
+mediumtext
+中文本数据
+
+
+longblob
+极大文本数据
+
+
+longblob
+二进制形式极大文本数据
+
+
+longtext
+极大文本数据
+
+
+
+日期时间类型：
+
+
+
+类型
+格式
+描述
+
+
+
+
+date
+YYYY-MM-DD
+日期值
+
+
+time
+HH:MM:SS
+时间值或者持续时间
+
+
+year
+YYYY
+年份值
+
+
+datetime
+YYYY-MM-DD HH:MM:SS
+混合时间和日期
+
+
+timestamp
+YYYY-MM-DD HH:MM:SS
+混合日期和时间值
+
+
+
+
+DML
+添加数据
+给指定的字段添加数据：
+insert into 表名 (字段1，字段2，...) values(值1，值2，...);
+给全部的字段添加数据：
+insert into 表名 values (值1，值2，...);
+批量添加数据：
+insert into (字段名1，字段名2，...) values(值1，值2,..),(值1，值2,..),(值1，值2,..);
+修改数据：
+update 表名 set 字段名1=值1，字段名2=值2，... [where 条件];
+删除数据
+delete from 表名 [where 条件];
+DQL
+基础查询
+查询多个字段：
+select 字段1，字段2，字段3... from 表名;select * from 表名;
+字段设置别名：
+select 字段1 [as 别名1]，字段2 [as 别名2] ... from 表名;as可以省略select 字段1 [别名1]，字段2 [别名2]，... from 表名;
+去除重复记录：
+select distinct 字段列表 from 表名;
+条件查询
+语法：
+select 字段列表 from 表名 where 条件列表;
+条件：
+
+
+
+比较运算符
+功能
+
+
+
+
+&gt;
+
+
+
+&lt;
+
+
+
+&gt;=
+
+
+
+&lt;=
+
+
+
+=
+
+
+
+&lt;&gt;或者!=
+
+
+
+detween … and …
+在某个范围之内
+
+
+in(…)
+在in之后的列表中的值，多选一
+
+
+like(占位符)
+模糊匹配
+
+
+is NULL
+
+
+
+
+
+
+
+逻辑运算符
+功能
+
+
+
+
+and 或者 &amp;&amp;
+
+
+
+or 或者 ||
+
+
+
+not 或者 ！
+
+
+
+
+聚合函数：
+语法
+select 聚合函数(字段列表) from 表名;null值不参与聚合函数的运算
+常见的聚合函数:
+
+
+
+函数
+功能
+
+
+
+
+count
+统计数量
+
+
+max
+最大值
+
+
+min
+最小值
+
+
+avg
+平均值
+
+
+sum
+求和
+
+
+
+分组查询
+select 字段列表 from 表名 [where 条件] group by 分组字段名 [having 分组后的过滤条件];
+where和having的区别：
+
+执行时间不同：where是分组之前进行过滤,不满足where条件，不参与分组，而having是分组之后再对结果进行过滤
+判断时间不同：where不能对聚合函数进行判断，而having可以
+执行顺序：where&gt;聚合函数&gt;having
+
+排序查询
+select 字段列表 from 表名 order by 字段1 排序方式1,字段2 排序方式2;
+排序方式：
+
+ASC: 升序（默认值）
+DESC:降序
+
+分页查询
+select 字段列表 from 表名 limit 起始索引,查询记录数;
+
+DCL
+管理用户
+查询用户：
+select * from mysql.user;
+创建用户：
+create user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified by &#x27;密码&#x27;;
+修改用户密码：
+alter user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified with mysql_native_password by &#x27;新密码&#x27;;
+删除用户：
+drop user &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+主机名可以使用用%通配
+权限控制
+
+
+
+权限
+说明
+
+
+
+
+all，all privileges
+所有权限
+
+
+select
+查询数据
+
+
+insert
+插入数据
+
+
+update
+修改数据
+
+
+delete
+删除数据
+
+
+alter
+修改表
+
+
+drop
+删除数据库/表/视图
+
+
+create
+创建数据库/表
+
+
+
+查询权限：
+show grants for &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+授予权限
+grant 权限列表 on 数据库.表名 to &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+撤销权限
+revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
       </tags>
   </entry>
   <entry>
@@ -565,6 +1070,152 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </tags>
   </entry>
   <entry>
+    <title>文章分类、置顶与短链配置</title>
+    <url>/posts/1784a007/</url>
+    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
+一、文件夹自动归类（auto_category）
+装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
+用法
+在 source/_posts/ 下建文件夹，文章放进去：
+source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
+上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
+注意
+
+手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
+_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
+建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
+
+配置（已设好，一般不用改）
+_config.yml 里：
+auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
+想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
+二、置顶排序（sticky）
+首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
+---title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
+规则
+
+有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
+没 sticky 的文章：按日期倒序排在置顶文章之后
+sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
+
+示例
+本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
+三、永久短链（abbrlink）
+装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
+https://zenty-me.github.io/posts/b9c5d664/
+为什么用短链
+
+永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
+简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
+适合分享：短链好看，外链稳定
+
+工作机制
+
+第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
+之后这个值永久不变，URL 固定为 /posts/abbrlink值/
+不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
+
+配置（已设好）
+_config.yml 里：
+permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
+四、系列文章（series）
+写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
+归入系列
+在 front-matter 加 series: 系列名，同名的就是一个系列：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
+加完后该文章自动获得：
+
+文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
+侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
+
+自定义顺序
+默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
+series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
+排序规则
+
+
+
+情况
+排序方式
+
+
+
+
+系列里有任一篇带 series_order
+按 series_order 数字升序（没加的排最后）
+
+
+全都没加 series_order
+按 date 排序
+
+
+
+配置在 _config.butterfly.yml：
+series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
+示例
+本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
+五、日常写笔记流程
+结合三个机制，写一篇新笔记的完整流程：
+
+建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
+移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
+（可选）置顶：在 front-matter 加 sticky: 100
+（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
+编辑：Typora 写正文
+部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
+小结
+
+
+
+需求
+怎么做
+
+
+
+
+给文章归类
+把 md 文件放进 _posts/分类名/ 文件夹
+
+
+新建分类
+在 _posts/ 下新建文件夹并放入文章
+
+
+置顶文章
+front-matter 加 sticky: 100
+
+
+文章 URL
+自动生成 /posts/xxxxxxxx/，不用管
+
+
+多级分类
+auto_category.depth 改大、multiple: true
+
+
+组成系列文章
+front-matter 加 series: 系列名
+
+
+指定系列内顺序
+front-matter 加 series_order: 数字（越小越靠前）
+
+
+
+一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hexo 博客发布笔记完整教程</title>
     <url>/posts/b9c5d664/</url>
     <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
@@ -774,297 +1425,6 @@ _drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题
       </tags>
   </entry>
   <entry>
-    <title>文章分类、置顶与短链配置</title>
-    <url>/posts/1784a007/</url>
-    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
-一、文件夹自动归类（auto_category）
-装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
-用法
-在 source/_posts/ 下建文件夹，文章放进去：
-source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
-上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
-注意
-
-手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
-_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
-建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
-
-配置（已设好，一般不用改）
-_config.yml 里：
-auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
-想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
-二、置顶排序（sticky）
-首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
----title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
-规则
-
-有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
-没 sticky 的文章：按日期倒序排在置顶文章之后
-sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
-
-示例
-本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
-三、永久短链（abbrlink）
-装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
-https://zenty-me.github.io/posts/b9c5d664/
-为什么用短链
-
-永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
-简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
-适合分享：短链好看，外链稳定
-
-工作机制
-
-第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
-之后这个值永久不变，URL 固定为 /posts/abbrlink值/
-不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
-
-配置（已设好）
-_config.yml 里：
-permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
-四、系列文章（series）
-写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
-归入系列
-在 front-matter 加 series: 系列名，同名的就是一个系列：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
-加完后该文章自动获得：
-
-文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
-侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
-
-自定义顺序
-默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
-series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
-排序规则
-
-
-
-情况
-排序方式
-
-
-
-
-系列里有任一篇带 series_order
-按 series_order 数字升序（没加的排最后）
-
-
-全都没加 series_order
-按 date 排序
-
-
-
-配置在 _config.butterfly.yml：
-series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
-示例
-本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
-五、日常写笔记流程
-结合三个机制，写一篇新笔记的完整流程：
-
-建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
-移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
-（可选）置顶：在 front-matter 加 sticky: 100
-（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
-编辑：Typora 写正文
-部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
-小结
-
-
-
-需求
-怎么做
-
-
-
-
-给文章归类
-把 md 文件放进 _posts/分类名/ 文件夹
-
-
-新建分类
-在 _posts/ 下新建文件夹并放入文章
-
-
-置顶文章
-front-matter 加 sticky: 100
-
-
-文章 URL
-自动生成 /posts/xxxxxxxx/，不用管
-
-
-多级分类
-auto_category.depth 改大、multiple: true
-
-
-组成系列文章
-front-matter 加 series: 系列名
-
-
-指定系列内顺序
-front-matter 加 series_order: 数字（越小越靠前）
-
-
-
-一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何配置网站外观与个人信息</title>
-    <url>/posts/9fa0ea99/</url>
-    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
-
-
-
-文件
-作用
-
-
-
-
-_config.yml
-Hexo 站点级配置（站名、作者、语言、部署等）
-
-
-_config.butterfly.yml
-Butterfly 主题配置（头像、背景、菜单、侧边栏等）
-
-
-
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息
-编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
-
-title：浏览器标签页和首页大标题都读这里
-description：搜索引擎抓取的站点描述，写一句话介绍即可
-author：改一次，全站的作者署名、版权信息都会同步
-
-二、头像
-编辑 _config.butterfly.yml：
-avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
-
-支持 png / jpg / webp，建议用正方形图，否则会被裁切。
-
-三、网站背景
-背景在 _config.butterfly.yml 的 background 字段：
-# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）
-顶部图是每页面顶部那张大横图：
-disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-图片放到 source/img/top-bg.webp（或你指定的路径）。
-
-单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
-
-五、导航菜单
-菜单在 _config.butterfly.yml 顶部：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标class。
-
-显示名：菜单上显示的文字
-路径：页面的 URL，比如 /tags/
-图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
-
-新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接
-侧边栏的社交图标：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-七、侧边栏作者卡片
-侧边栏那个带头像和按钮的卡片：
-card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）
-favicon: /img/favicon.png
-图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪
-所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
-source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）
-文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
-在 _config.butterfly.yml 里：
-lightbox: fancybox
-一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
-
-写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
-
-十一、部署生效
-任何配置改完后，三连部署：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
-小结
-
-
-
-想改什么
-改哪里
-
-
-
-
-站点名 / 作者名 / SEO 描述
-_config.yml 的 title / author / description
-
-
-头像
-_config.butterfly.yml 的 avatar.img + 放图到 source/img/
-
-
-背景色 / 渐变
-_config.butterfly.yml 的 background
-
-
-顶部图
-_config.butterfly.yml 的 default_top_img 等
-
-
-导航菜单
-_config.butterfly.yml 的 menu
-
-
-社交图标
-_config.butterfly.yml 的 social
-
-
-作者签名
-_config.butterfly.yml 的 card_author.description
-
-
-图片点击放大
-_config.butterfly.yml 的 lightbox: fancybox
-
-
-标签页小图标
-_config.butterfly.yml 的 favicon
-
-
-
-记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>图床搭建</title>
     <url>/posts/f7ade587/</url>
     <content><![CDATA[1. 准备
@@ -1098,6 +1458,124 @@ CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用�
 ]]></content>
       <categories>
         <category>博客搭建</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>补环境</title>
+    <url>/posts/43a51ea6/</url>
+    <content><![CDATA[1. 介绍
+
+由于浏览器环境与node环境的差别，会导致浏览器的JavaScript代码没办法在node环境中正常执行，js代码会根据浏览器所提供的属性来判断你执行的环境是不是通过浏览器来执行的。如果不是则不会返回正确的响应信息
+
+// node 中内置的关键字requireglobalglobalThis  // 浏览器环境也有globalThis, 与global没有任何区别(globalThis支持ES2020语法)process__filename__dirname// 浏览器支持的关键字(对象)/** window* document* navigator* location* ....* */
+2. 浏览器中常见对象
+1. window：窗口对象
+
+window在浏览器中属于顶级变量，任何在全局作用域中声明的变量或函数都会成为window对象的属性。例如：如果你声明一个全局变量var name = 'admin';，你可以通过window.name获取。window仅在浏览器环境中存在，在node或者其他环境中，顶级对象为global。
+
+addEventListener: functionsetInterval: functionsetTimeout: functionnameselfdoucmentnavigatorlocationscreenhistorytoString: function
+2. document：文档对象
+bodydocumentElementcookiecreateElement: functiongetElementByIdgetElementByTagNamegetElementByClassNametoString
+3. navigator：导航对象
+userAgenttoString: function
+4. location：地址栏对象
+hreftoString: function
+5. screen：屏幕对象
+availHeightavailLeftavailTopavailWidthtoString: function
+6. history：历史对象
+back: functionforward: functiongo: functiontoString: function
+7. locationStorage和sessionStorage：本地存储对象
+getItem: functionsetItem: functionremovieItem: functiontoString: function
+8. element：标签对象
+/* 常用标签 */h1 - h6标签p标签input标签div与span标签img标签table标签form标签canvas标签（toDataURL: function）/* 标签对象常用的属性与方法 */ele.styleele.innerHtmlele.getAttribute()
+3. 检测环境的代码示例
+1. 检测代码执行环境是否存在navigator
+navigator = &#123;&#125;navigator.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36&#x27;function ps() &#123;    if (navigator[&#x27;userAgent&#x27;]) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
+2. 检测属性长度，根据长度判断数据是否正确
+location = &#123;&#125;location.href = &#x27;https://www.baidu.com&#x27;function ps() &#123;    if (location[&#x27;href&#x27;].length &gt; 3) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
+3. 异常日志输出
+
+在前端开发中为了代码的健壮性通常会对容易出错的代码进行异常捕获，但是生产环境中的代码一般不会直接输出错误日志到浏览器，需要我们爬虫开发者自行输
+
+// location = &#123;&#125;// location.host = &#x27;8888&#x27;// navigator = &#123;&#125;// navigator.userAgent = &#x27;abc&#x27;function pn() &#123;    try &#123;        console.log(verify_local());        if (navigator[&#x27;userAgent&#x27;]) &#123;            return &#x27;hello world&#x27;        &#125;    &#125; catch (e) &#123;        // console.log(e)  // 输出错误日志        return &#x27;错误的数据&#x27;    &#125;&#125;function verify_local() &#123;    if (location.host.length &gt; 2) &#123;        return &#x27;浏览器环境...&#x27;    &#125;    return &#x27;非浏览器环境...&#x27;&#125;console.log(pn());
+4. 判断浏览器执行环境与node执行环境来验证是否为爬虫程序
+// 浏览器和node差异/*&quot;undefined&quot; != typeof exports：检查 exports 变量的类型是否不是 &quot;undefined&quot;在 Node.js 环境中，exports 是一个预定义的对象，用于模块导出在浏览器环境中，exports 通常是未定义的（undefined）如果 exports 存在（即在 Node.js 环境中），则将 exports 赋给 browser_or_node（object）如果 exports 不存在（即在浏览器环境中），则将 void 0（等同于 undefined）赋给 browser_or_node*/// let browser_or_node = &quot;undefined&quot; != typeof exports ? exports : void 0// console.log(typeof browser_or_node);let glb = &quot;undefined&quot; == typeof window ? global : windowconsole.log(glb)
+5. 基于toString检测
+// window = global;// window.addEventListener = function () &#123;// &#125;//// navigator = &#123;//     toString() &#123;//         return &#x27;[object Navigator]&#x27;//     &#125;,//     userAgent: &quot;&#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36&#x27;&quot;// &#125;//// kw = &#123;//     getAttribute: function () &#123;//     &#125;// &#125;//// document = &#123;//     getElementById(ele) &#123;//         console.log(&quot;document getElementById&quot;, ele)//         if (ele === &quot;kw&quot;) &#123;//             return kw//         &#125;//     &#125;,//     createElement(ele) &#123;//         console.log(&quot;document createElement &quot;, ele)//         if (ele === &quot;canvas&quot;) &#123;//             return canvas//         &#125;//     &#125;// &#125;//// ctx = &#123;//     fillRect() &#123;//     &#125;// &#125;//// canvas = &#123;//     getContext() &#123;//         return ctx//     &#125;// &#125;function get_sign() &#123;    window.addEventListener(&quot;test&quot;)    let kw = document.getElementById(&quot;kw&quot;)    let _class = kw.getAttribute(&quot;class&quot;)    let canvas = document.createElement(&quot;canvas&quot;)    let ctx = canvas.getContext(&quot;2d&quot;);    ctx.fillRect(10, 10, 100, 100);    try &#123;        if (navigator.toString() === &#x27;[object Navigator]&#x27;) &#123;            return btoa(&quot;admin&quot;)  // 输出base64编码        &#125; else &#123;            return &#x27;假数据 - 1&#x27;        &#125;    &#125; catch (e) &#123;        return &#x27;假数据 - 2&#x27;    &#125;&#125;console.log(get_sign())
+4. Proxy代理脚本
+function getEnv(proxy_array) &#123;    for (let i = 0; i &lt; proxy_array.length; i++) &#123;        handler = `&#123;            get: function(target, property, receiver) &#123;                   console.log(&#x27;方法：get&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                   return target[property];            &#125;,            set: function(target, property, value, receiver)&#123;                    console.log(&#x27;方法：set&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                    return Reflect.set(...arguments);            &#125;        &#125;`;        eval(`            try &#123;                $&#123;proxy_array[i]&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125; catch (e) &#123;                $&#123;proxy_array[i]&#125; = &#123;&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125;        `);    &#125;&#125;proxy_array = [&#x27;window&#x27;, &#x27;document&#x27;, &#x27;location&#x27;, &#x27;navigator&#x27;, &#x27;history&#x27;, &#x27;screen&#x27;]getEnv(proxy_array);
+
+5. 原型和原型链
+1. 基础
+
+JavaScript 中，对象需要一个机制来共享属性和方法。如果每个对象都存储自己的方法副本，内存会严重浪费。原型系统正是为了解决这个问题而设计的。
+
+// 每个实例都独立存储方法（浪费内存）function createUser(name) &#123;  return &#123;    name: name,    sayHi: function() &#123;  // 每次调用都创建新函数      console.log(&#x27;Hi, &#x27; + this.name);    &#125;  &#125;;&#125;// 使用原型共享方法（所有实例共享同一个函数）function User(name) &#123;  this.name = name;&#125;User.prototype.sayHi = function() &#123;  console.log(&#x27;Hi, &#x27; + this.name);&#125;;
+2. 属性
+prototype属性(函数独有)
+
+每一个函数都有一个prototype属性，指向通过new创建的实例的原型
+
+function Person() &#123;&#125;console.log(Person.prototype); // &#123; constructor: Person &#125;
+__proto__属性(对象独有)
+
+每一个对象(除了null)都有一个__proto__属性，指向它的原型对象
+
+const obj = &#123;&#125;;console.log(obj.__proto__); // Object.prototypeconst arr = [];console.log(arr.__proto__); // Array.prototype
+constructor属性
+
+原型对象上有一个constructor属性，指回构造函数本身
+
+function Dog() &#123;&#125;console.log(Dog.prototype.constructor === Dog); // trueconst dog = new Dog();console.log(dog.__proto__.constructor === Dog); // true
+3. 使用
+
+传统方法创建类，并将方法存储到公共空间
+
+function FuncStudent(name, score) &#123;    this.name = name;    this.score = score;&#125;// 在类中存在一个默认的prototype属性, 这个属性可以帮助我们创建一个独立公共空间/** 在类对象中的prototype被称之为原型, 通过这个类对象实例化出来的实例对象中也存在原型(__proto__)** prototype: 函数对象上的属性* __proto__: 对象上的属性** */FuncStudent.prototype.print_info = function () &#123;    console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);&#125;func_student_1 = new FuncStudent(&#x27;张三&#x27;, 100)func_student_2 = new FuncStudent(&#x27;李四&#x27;, 90)console.log(func_student_1)console.log(&#x27;-&#x27;.repeat(30))console.log(func_student_2)func_student_1.print_info()console.log(FuncStudent.prototype === func_student_1.__proto__) // true
+
+使用class关键字创建类并实例化对象(会将类中的方法放入公共空间)
+
+class ClsStudent &#123;    constructor(name, score) &#123;        this.name = name;        this.score = score;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);    &#125;&#125;cls_student_1 = new ClsStudent(&#x27;张三&#x27;, 100)console.log(cls_student_1)
+4. 原型链
+
+在继承多个类的时候，他的原型层数会比较多，会形成一个原型网络。那我们通过这个原型网上找的这个链路就称为原型链。
+
+class Person &#123;    constructor(name) &#123;        this.name = name;    &#125;    drink() &#123;        console.log(&#x27;正在喝水...&#x27;);    &#125;&#125;class Teacher extends Person &#123;    constructor(name, subject) &#123;        super(name);        this.subject = subject;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 教$&#123;this.subject&#125;科目...`);    &#125;&#125;let teacher = new Teacher(&#x27;张三&#x27;, &#x27;语文&#x27;);// teacher.print_info()// teacher.drink()//  查看原型链关系(通过实例对象的方式查看)console.log(teacher.hasOwnProperty(&#x27;print_info&#x27;)) // false// 查看方法是否在声明这个实例对象的类中console.log(teacher.__proto__.hasOwnProperty(&#x27;print_info&#x27;)) // true  console.log(teacher.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // false// 看方法是否在声明这个实例对象的类的父类中console.log(teacher.__proto__.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // trueconsole.log(&#x27;-&#x27;.repeat(30))// 查看原型链关系(通过类查询)console.log(Teacher.prototype.hasOwnProperty(&#x27;print_info&#x27;)) // trueconsole.log(Teacher.prototype.hasOwnProperty(&#x27;drink&#x27;)) //false// 通过prototype得到的结果是一个原型对象, 如果继续向下查询需要使用__proto__console.log(Teacher.prototype.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // true 
+5. 原型链检测
+
+Object.getOwnPropertyDescriptor() 静态方法返回一个对象，该对象描述给定对象上特定属性（即直接存在于对象上而不在对象的原型链中的属性）的配置。返回的对象是可变的，但对其进行更改不会影响原始属性的配置。
+
+认识
+
+node.js 环境中
+
+// 原型检测代码示例navigator = &#123;    userAgent: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;&#125;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))
+&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+
+浏览器环境中
+
+
+补原型(实例对象)
+navigator = &#123;&#125;navigator.__proto__.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
+undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+补原型(类对象)
+Navigator = function () &#123;&#125;Navigator.prototype.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;navigator = new Navigator()console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
+undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+补原型(方法)
+// 补原型(方法)Document = function () &#123;&#125;Document.prototype.createElement = function () &#123;&#125;HTMLDocument = function () &#123;&#125;Object.setPrototypeOf(HTMLDocument.prototype, Document.prototype)  // 第一个参数为子类， 第二个参数为父类document = new HTMLDocument()console.log(Object.getOwnPropertyDescriptor(document, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__.__proto__, &#x27;createElement&#x27;))
+undefinedundefined&#123;  value: [Function (anonymous)],  writable: true,  enumerable: true,  configurable: true&#125;
+代理脚本
+
+不是用于补环境，只是检测网站的代码是否有原型调用
+
+function watch(obj, name, visited = new WeakSet()) &#123;    // 防止循环引用导致无限递归    if (obj === null || typeof obj !== &#x27;object&#x27; || visited.has(obj)) &#123;        return obj;    &#125;    visited.add(obj);    // 检查原型链访问    const checkPrototypeChain = (target, property) =&gt; &#123;        let current = target;        while (current) &#123;            if (Object.prototype.hasOwnProperty.call(current, property)) &#123;                return false; // 属性直接存在于当前对象上            &#125;            current = Object.getPrototypeOf(current);            if (current &amp;&amp; current !== Object.prototype &amp;&amp; current !== null) &#123;                console.log(`原型链检测:true (对象: $&#123;name&#125;, 属性: $&#123;property&#125;)`);                return true;            &#125;        &#125;        return false;    &#125;;    return new Proxy(obj, &#123;        get: function (target, property, receiver) &#123;            try &#123;                // 排除一些不常见的或可能导致问题的属性                if (typeof property === &#x27;symbol&#x27; || property === &#x27;constructor&#x27; || property === &#x27;__proto__&#x27;) &#123;                    return Reflect.get(target, property, receiver);                &#125;                const value = Reflect.get(target, property, receiver);                // 深度监听嵌套对象                if (typeof value === &#x27;object&#x27; &amp;&amp; value !== null) &#123;                    // 为嵌套对象生成一个更具体的名称                    const nestedName = `$&#123;name&#125;.$&#123;String(property)&#125;`;                    return watch(value, nestedName, visited);                &#125;                // 打印属性访问信息                console.log(`对象 =&gt; $&#123;name&#125;, 读取属性: $&#123;String(property)&#125;, 值为: $&#123;typeof value === &#x27;function&#x27; ? &#x27;function&#x27; : value&#125;, 类型为: $&#123;typeof value&#125;`);                // 检测原型链访问                // 如果属性不在 target 上，但通过原型链访问到，则标记为 true                if (!Object.prototype.hasOwnProperty.call(target, property)) &#123;                    checkPrototypeChain(target, property);                &#125;                // 检测描述符                const descriptor = Object.getOwnPropertyDescriptor(target, property);                if (descriptor) &#123;                    if (descriptor.get || descriptor.set) &#123;                        console.log(`特殊检测: 存在Getter/Setter (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.writable &amp;&amp; !descriptor.get) &#123;                        console.log(`特殊检测: 只读属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.configurable) &#123;                        console.log(`特殊检测: 不可配置属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                &#125;            &#125; catch (e) &#123;                console.error(`Error in get trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.get(target, property, receiver);        &#125;,        set: (target, property, newValue, receiver) =&gt; &#123;            try &#123;                console.log(`对象 =&gt; $&#123;name&#125;, 设置属性: $&#123;String(property)&#125;, 值为: $&#123;typeof newValue === &#x27;function&#x27; ? &#x27;function&#x27; : newValue&#125;, 类型为: $&#123;typeof newValue&#125;`);            &#125; catch (e) &#123;                console.error(`Error in set trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.set(target, property, newValue, receiver);        &#125;,        // 捕获 in 操作符        has: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, in 操作符检测属性: $&#123;String(property)&#125;`);            return Reflect.has(target, property);        &#125;,        // 捕获 delete 操作符        deleteProperty: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 删除属性: $&#123;String(property)&#125;`);            return Reflect.deleteProperty(target, property);        &#125;,        // 捕获 Object.keys(), Object.values(), Object.entries() 等操作        ownKeys: function (target) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 获取自身所有键`);            return Reflect.ownKeys(target);        &#125;,        // 捕获 Object.defineProperty()        defineProperty: function (target, property, descriptor) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 定义属性: $&#123;String(property)&#125;`);            return Reflect.defineProperty(target, property, descriptor);        &#125;,        // 捕获 Object.setPrototypeOf()        setPrototypeOf: function (target, prototype) &#123;            console.log(`特殊检测: setPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.setPrototypeOf(target, prototype);        &#125;,        // 捕获 Object.getPrototypeOf()        getPrototypeOf: function (target) &#123;            console.log(`特殊检测: getPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.getPrototypeOf(target);        &#125;,        getOwnPropertyDescriptor: function (target, property) &#123;            console.log(`特殊检测: getOwnPropertyDescriptor 被调用 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);            return Reflect.getOwnPropertyDescriptor(target, property);        &#125;,        toString: function (target) &#123;            console.log(`特殊检测: toString 被调用 (对象: $&#123;name&#125;)`);            return Reflect.toString(target);        &#125;    &#125;);&#125;
+
+使用
+
+
+]]></content>
+      <categories>
+        <category>爬虫</category>
       </categories>
   </entry>
   <entry>
@@ -1533,122 +2011,149 @@ Job 类
       </categories>
   </entry>
   <entry>
-    <title>补环境</title>
-    <url>/posts/43a51ea6/</url>
-    <content><![CDATA[1. 介绍
-
-由于浏览器环境与node环境的差别，会导致浏览器的JavaScript代码没办法在node环境中正常执行，js代码会根据浏览器所提供的属性来判断你执行的环境是不是通过浏览器来执行的。如果不是则不会返回正确的响应信息
-
-// node 中内置的关键字requireglobalglobalThis  // 浏览器环境也有globalThis, 与global没有任何区别(globalThis支持ES2020语法)process__filename__dirname// 浏览器支持的关键字(对象)/** window* document* navigator* location* ....* */
-2. 浏览器中常见对象
-1. window：窗口对象
-
-window在浏览器中属于顶级变量，任何在全局作用域中声明的变量或函数都会成为window对象的属性。例如：如果你声明一个全局变量var name = 'admin';，你可以通过window.name获取。window仅在浏览器环境中存在，在node或者其他环境中，顶级对象为global。
-
-addEventListener: functionsetInterval: functionsetTimeout: functionnameselfdoucmentnavigatorlocationscreenhistorytoString: function
-2. document：文档对象
-bodydocumentElementcookiecreateElement: functiongetElementByIdgetElementByTagNamegetElementByClassNametoString
-3. navigator：导航对象
-userAgenttoString: function
-4. location：地址栏对象
-hreftoString: function
-5. screen：屏幕对象
-availHeightavailLeftavailTopavailWidthtoString: function
-6. history：历史对象
-back: functionforward: functiongo: functiontoString: function
-7. locationStorage和sessionStorage：本地存储对象
-getItem: functionsetItem: functionremovieItem: functiontoString: function
-8. element：标签对象
-/* 常用标签 */h1 - h6标签p标签input标签div与span标签img标签table标签form标签canvas标签（toDataURL: function）/* 标签对象常用的属性与方法 */ele.styleele.innerHtmlele.getAttribute()
-3. 检测环境的代码示例
-1. 检测代码执行环境是否存在navigator
-navigator = &#123;&#125;navigator.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36&#x27;function ps() &#123;    if (navigator[&#x27;userAgent&#x27;]) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
-2. 检测属性长度，根据长度判断数据是否正确
-location = &#123;&#125;location.href = &#x27;https://www.baidu.com&#x27;function ps() &#123;    if (location[&#x27;href&#x27;].length &gt; 3) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
-3. 异常日志输出
-
-在前端开发中为了代码的健壮性通常会对容易出错的代码进行异常捕获，但是生产环境中的代码一般不会直接输出错误日志到浏览器，需要我们爬虫开发者自行输
-
-// location = &#123;&#125;// location.host = &#x27;8888&#x27;// navigator = &#123;&#125;// navigator.userAgent = &#x27;abc&#x27;function pn() &#123;    try &#123;        console.log(verify_local());        if (navigator[&#x27;userAgent&#x27;]) &#123;            return &#x27;hello world&#x27;        &#125;    &#125; catch (e) &#123;        // console.log(e)  // 输出错误日志        return &#x27;错误的数据&#x27;    &#125;&#125;function verify_local() &#123;    if (location.host.length &gt; 2) &#123;        return &#x27;浏览器环境...&#x27;    &#125;    return &#x27;非浏览器环境...&#x27;&#125;console.log(pn());
-4. 判断浏览器执行环境与node执行环境来验证是否为爬虫程序
-// 浏览器和node差异/*&quot;undefined&quot; != typeof exports：检查 exports 变量的类型是否不是 &quot;undefined&quot;在 Node.js 环境中，exports 是一个预定义的对象，用于模块导出在浏览器环境中，exports 通常是未定义的（undefined）如果 exports 存在（即在 Node.js 环境中），则将 exports 赋给 browser_or_node（object）如果 exports 不存在（即在浏览器环境中），则将 void 0（等同于 undefined）赋给 browser_or_node*/// let browser_or_node = &quot;undefined&quot; != typeof exports ? exports : void 0// console.log(typeof browser_or_node);let glb = &quot;undefined&quot; == typeof window ? global : windowconsole.log(glb)
-5. 基于toString检测
-// window = global;// window.addEventListener = function () &#123;// &#125;//// navigator = &#123;//     toString() &#123;//         return &#x27;[object Navigator]&#x27;//     &#125;,//     userAgent: &quot;&#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36&#x27;&quot;// &#125;//// kw = &#123;//     getAttribute: function () &#123;//     &#125;// &#125;//// document = &#123;//     getElementById(ele) &#123;//         console.log(&quot;document getElementById&quot;, ele)//         if (ele === &quot;kw&quot;) &#123;//             return kw//         &#125;//     &#125;,//     createElement(ele) &#123;//         console.log(&quot;document createElement &quot;, ele)//         if (ele === &quot;canvas&quot;) &#123;//             return canvas//         &#125;//     &#125;// &#125;//// ctx = &#123;//     fillRect() &#123;//     &#125;// &#125;//// canvas = &#123;//     getContext() &#123;//         return ctx//     &#125;// &#125;function get_sign() &#123;    window.addEventListener(&quot;test&quot;)    let kw = document.getElementById(&quot;kw&quot;)    let _class = kw.getAttribute(&quot;class&quot;)    let canvas = document.createElement(&quot;canvas&quot;)    let ctx = canvas.getContext(&quot;2d&quot;);    ctx.fillRect(10, 10, 100, 100);    try &#123;        if (navigator.toString() === &#x27;[object Navigator]&#x27;) &#123;            return btoa(&quot;admin&quot;)  // 输出base64编码        &#125; else &#123;            return &#x27;假数据 - 1&#x27;        &#125;    &#125; catch (e) &#123;        return &#x27;假数据 - 2&#x27;    &#125;&#125;console.log(get_sign())
-4. Proxy代理脚本
-function getEnv(proxy_array) &#123;    for (let i = 0; i &lt; proxy_array.length; i++) &#123;        handler = `&#123;            get: function(target, property, receiver) &#123;                   console.log(&#x27;方法：get&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                   return target[property];            &#125;,            set: function(target, property, value, receiver)&#123;                    console.log(&#x27;方法：set&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                    return Reflect.set(...arguments);            &#125;        &#125;`;        eval(`            try &#123;                $&#123;proxy_array[i]&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125; catch (e) &#123;                $&#123;proxy_array[i]&#125; = &#123;&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125;        `);    &#125;&#125;proxy_array = [&#x27;window&#x27;, &#x27;document&#x27;, &#x27;location&#x27;, &#x27;navigator&#x27;, &#x27;history&#x27;, &#x27;screen&#x27;]getEnv(proxy_array);
-
-5. 原型和原型链
-1. 基础
-
-JavaScript 中，对象需要一个机制来共享属性和方法。如果每个对象都存储自己的方法副本，内存会严重浪费。原型系统正是为了解决这个问题而设计的。
-
-// 每个实例都独立存储方法（浪费内存）function createUser(name) &#123;  return &#123;    name: name,    sayHi: function() &#123;  // 每次调用都创建新函数      console.log(&#x27;Hi, &#x27; + this.name);    &#125;  &#125;;&#125;// 使用原型共享方法（所有实例共享同一个函数）function User(name) &#123;  this.name = name;&#125;User.prototype.sayHi = function() &#123;  console.log(&#x27;Hi, &#x27; + this.name);&#125;;
-2. 属性
-prototype属性(函数独有)
-
-每一个函数都有一个prototype属性，指向通过new创建的实例的原型
-
-function Person() &#123;&#125;console.log(Person.prototype); // &#123; constructor: Person &#125;
-__proto__属性(对象独有)
-
-每一个对象(除了null)都有一个__proto__属性，指向它的原型对象
-
-const obj = &#123;&#125;;console.log(obj.__proto__); // Object.prototypeconst arr = [];console.log(arr.__proto__); // Array.prototype
-constructor属性
-
-原型对象上有一个constructor属性，指回构造函数本身
-
-function Dog() &#123;&#125;console.log(Dog.prototype.constructor === Dog); // trueconst dog = new Dog();console.log(dog.__proto__.constructor === Dog); // true
-3. 使用
-
-传统方法创建类，并将方法存储到公共空间
-
-function FuncStudent(name, score) &#123;    this.name = name;    this.score = score;&#125;// 在类中存在一个默认的prototype属性, 这个属性可以帮助我们创建一个独立公共空间/** 在类对象中的prototype被称之为原型, 通过这个类对象实例化出来的实例对象中也存在原型(__proto__)** prototype: 函数对象上的属性* __proto__: 对象上的属性** */FuncStudent.prototype.print_info = function () &#123;    console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);&#125;func_student_1 = new FuncStudent(&#x27;张三&#x27;, 100)func_student_2 = new FuncStudent(&#x27;李四&#x27;, 90)console.log(func_student_1)console.log(&#x27;-&#x27;.repeat(30))console.log(func_student_2)func_student_1.print_info()console.log(FuncStudent.prototype === func_student_1.__proto__) // true
-
-使用class关键字创建类并实例化对象(会将类中的方法放入公共空间)
-
-class ClsStudent &#123;    constructor(name, score) &#123;        this.name = name;        this.score = score;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);    &#125;&#125;cls_student_1 = new ClsStudent(&#x27;张三&#x27;, 100)console.log(cls_student_1)
-4. 原型链
-
-在继承多个类的时候，他的原型层数会比较多，会形成一个原型网络。那我们通过这个原型网上找的这个链路就称为原型链。
-
-class Person &#123;    constructor(name) &#123;        this.name = name;    &#125;    drink() &#123;        console.log(&#x27;正在喝水...&#x27;);    &#125;&#125;class Teacher extends Person &#123;    constructor(name, subject) &#123;        super(name);        this.subject = subject;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 教$&#123;this.subject&#125;科目...`);    &#125;&#125;let teacher = new Teacher(&#x27;张三&#x27;, &#x27;语文&#x27;);// teacher.print_info()// teacher.drink()//  查看原型链关系(通过实例对象的方式查看)console.log(teacher.hasOwnProperty(&#x27;print_info&#x27;)) // false// 查看方法是否在声明这个实例对象的类中console.log(teacher.__proto__.hasOwnProperty(&#x27;print_info&#x27;)) // true  console.log(teacher.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // false// 看方法是否在声明这个实例对象的类的父类中console.log(teacher.__proto__.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // trueconsole.log(&#x27;-&#x27;.repeat(30))// 查看原型链关系(通过类查询)console.log(Teacher.prototype.hasOwnProperty(&#x27;print_info&#x27;)) // trueconsole.log(Teacher.prototype.hasOwnProperty(&#x27;drink&#x27;)) //false// 通过prototype得到的结果是一个原型对象, 如果继续向下查询需要使用__proto__console.log(Teacher.prototype.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // true 
-5. 原型链检测
-
-Object.getOwnPropertyDescriptor() 静态方法返回一个对象，该对象描述给定对象上特定属性（即直接存在于对象上而不在对象的原型链中的属性）的配置。返回的对象是可变的，但对其进行更改不会影响原始属性的配置。
-
-认识
-
-node.js 环境中
-
-// 原型检测代码示例navigator = &#123;    userAgent: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;&#125;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))
-&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
-
-浏览器环境中
+    <title>如何配置网站外观与个人信息</title>
+    <url>/posts/9fa0ea99/</url>
+    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
 
 
-补原型(实例对象)
-navigator = &#123;&#125;navigator.__proto__.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
-undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
-补原型(类对象)
-Navigator = function () &#123;&#125;Navigator.prototype.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;navigator = new Navigator()console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
-undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
-补原型(方法)
-// 补原型(方法)Document = function () &#123;&#125;Document.prototype.createElement = function () &#123;&#125;HTMLDocument = function () &#123;&#125;Object.setPrototypeOf(HTMLDocument.prototype, Document.prototype)  // 第一个参数为子类， 第二个参数为父类document = new HTMLDocument()console.log(Object.getOwnPropertyDescriptor(document, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__.__proto__, &#x27;createElement&#x27;))
-undefinedundefined&#123;  value: [Function (anonymous)],  writable: true,  enumerable: true,  configurable: true&#125;
-代理脚本
 
-不是用于补环境，只是检测网站的代码是否有原型调用
-
-function watch(obj, name, visited = new WeakSet()) &#123;    // 防止循环引用导致无限递归    if (obj === null || typeof obj !== &#x27;object&#x27; || visited.has(obj)) &#123;        return obj;    &#125;    visited.add(obj);    // 检查原型链访问    const checkPrototypeChain = (target, property) =&gt; &#123;        let current = target;        while (current) &#123;            if (Object.prototype.hasOwnProperty.call(current, property)) &#123;                return false; // 属性直接存在于当前对象上            &#125;            current = Object.getPrototypeOf(current);            if (current &amp;&amp; current !== Object.prototype &amp;&amp; current !== null) &#123;                console.log(`原型链检测:true (对象: $&#123;name&#125;, 属性: $&#123;property&#125;)`);                return true;            &#125;        &#125;        return false;    &#125;;    return new Proxy(obj, &#123;        get: function (target, property, receiver) &#123;            try &#123;                // 排除一些不常见的或可能导致问题的属性                if (typeof property === &#x27;symbol&#x27; || property === &#x27;constructor&#x27; || property === &#x27;__proto__&#x27;) &#123;                    return Reflect.get(target, property, receiver);                &#125;                const value = Reflect.get(target, property, receiver);                // 深度监听嵌套对象                if (typeof value === &#x27;object&#x27; &amp;&amp; value !== null) &#123;                    // 为嵌套对象生成一个更具体的名称                    const nestedName = `$&#123;name&#125;.$&#123;String(property)&#125;`;                    return watch(value, nestedName, visited);                &#125;                // 打印属性访问信息                console.log(`对象 =&gt; $&#123;name&#125;, 读取属性: $&#123;String(property)&#125;, 值为: $&#123;typeof value === &#x27;function&#x27; ? &#x27;function&#x27; : value&#125;, 类型为: $&#123;typeof value&#125;`);                // 检测原型链访问                // 如果属性不在 target 上，但通过原型链访问到，则标记为 true                if (!Object.prototype.hasOwnProperty.call(target, property)) &#123;                    checkPrototypeChain(target, property);                &#125;                // 检测描述符                const descriptor = Object.getOwnPropertyDescriptor(target, property);                if (descriptor) &#123;                    if (descriptor.get || descriptor.set) &#123;                        console.log(`特殊检测: 存在Getter/Setter (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.writable &amp;&amp; !descriptor.get) &#123;                        console.log(`特殊检测: 只读属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.configurable) &#123;                        console.log(`特殊检测: 不可配置属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                &#125;            &#125; catch (e) &#123;                console.error(`Error in get trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.get(target, property, receiver);        &#125;,        set: (target, property, newValue, receiver) =&gt; &#123;            try &#123;                console.log(`对象 =&gt; $&#123;name&#125;, 设置属性: $&#123;String(property)&#125;, 值为: $&#123;typeof newValue === &#x27;function&#x27; ? &#x27;function&#x27; : newValue&#125;, 类型为: $&#123;typeof newValue&#125;`);            &#125; catch (e) &#123;                console.error(`Error in set trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.set(target, property, newValue, receiver);        &#125;,        // 捕获 in 操作符        has: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, in 操作符检测属性: $&#123;String(property)&#125;`);            return Reflect.has(target, property);        &#125;,        // 捕获 delete 操作符        deleteProperty: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 删除属性: $&#123;String(property)&#125;`);            return Reflect.deleteProperty(target, property);        &#125;,        // 捕获 Object.keys(), Object.values(), Object.entries() 等操作        ownKeys: function (target) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 获取自身所有键`);            return Reflect.ownKeys(target);        &#125;,        // 捕获 Object.defineProperty()        defineProperty: function (target, property, descriptor) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 定义属性: $&#123;String(property)&#125;`);            return Reflect.defineProperty(target, property, descriptor);        &#125;,        // 捕获 Object.setPrototypeOf()        setPrototypeOf: function (target, prototype) &#123;            console.log(`特殊检测: setPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.setPrototypeOf(target, prototype);        &#125;,        // 捕获 Object.getPrototypeOf()        getPrototypeOf: function (target) &#123;            console.log(`特殊检测: getPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.getPrototypeOf(target);        &#125;,        getOwnPropertyDescriptor: function (target, property) &#123;            console.log(`特殊检测: getOwnPropertyDescriptor 被调用 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);            return Reflect.getOwnPropertyDescriptor(target, property);        &#125;,        toString: function (target) &#123;            console.log(`特殊检测: toString 被调用 (对象: $&#123;name&#125;)`);            return Reflect.toString(target);        &#125;    &#125;);&#125;
-
-使用
+文件
+作用
 
 
+
+
+_config.yml
+Hexo 站点级配置（站名、作者、语言、部署等）
+
+
+_config.butterfly.yml
+Butterfly 主题配置（头像、背景、菜单、侧边栏等）
+
+
+
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息
+编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
+
+title：浏览器标签页和首页大标题都读这里
+description：搜索引擎抓取的站点描述，写一句话介绍即可
+author：改一次，全站的作者署名、版权信息都会同步
+
+二、头像
+编辑 _config.butterfly.yml：
+avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
+图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
+
+支持 png / jpg / webp，建议用正方形图，否则会被裁切。
+
+三、网站背景
+背景在 _config.butterfly.yml 的 background 字段：
+# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
+本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
+四、顶部图（Top Img）
+顶部图是每页面顶部那张大横图：
+disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
+图片放到 source/img/top-bg.webp（或你指定的路径）。
+
+单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
+
+五、导航菜单
+菜单在 _config.butterfly.yml 顶部：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标class。
+
+显示名：菜单上显示的文字
+路径：页面的 URL，比如 /tags/
+图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
+
+新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
+六、社交链接
+侧边栏的社交图标：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
+格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
+七、侧边栏作者卡片
+侧边栏那个带头像和按钮的卡片：
+card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
+description 是作者名下面那一行小字，改成自己的签名即可。
+八、Favicon（浏览器标签页小图标）
+favicon: /img/favicon.png
+图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
+九、图片资源放哪
+所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
+引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
+十、图片灯箱（lightbox）
+文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+在 _config.butterfly.yml 里：
+lightbox: fancybox
+一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
+
+写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
+
+十一、部署生效
+任何配置改完后，三连部署：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
+小结
+
+
+
+想改什么
+改哪里
+
+
+
+
+站点名 / 作者名 / SEO 描述
+_config.yml 的 title / author / description
+
+
+头像
+_config.butterfly.yml 的 avatar.img + 放图到 source/img/
+
+
+背景色 / 渐变
+_config.butterfly.yml 的 background
+
+
+顶部图
+_config.butterfly.yml 的 default_top_img 等
+
+
+导航菜单
+_config.butterfly.yml 的 menu
+
+
+社交图标
+_config.butterfly.yml 的 social
+
+
+作者签名
+_config.butterfly.yml 的 card_author.description
+
+
+图片点击放大
+_config.butterfly.yml 的 lightbox: fancybox
+
+
+标签页小图标
+_config.butterfly.yml 的 favicon
+
+
+
+记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
 ]]></content>
       <categories>
-        <category>爬虫</category>
+        <category>博客搭建</category>
       </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
   </entry>
   <entry>
     <title>docker</title>
@@ -1823,402 +2328,5 @@ wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
       <categories>
         <category>开发</category>
       </categories>
-  </entry>
-  <entry>
-    <title>MySql</title>
-    <url>/posts/6cac71de/</url>
-    <content><![CDATA[基础
-DDL
-数据库操作
-查询所有数据库：
-show databases;
-查询当前数据库：
-select database();
-创建数据库：
-create database &#123;if not exists&#125; 数据库名;
-删除数据库：
-drop database &#123;if exists&#125; 数据库名;
-切换数据库：
-use 数据库名;
-
-表操作
-查询当前数据库所有表：
-show tables;
-查看指定表的结构：
-desc 表名;
-查询指定表的建表语句：
-show create table 表名;
-创建表结构：
-create table 表名&#123;	字段1 字段1类型 [comment 字段1注释],	字段2 字段2类型 [comment 字段2注释],	字段3 字段3类型 [comment 字段3注释],	字段4 字段4类型 [comment 字段4注释],	....	字段n 字段n类型 [comment 字段n注释]&#125;[comment 表注释];
-[]内为可选参数
-
-修改表：
-添加：
-alter table 表名 add 字段名 类型(长度) [comment 注释] [约束];
-修改数据类型：
-alter table 表名 modify 字段名 新数据类型(长度);
-修改字段名和字段类型：
-alter table 表名 change 旧字段名 新字段名 类型(长度) [comment 注释] [约束];
-删除字段：
-alter table 表名 drop 字段名;
-修改表名：
-alter table 表名 rename to 新表名;
-删除表：
-drop table [if exists] 表名;
-删除指定表并重新创建：
-truncate table 表名;删除的时候表中的所有数据都会被删除
-
-数据类型：
-数值类型：
-
-
-
-类型
-描述
-
-
-
-
-tinyint
-小整数值
-
-
-smallint
-大整数值
-
-
-mediumint
-大整数值
-
-
-int/integer
-大整数值
-
-
-bigint
-极大整数值
-
-
-float
-单精度浮点数值
-
-
-double
-双精度浮点数值
-
-
-decimal
-小数值
-
-
-
-字符串类型：
-
-
-
-类型
-描述
-
-
-
-
-char
-定长字符串
-
-
-varchar
-变长字符串
-
-
-tinyblob
-不超过255个字符的二进制数据
-
-
-tinytext
-短文本字符串
-
-
-blob
-二进制形式长文本数据
-
-
-text
-长文本数据
-
-
-mediumblob
-二进制形式中文本数据
-
-
-mediumtext
-中文本数据
-
-
-longblob
-极大文本数据
-
-
-longblob
-二进制形式极大文本数据
-
-
-longtext
-极大文本数据
-
-
-
-日期时间类型：
-
-
-
-类型
-格式
-描述
-
-
-
-
-date
-YYYY-MM-DD
-日期值
-
-
-time
-HH:MM:SS
-时间值或者持续时间
-
-
-year
-YYYY
-年份值
-
-
-datetime
-YYYY-MM-DD HH:MM:SS
-混合时间和日期
-
-
-timestamp
-YYYY-MM-DD HH:MM:SS
-混合日期和时间值
-
-
-
-
-DML
-添加数据
-给指定的字段添加数据：
-insert into 表名 (字段1，字段2，...) values(值1，值2，...);
-给全部的字段添加数据：
-insert into 表名 values (值1，值2，...);
-批量添加数据：
-insert into (字段名1，字段名2，...) values(值1，值2,..),(值1，值2,..),(值1，值2,..);
-修改数据：
-update 表名 set 字段名1=值1，字段名2=值2，... [where 条件];
-删除数据
-delete from 表名 [where 条件];
-DQL
-基础查询
-查询多个字段：
-select 字段1，字段2，字段3... from 表名;select * from 表名;
-字段设置别名：
-select 字段1 [as 别名1]，字段2 [as 别名2] ... from 表名;as可以省略select 字段1 [别名1]，字段2 [别名2]，... from 表名;
-去除重复记录：
-select distinct 字段列表 from 表名;
-条件查询
-语法：
-select 字段列表 from 表名 where 条件列表;
-条件：
-
-
-
-比较运算符
-功能
-
-
-
-
-&gt;
-
-
-
-&lt;
-
-
-
-&gt;=
-
-
-
-&lt;=
-
-
-
-=
-
-
-
-&lt;&gt;或者!=
-
-
-
-detween … and …
-在某个范围之内
-
-
-in(…)
-在in之后的列表中的值，多选一
-
-
-like(占位符)
-模糊匹配
-
-
-is NULL
-
-
-
-
-
-
-
-逻辑运算符
-功能
-
-
-
-
-and 或者 &amp;&amp;
-
-
-
-or 或者 ||
-
-
-
-not 或者 ！
-
-
-
-
-聚合函数：
-语法
-select 聚合函数(字段列表) from 表名;null值不参与聚合函数的运算
-常见的聚合函数:
-
-
-
-函数
-功能
-
-
-
-
-count
-统计数量
-
-
-max
-最大值
-
-
-min
-最小值
-
-
-avg
-平均值
-
-
-sum
-求和
-
-
-
-分组查询
-select 字段列表 from 表名 [where 条件] group by 分组字段名 [having 分组后的过滤条件];
-where和having的区别：
-
-执行时间不同：where是分组之前进行过滤,不满足where条件，不参与分组，而having是分组之后再对结果进行过滤
-判断时间不同：where不能对聚合函数进行判断，而having可以
-执行顺序：where&gt;聚合函数&gt;having
-
-排序查询
-select 字段列表 from 表名 order by 字段1 排序方式1,字段2 排序方式2;
-排序方式：
-
-ASC: 升序（默认值）
-DESC:降序
-
-分页查询
-select 字段列表 from 表名 limit 起始索引,查询记录数;
-
-DCL
-管理用户
-查询用户：
-select * from mysql.user;
-创建用户：
-create user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified by &#x27;密码&#x27;;
-修改用户密码：
-alter user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified with mysql_native_password by &#x27;新密码&#x27;;
-删除用户：
-drop user &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-主机名可以使用用%通配
-权限控制
-
-
-
-权限
-说明
-
-
-
-
-all，all privileges
-所有权限
-
-
-select
-查询数据
-
-
-insert
-插入数据
-
-
-update
-修改数据
-
-
-delete
-删除数据
-
-
-alter
-修改表
-
-
-drop
-删除数据库/表/视图
-
-
-create
-创建数据库/表
-
-
-
-查询权限：
-show grants for &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-授予权限
-grant 权限列表 on 数据库.表名 to &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-撤销权限
-revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-]]></content>
-      <categories>
-        <category>数据库</category>
-      </categories>
-      <tags>
-        <tag>MySQL</tag>
-      </tags>
   </entry>
 </search>
