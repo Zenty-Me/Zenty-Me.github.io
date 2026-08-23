@@ -1,6 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>解决lmstudio下载模型卡顿问题</title>
+    <url>/posts/17dd0035/</url>
+    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
+引言
+在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
+本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
+一、准备工作
+在开始之前，请确保：
+
+安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
+注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
+了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
+
+二、从魔搭社区下载模型
+魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
+方式一：网页直接下载（最直观）
+
+进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
+搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
+进入模型详情页：点击目标模型，进入其详情页面。
+进入文件列表：点击页面中的“模型文件”标签。
+选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
+
+
+提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
+
+方式二：命令行CLI下载（推荐）
+魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
+首先安装modelscope库：
+pip install modelscope
+然后使用以下命令下载：
+modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
+示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
+modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
+方式三：Python SDK下载
+如果你更习惯使用Python，也可以使用SDK进行下载：
+from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
+三、导入LM Studio
+下载好模型文件后，有两种方式将其导入LM Studio。
+方式一：使用 lms import 命令（最推荐）
+LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
+
+
+打开终端（Windows用户可使用PowerShell或CMD）。
+
+
+执行导入命令：
+基本导入（默认会移动文件）：
+lms import /path/to/your/model.gguf
+保留原文件（复制一份）：
+lms import /path/to/your/model.gguf --copy
+创建符号链接（不复制也不移动，在原位置创建引用）：
+lms import /path/to/your/model.gguf --symbolic-link
+这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
+
+
+根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
+
+
+方式二：手动放置文件（备选）
+如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
+
+
+找到LM Studio的模型目录：
+
+Windows: C:\Users\你的用户名\.lmstudio\models\
+macOS/Linux: ~/.lmstudio/models/
+
+你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
+
+
+创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
+.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
+如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
+
+
+刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
+
+
+
+注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
+
+四、验证与使用
+导入成功后，在LM Studio中：
+
+点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
+点击模型进行加载。
+切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
+
+提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
+五、常见问题与技巧
+Q：下载的模型在LM Studio中无法识别？
+A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
+Q：LM Studio内置下载速度太慢怎么办？
+A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
+Q：如何选择合适量化版本的模型？
+A：一般来说：
+
+q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
+q8_0：质量更好，体积也更大
+f16：接近原始精度，但又大又慢
+
+如果显存有限（如8GB），推荐使用Q4量化版本。
+结语
+通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
+]]></content>
+      <categories>
+        <category>其他</category>
+      </categories>
+  </entry>
+  <entry>
     <title>PCA降维</title>
     <url>/posts/44cb4915/</url>
     <content><![CDATA[前置知识
@@ -517,120 +628,168 @@ POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text
       </categories>
   </entry>
   <entry>
-    <title>解决lmstudio下载模型卡顿问题</title>
-    <url>/posts/17dd0035/</url>
-    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
-引言
-在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
-本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
-一、准备工作
-在开始之前，请确保：
+    <title>XXL-Job分布式任务调度平台</title>
+    <url>/posts/9d7f76ba/</url>
+    <content><![CDATA[介绍
+XXL-JOB 是一个轻量级分布式任务调度框架，通过中心化的调度器（支持集群）统一管理任务，解决 Spring@Scheduled在分布式环境下的任务重复执行问题，并提供任务分片、失败重试、可视化监控等功能。
+核心点：分布式协调 + 避免重复执行 + 运维友好
 
-安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
-注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
-了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
+开源地址：https://www.xuxueli.com/xxl-job/
 
-二、从魔搭社区下载模型
-魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
-方式一：网页直接下载（最直观）
+使用
+环境准备和初始化
 
-进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
-搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
-进入模型详情页：点击目标模型，进入其详情页面。
-进入文件列表：点击页面中的“模型文件”标签。
-选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
-
-
-提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
-
-方式二：命令行CLI下载（推荐）
-魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
-首先安装modelscope库：
-pip install modelscope
-然后使用以下命令下载：
-modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
-示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
-modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
-方式三：Python SDK下载
-如果你更习惯使用Python，也可以使用SDK进行下载：
-from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
-三、导入LM Studio
-下载好模型文件后，有两种方式将其导入LM Studio。
-方式一：使用 lms import 命令（最推荐）
-LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
-
-
-打开终端（Windows用户可使用PowerShell或CMD）。
-
-
-执行导入命令：
-基本导入（默认会移动文件）：
-lms import /path/to/your/model.gguf
-保留原文件（复制一份）：
-lms import /path/to/your/model.gguf --copy
-创建符号链接（不复制也不移动，在原位置创建引用）：
-lms import /path/to/your/model.gguf --symbolic-link
-这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
-
-
-根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
-
-
-方式二：手动放置文件（备选）
-如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
-
-
-找到LM Studio的模型目录：
-
-Windows: C:\Users\你的用户名\.lmstudio\models\
-macOS/Linux: ~/.lmstudio/models/
-
-你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
-
-
-创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
-.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
-如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
-
-
-刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
+源码下载：https://gitee.com/xuxueli0323/xxl-job
+找到初始化数据库文件并执行
 
 
 
-注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
+修改配置
 
-四、验证与使用
-导入成功后，在LM Studio中：
 
-点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
-点击模型进行加载。
-切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
+调度中心配置文件地址：/xxl-job/xxl-job-admin/src/main/resources/application.properties
+该配置文件当下需要重点修改一下数据源的配置。主要修改：url、username、password。
 
-提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
-五、常见问题与技巧
-Q：下载的模型在LM Studio中无法识别？
-A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
-Q：LM Studio内置下载速度太慢怎么办？
-A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
-Q：如何选择合适量化版本的模型？
-A：一般来说：
 
-q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
-q8_0：质量更好，体积也更大
-f16：接近原始精度，但又大又慢
 
-如果显存有限（如8GB），推荐使用Q4量化版本。
-结语
-通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
+启动项目
+
+
+
+访问调度中心
+
+地址：http://localhost:8080，端口号可自己在配置文件中指定
+账号：admin
+密码：123456
+
+配置部署&quot;执行器项目&quot;
+新建项目
+
+添加依赖并配置
+
+注意版本尽量和你下载的源码的版本一致
+
+&lt;dependency&gt;  &lt;groupId&gt;com.xuxueli&lt;/groupId&gt;  &lt;artifactId&gt;xxl-job-core&lt;/artifactId&gt;  &lt;version&gt;3.0.0&lt;/version&gt;&lt;/dependency&gt;
+
+配置
+
+xxl:  job:    adminAddresses: http://127.0.0.1:8081 # xxl-job 调度中心部署根地址，如调度中心集群部署存在多个地址则用逗号分隔    accessToken: default_token # 需要和 xxl-job 上创建的 token 保持一致    appName: test # 需要和 xxl-job 上创建的执行器名称保持一致    ip: # 执行器 ip, 为空表示自动获取 ip    port: 10001 # 执行器端口号    logPath: /data/applogs/xxl-job/jobhandler # 执行器日志存放路径    logRetentionDays: 30 # 日志保留时间（单位：天）
+新建执行器和任务
+
+
+新建config文件夹：读取配置并注入使用
+
+配置类
+
+package com.zzh.xxxjobdemo.config;import lombok.Data;import org.springframework.boot.context.properties.ConfigurationProperties;import org.springframework.stereotype.Component;@ConfigurationProperties(prefix = XxlJobProperties.PREFIX)@Component@Datapublic class XxlJobProperties &#123;    public static final String PREFIX = &quot;xxl.job&quot;;    private String adminAddresses;    private String accessToken;    private String appName;    private String ip;    private int port;    private String logPath;    private int logRetentionDays = 30;&#125;
+
+注入使用
+
+package com.zzh.xxxjobdemo.config;import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;import jakarta.annotation.Resource;import lombok.extern.slf4j.Slf4j;import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;@Configuration@Slf4jpublic class XxlJobConfig &#123;    @Resource    private XxlJobProperties xxlJobProperties;    /**     * 初始化执行器     * @return     */    @Bean    public XxlJobSpringExecutor xxlJobExecutor() &#123;        log.info(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; xxl-job config init.&quot;);        XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();        xxlJobSpringExecutor.setAdminAddresses(xxlJobProperties.getAdminAddresses());        xxlJobSpringExecutor.setAppname(xxlJobProperties.getAppName());        xxlJobSpringExecutor.setIp(xxlJobProperties.getIp());        xxlJobSpringExecutor.setPort(xxlJobProperties.getPort());        xxlJobSpringExecutor.setAccessToken(xxlJobProperties.getAccessToken());        xxlJobSpringExecutor.setLogPath(xxlJobProperties.getLogPath());        xxlJobSpringExecutor.setLogRetentionDays(xxlJobProperties.getLogRetentionDays());        return xxlJobSpringExecutor;    &#125;&#125;
+
+新建一个任务类
+
+package com.zzh.xxxjobdemo.job;import com.xxl.job.core.handler.annotation.XxlJob;import org.springframework.stereotype.Component;import java.util.Date;@Componentpublic class SimpleXxlJob &#123;    @XxlJob(&quot;demoJobHandler&quot;)    public void demoJobHandler() throws Exception&#123;        System.out.println(&quot;执行定时任务，执行时间：&quot; + new Date());    &#125;&#125;
+demoJobHandler 和创建任务时的 JobHandler 保持一致
+执行
+
+在任务管理界面选中任务并选择执行一次
+
+
+
+日志
+
+
+
+GLUE 模式使用
+
+先在 demo 项目中注入一个 service 类后并重启项目
+
+package com.zzh.xxxjobdemo.service;import org.springframework.stereotype.Service;@Servicepublic class HelloService &#123;    public void doSome()&#123;        System.out.println(&quot;do some!&quot;);    &#125;    public void doOther()&#123;        System.out.println(&quot;do other!&quot;);    &#125;&#125;
+
+新建一个任务，选择 GLUE 模式
+
+
+
+编辑代码
+
+
+package com.xxl.job.service.handler;import com.xxl.job.core.context.XxlJobHelper;import com.xxl.job.core.handler.IJobHandler;import org.springframework.beans.factory.annotation.Autowired;import com.zzh.xxxjobdemo.service.HelloService;public class DemoGlueJobHandler extends IJobHandler &#123;      // 注入业务实现类  	@Autowired  	private HelloService helloService;	@Override	public void execute() throws Exception &#123;		helloService.doSome();	&#125;&#125;
+
+点击执行任务即可
+
+
+路由策略
+在IDE中模拟集群
+
+
+修改配置，添加 VM Options 选项，配置实例启动端口和执行器监听端口
+
+-Dserver.port=8088 -Dxxl.job.port=10010
+
+修改路由策略为轮询
+
+
+在后台管理界面执行两次任务，可以观察到每一个实例都执行了一次
+
+
+其他策略
+
+第一个：直接选任务列表里的第一个机器干活。
+最后一个：直接选任务列表里的最后一个机器干活。
+轮询：轮流让每台机器干活，大家排队，一人一次。
+随机：随便抽一台机器干活，全凭运气。
+一致性HASH：同样的任务永远找同一台机器干，避免换来换去。
+最不经常使用：挑平时干活最少的机器去干，雨露均沾。
+最近最久未使用：挑最闲的机器（好久没干活的）去干。
+故障转移：如果一台机器挂了，自动换另一台好的继续干。
+忙碌转移：如果一台机器正忙着，就找其他闲着的机器干。
+分片广播：让所有机器一起干同一个活，各自分一小块任务。
+
+分片功能
+需求：自指定的节假日，需要给平台所有用户发送祝福短信
+在分片广播方面涉及到两个概念：
+
+分片总数：一共有多少台
+分片索引：当前这台机器的下标（下标从0开始）
+
+准备
+
+数据库文件生成提示词
+
+你是一名 MySQL 数据库专家和数据生成专家。请帮我编写一个脚本，用于生成包含建表 SQL 以及 5000 条模拟数据的 SQL 文件。### 一、 表结构要求 (DDL)- **数据库/ Schema**: `xxl_job`- **表名**: `t_user_mobile_plan`- **Engine/字符集**: `InnoDB`, `utf8mb4`, 排序规则 `utf8mb4_0900_ai_ci`- **字段定义**:  1. `id`: bigint, NOT NULL, AUTO_INCREMENT, 主键, 注释 &#x27;主键&#x27;  2. `username`: varchar(50), NOT NULL, 注释 &#x27;用户名&#x27;  3. `nickname`: varchar(50), NULL DEFAULT NULL, 注释 &#x27;昵称&#x27;  4. `phone`: varchar(20), NOT NULL, 注释 &#x27;手机号码&#x27;  5. `info`: varchar(500), NULL DEFAULT NULL, 注释 &#x27;备注&#x27;- **其他**: 包含 `DROP TABLE IF EXISTS `t_user_mobile_plan`;` 语句，并在脚本开头和结尾分别加上 `SET FOREIGN_KEY_CHECKS = 0;` 和 `SET FOREIGN_KEY_CHECKS = 1;`。设置建表后的 `AUTO_INCREMENT = 5001`。### 二、 数据生成规则 (5000条，ID 从 1 到 5000)1. **`id`**: 从 1 递增至 5000。2. **`username`**: 格式为 `user_&#123;id&#125;`（如 `user_1`, `user_2`）。3. **`nickname`**: 格式为 `用户&#123;id&#125;`（如 `用户1`, `用户2`）。4. **`phone`**: 生成符合中国大陆手机号规则的数据（如 131, 151, 181 开头，按 ID 规律递增或合理伪随机生成 11 位号码）。5. **`info`**: 根据 `id % 5` 的余数按如下规律循环填入：   - `id % 5 == 1`: `&quot;普通用户，创建于批次&#123;batch&#125;&quot;` （其中 batch 计算公式为: (id - 1) // 100 + 1，即 1~100 为批次1，101~200 为批次2，以此类推）   - `id % 5 == 2`: `&quot;测试账号，序号：&#123;id&#125;&quot;`   - `id % 5 == 3`: `&quot;无特殊备注&quot;`   - `id % 5 == 4`: `&quot;手机套餐用户，编号：&#123;id&#125;&quot;`   - `id % 5 == 0`: `&quot;VIP客户，第&#123;id&#125;号用户&quot;`### 三、 输出要求由于 5000 条 SQL 超过了单次回答的字数限制，请提供以下 2 种实现方式：1. **Python 生成脚本**：提供一段完整的 Python 代码，运行后可直接生成目标 `.sql` 文件。2. **MySQL 存储过程**：提供一段可以在 MySQL 中直接执行的存储过程代码，调用后自动创建表并插入这 5000 条数据。3. **SQL 示例**：展示前 10 条和最后 5 条生成的 `INSERT INTO` SQL 语句样例。
+
+添加依赖
+
+&lt;!--mybatis依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.mybatis.spring.boot&lt;/groupId&gt;  &lt;artifactId&gt;mybatis-spring-boot-starter&lt;/artifactId&gt;  &lt;version&gt;3.0.4&lt;/version&gt;&lt;/dependency&gt;&lt;!--mysql依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;com.mysql&lt;/groupId&gt;  &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;  &lt;scope&gt;runtime&lt;/scope&gt;&lt;/dependency&gt;&lt;!--lombok依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;  &lt;artifactId&gt;lombok&lt;/artifactId&gt;  &lt;optional&gt;true&lt;/optional&gt;&lt;/dependency&gt;
+
+数据库配置
+
+spring:  datasource:    type: com.zaxxer.hikari.HikariDataSource    driver-class-name: com.mysql.cj.jdbc.Driver    url: jdbc:mysql://localhost:3306/xxl_job_demo    name: root    password: xxxxxx
+
+启动类上添加扫描类
+
+@MapperScan(basePackages = &quot;com.zzh.xxxjobdemo.mapper&quot;)@SpringBootApplicationpublic class XxxJobDemoApplication &#123;    public static void main(String[] args) &#123;        SpringApplication.run(XxxJobDemoApplication.class, args);    &#125;&#125;
+
+实体类
+
+@Datapublic class UserMobilePlan &#123;    // 主键    private Long id;    // 用户名    private String username;    // 昵称    private String nickname;    // 手机号码    private String phone;    // 备注    private String info;&#125;
+
+mapper 类
+
+public interface UserMobilePlanMapper &#123;    @Select(&quot;select * from t_user_mobile_plan&quot;)    List&lt;UserMobilePlan&gt; selectAll();    @Select(&quot;select * from t_user_mobile_plan where mod(id, #&#123;shardTotal&#125;) = #&#123;shardIndex&#125;&quot;)    List&lt;UserMobilePlan&gt; selectByMod(@Param(&quot;shardIndex&quot;) int shardIndex, @Param(&quot;shardTotal&quot;) int shardTotal);&#125;
+
+Job 类
+
+@Componentpublic class SendJob &#123;    @Resource    private  UserMobilePlanMapper userMobilePlanMapper;    @XxlJob(&quot;sendMsgHandler&quot;)    public void sendMsgHandler()&#123;        // 分片总数        int shardTotal = XxlJobHelper.getShardTotal();        // 分片索引        int shardIndex = XxlJobHelper.getShardIndex();        // 查询数据        List&lt;UserMobilePlan&gt; userMobilePlans = null;        if(shardTotal == 1) &#123;            userMobilePlans = userMobilePlanMapper.selectAll();        &#125;else&#123;            userMobilePlans = userMobilePlanMapper.selectByMod(shardIndex, shardTotal);        &#125;        // 处理数据        System.out.println(&quot;开始执行任务时间：&quot; + new Date() + &quot;，需要处理的数据总量：&quot; + userMobilePlans.size());        long begin = System.currentTimeMillis();        userMobilePlans.forEach(item -&gt; &#123;            try &#123;                TimeUnit.MICROSECONDS.sleep(10);            &#125; catch (InterruptedException e) &#123;                throw new RuntimeException(e);            &#125;        &#125;);        System.out.println(&quot;结束执行任务时间：&quot; + new Date());        long end = System.currentTimeMillis();        System.out.println(&quot;处理任务总耗时&quot; + (end - begin) + &quot;毫秒&quot;);    &#125;&#125;
+新建任务
+
+启动执行
+
+启动两个实例，并启动任务，观察输出
+
+
 ]]></content>
-      <categories>
-        <category>其他</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>docker</title>
-    <url>/posts/f255ffad/</url>
-    <content><![CDATA[]]></content>
       <categories>
         <category>开发</category>
       </categories>
@@ -1352,6 +1511,183 @@ isFullyAuthenticated()
 
 
 ]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>docker</title>
+    <url>/posts/f255ffad/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+
+
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+
+
+
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
+
+
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
+
+
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
+
+
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
+
+
+易混淆的术语
+接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+
+
+QPS vs. RPS
+
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+
+
+TPS vs. RPS
+
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+
+
+
+VU (并发用户) 和 TPS 换算
+
+公式描述：TPS = VU/RT，（RT单位：秒）。
+
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比
+目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeter
+Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
+
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
+
+ApacheBench
+ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
+
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrk
+wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>缓存技术常见问题及解决</title>
+    <url>/posts/aad9f202/</url>
+    <content><![CDATA[缓存技术常见的问题
+缓存雪崩
+认识
+
+当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
+
+解决方案
+
+为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
+
+缓存穿透
+认识
+
+解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
+
+举个栗子:
+
+假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
+
+解决方案
+
+为了应对上述情况，可以选择如下两种策略：
+
+
+
+当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
+
+这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
+为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
+
+
+
+引入布隆过滤器；
+
+布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
+布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
+
+将数据库中的所有用户数据加入布隆过滤器中；
+当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
+若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
+若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
+
+
+
+
+缓存击穿
+认识
+
+解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
+
+解决方案
+为了应对上述情况，可以选择如下方案：
+
+
+缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+
+
+加分布式锁；
+
+当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
+
+
+
+引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
+
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
   </entry>
   <entry>
     <title>如何添加书签</title>
@@ -1667,245 +2003,213 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </tags>
   </entry>
   <entry>
-    <title>XXL-Job分布式任务调度平台</title>
-    <url>/posts/9d7f76ba/</url>
-    <content><![CDATA[介绍
-XXL-JOB 是一个轻量级分布式任务调度框架，通过中心化的调度器（支持集群）统一管理任务，解决 Spring@Scheduled在分布式环境下的任务重复执行问题，并提供任务分片、失败重试、可视化监控等功能。
-核心点：分布式协调 + 避免重复执行 + 运维友好
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/posts/b9c5d664/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章
+hexo new &quot;文章标题&quot;
+执行后会在 source/_posts/ 下生成两个东西：
 
-开源地址：https://www.xuxueli.com/xxl-job/
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
 
-使用
-环境准备和初始化
+二、文章结构（Front-matter）
+文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+常用字段说明：
 
-源码下载：https://gitee.com/xuxueli0323/xxl-job
-找到初始化数据库文件并执行
 
 
+字段
+作用
+必填
 
-修改配置
 
 
-调度中心配置文件地址：/xxl-job/xxl-job-admin/src/main/resources/application.properties
-该配置文件当下需要重点修改一下数据源的配置。主要修改：url、username、password。
 
+title
+文章标题
+是
 
 
-启动项目
+date
+发布时间
+是
 
 
+tags
+标签（列表）
+否
 
-访问调度中心
 
-地址：http://localhost:8080，端口号可自己在配置文件中指定
-账号：admin
-密码：123456
+categories
+分类（列表）
+否
 
-配置部署&quot;执行器项目&quot;
-新建项目
 
-添加依赖并配置
+cover
+封面图路径
+否
 
-注意版本尽量和你下载的源码的版本一致
 
-&lt;dependency&gt;  &lt;groupId&gt;com.xuxueli&lt;/groupId&gt;  &lt;artifactId&gt;xxl-job-core&lt;/artifactId&gt;  &lt;version&gt;3.0.0&lt;/version&gt;&lt;/dependency&gt;
+description
+摘要（首页显示）
+否
 
-配置
 
-xxl:  job:    adminAddresses: http://127.0.0.1:8081 # xxl-job 调度中心部署根地址，如调度中心集群部署存在多个地址则用逗号分隔    accessToken: default_token # 需要和 xxl-job 上创建的 token 保持一致    appName: test # 需要和 xxl-job 上创建的执行器名称保持一致    ip: # 执行器 ip, 为空表示自动获取 ip    port: 10001 # 执行器端口号    logPath: /data/applogs/xxl-job/jobhandler # 执行器日志存放路径    logRetentionDays: 30 # 日志保留时间（单位：天）
-新建执行器和任务
 
+三、写作与图片处理
+用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则
+本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式
+文章里用裸文件名引用图片：
+![图片说明](图片名.png)
 
-新建config文件夹：读取配置并注入使用
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
 
-配置类
+Typora 配置建议
+如果用 Typora 写作，推荐这样配置：
 
-package com.zzh.xxxjobdemo.config;import lombok.Data;import org.springframework.boot.context.properties.ConfigurationProperties;import org.springframework.stereotype.Component;@ConfigurationProperties(prefix = XxlJobProperties.PREFIX)@Component@Datapublic class XxlJobProperties &#123;    public static final String PREFIX = &quot;xxl.job&quot;;    private String adminAddresses;    private String accessToken;    private String appName;    private String ip;    private int port;    private String logPath;    private int logRetentionDays = 30;&#125;
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
 
-注入使用
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览
+hexo server
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+按 Ctrl+C 停止服务。
 
-package com.zzh.xxxjobdemo.config;import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;import jakarta.annotation.Resource;import lombok.extern.slf4j.Slf4j;import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;@Configuration@Slf4jpublic class XxlJobConfig &#123;    @Resource    private XxlJobProperties xxlJobProperties;    /**     * 初始化执行器     * @return     */    @Bean    public XxlJobSpringExecutor xxlJobExecutor() &#123;        log.info(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; xxl-job config init.&quot;);        XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();        xxlJobSpringExecutor.setAdminAddresses(xxlJobProperties.getAdminAddresses());        xxlJobSpringExecutor.setAppname(xxlJobProperties.getAppName());        xxlJobSpringExecutor.setIp(xxlJobProperties.getIp());        xxlJobSpringExecutor.setPort(xxlJobProperties.getPort());        xxlJobSpringExecutor.setAccessToken(xxlJobProperties.getAccessToken());        xxlJobSpringExecutor.setLogPath(xxlJobProperties.getLogPath());        xxlJobSpringExecutor.setLogRetentionDays(xxlJobProperties.getLogRetentionDays());        return xxlJobSpringExecutor;    &#125;&#125;
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
 
-新建一个任务类
+五、部署到 GitHub Pages
+写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+简写形式：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+各步骤作用：
 
-package com.zzh.xxxjobdemo.job;import com.xxl.job.core.handler.annotation.XxlJob;import org.springframework.stereotype.Component;import java.util.Date;@Componentpublic class SimpleXxlJob &#123;    @XxlJob(&quot;demoJobHandler&quot;)    public void demoJobHandler() throws Exception&#123;        System.out.println(&quot;执行定时任务，执行时间：&quot; + new Date());    &#125;&#125;
-demoJobHandler 和创建任务时的 JobHandler 保持一致
-执行
 
-在任务管理界面选中任务并选择执行一次
 
+命令
+作用
 
 
-日志
 
 
+hexo clean
+清理缓存（删 db.json 和 public/）
 
-GLUE 模式使用
 
-先在 demo 项目中注入一个 service 类后并重启项目
+hexo generate
+生成静态文件到 public/
 
-package com.zzh.xxxjobdemo.service;import org.springframework.stereotype.Service;@Servicepublic class HelloService &#123;    public void doSome()&#123;        System.out.println(&quot;do some!&quot;);    &#125;    public void doOther()&#123;        System.out.println(&quot;do other!&quot;);    &#125;&#125;
 
-新建一个任务，选择 GLUE 模式
+hexo deploy
+把 public/ 推送到 GitHub 仓库
 
 
 
-编辑代码
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客
+部署完成后访问主页：
+https://zenty-me.github.io/
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
 
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
 
-package com.xxl.job.service.handler;import com.xxl.job.core.context.XxlJobHelper;import com.xxl.job.core.handler.IJobHandler;import org.springframework.beans.factory.annotation.Autowired;import com.zzh.xxxjobdemo.service.HelloService;public class DemoGlueJobHandler extends IJobHandler &#123;      // 注入业务实现类  	@Autowired  	private HelloService helloService;	@Override	public void execute() throws Exception &#123;		helloService.doSome();	&#125;&#125;
+七、草稿机制
+不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+发布后记得执行部署命令。
+八、常用命令速查
 
-点击执行任务即可
 
 
-路由策略
-在IDE中模拟集群
+命令
+作用
 
 
-修改配置，添加 VM Options 选项，配置实例启动端口和执行器监听端口
 
--Dserver.port=8088 -Dxxl.job.port=10010
 
-修改路由策略为轮询
+hexo new &quot;标题&quot;
+新建文章
 
 
-在后台管理界面执行两次任务，可以观察到每一个实例都执行了一次
+hexo new draft &quot;标题&quot;
+新建草稿
 
 
-其他策略
+hexo publish &quot;标题&quot;
+草稿转正式
 
-第一个：直接选任务列表里的第一个机器干活。
-最后一个：直接选任务列表里的最后一个机器干活。
-轮询：轮流让每台机器干活，大家排队，一人一次。
-随机：随便抽一台机器干活，全凭运气。
-一致性HASH：同样的任务永远找同一台机器干，避免换来换去。
-最不经常使用：挑平时干活最少的机器去干，雨露均沾。
-最近最久未使用：挑最闲的机器（好久没干活的）去干。
-故障转移：如果一台机器挂了，自动换另一台好的继续干。
-忙碌转移：如果一台机器正忙着，就找其他闲着的机器干。
-分片广播：让所有机器一起干同一个活，各自分一小块任务。
 
-分片功能
-需求：自指定的节假日，需要给平台所有用户发送祝福短信
-在分片广播方面涉及到两个概念：
+hexo server
+本地预览
 
-分片总数：一共有多少台
-分片索引：当前这台机器的下标（下标从0开始）
 
-准备
+hexo server --draft
+预览含草稿
 
-数据库文件生成提示词
 
-你是一名 MySQL 数据库专家和数据生成专家。请帮我编写一个脚本，用于生成包含建表 SQL 以及 5000 条模拟数据的 SQL 文件。### 一、 表结构要求 (DDL)- **数据库/ Schema**: `xxl_job`- **表名**: `t_user_mobile_plan`- **Engine/字符集**: `InnoDB`, `utf8mb4`, 排序规则 `utf8mb4_0900_ai_ci`- **字段定义**:  1. `id`: bigint, NOT NULL, AUTO_INCREMENT, 主键, 注释 &#x27;主键&#x27;  2. `username`: varchar(50), NOT NULL, 注释 &#x27;用户名&#x27;  3. `nickname`: varchar(50), NULL DEFAULT NULL, 注释 &#x27;昵称&#x27;  4. `phone`: varchar(20), NOT NULL, 注释 &#x27;手机号码&#x27;  5. `info`: varchar(500), NULL DEFAULT NULL, 注释 &#x27;备注&#x27;- **其他**: 包含 `DROP TABLE IF EXISTS `t_user_mobile_plan`;` 语句，并在脚本开头和结尾分别加上 `SET FOREIGN_KEY_CHECKS = 0;` 和 `SET FOREIGN_KEY_CHECKS = 1;`。设置建表后的 `AUTO_INCREMENT = 5001`。### 二、 数据生成规则 (5000条，ID 从 1 到 5000)1. **`id`**: 从 1 递增至 5000。2. **`username`**: 格式为 `user_&#123;id&#125;`（如 `user_1`, `user_2`）。3. **`nickname`**: 格式为 `用户&#123;id&#125;`（如 `用户1`, `用户2`）。4. **`phone`**: 生成符合中国大陆手机号规则的数据（如 131, 151, 181 开头，按 ID 规律递增或合理伪随机生成 11 位号码）。5. **`info`**: 根据 `id % 5` 的余数按如下规律循环填入：   - `id % 5 == 1`: `&quot;普通用户，创建于批次&#123;batch&#125;&quot;` （其中 batch 计算公式为: (id - 1) // 100 + 1，即 1~100 为批次1，101~200 为批次2，以此类推）   - `id % 5 == 2`: `&quot;测试账号，序号：&#123;id&#125;&quot;`   - `id % 5 == 3`: `&quot;无特殊备注&quot;`   - `id % 5 == 4`: `&quot;手机套餐用户，编号：&#123;id&#125;&quot;`   - `id % 5 == 0`: `&quot;VIP客户，第&#123;id&#125;号用户&quot;`### 三、 输出要求由于 5000 条 SQL 超过了单次回答的字数限制，请提供以下 2 种实现方式：1. **Python 生成脚本**：提供一段完整的 Python 代码，运行后可直接生成目标 `.sql` 文件。2. **MySQL 存储过程**：提供一段可以在 MySQL 中直接执行的存储过程代码，调用后自动创建表并插入这 5000 条数据。3. **SQL 示例**：展示前 10 条和最后 5 条生成的 `INSERT INTO` SQL 语句样例。
+hexo clean
+清理缓存
 
-添加依赖
 
-&lt;!--mybatis依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.mybatis.spring.boot&lt;/groupId&gt;  &lt;artifactId&gt;mybatis-spring-boot-starter&lt;/artifactId&gt;  &lt;version&gt;3.0.4&lt;/version&gt;&lt;/dependency&gt;&lt;!--mysql依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;com.mysql&lt;/groupId&gt;  &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;  &lt;scope&gt;runtime&lt;/scope&gt;&lt;/dependency&gt;&lt;!--lombok依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;  &lt;artifactId&gt;lombok&lt;/artifactId&gt;  &lt;optional&gt;true&lt;/optional&gt;&lt;/dependency&gt;
+hexo generate
+生成静态文件
 
-数据库配置
 
-spring:  datasource:    type: com.zaxxer.hikari.HikariDataSource    driver-class-name: com.mysql.cj.jdbc.Driver    url: jdbc:mysql://localhost:3306/xxl_job_demo    name: root    password: xxxxxx
+hexo deploy
+部署到远程
 
-启动类上添加扫描类
 
-@MapperScan(basePackages = &quot;com.zzh.xxxjobdemo.mapper&quot;)@SpringBootApplicationpublic class XxxJobDemoApplication &#123;    public static void main(String[] args) &#123;        SpringApplication.run(XxxJobDemoApplication.class, args);    &#125;&#125;
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
 
-实体类
 
-@Datapublic class UserMobilePlan &#123;    // 主键    private Long id;    // 用户名    private String username;    // 昵称    private String nickname;    // 手机号码    private String phone;    // 备注    private String info;&#125;
+hexo list
+列出所有文章
 
-mapper 类
 
-public interface UserMobilePlanMapper &#123;    @Select(&quot;select * from t_user_mobile_plan&quot;)    List&lt;UserMobilePlan&gt; selectAll();    @Select(&quot;select * from t_user_mobile_plan where mod(id, #&#123;shardTotal&#125;) = #&#123;shardIndex&#125;&quot;)    List&lt;UserMobilePlan&gt; selectByMod(@Param(&quot;shardIndex&quot;) int shardIndex, @Param(&quot;shardTotal&quot;) int shardTotal);&#125;
+hexo version
+查看版本
 
-Job 类
 
-@Componentpublic class SendJob &#123;    @Resource    private  UserMobilePlanMapper userMobilePlanMapper;    @XxlJob(&quot;sendMsgHandler&quot;)    public void sendMsgHandler()&#123;        // 分片总数        int shardTotal = XxlJobHelper.getShardTotal();        // 分片索引        int shardIndex = XxlJobHelper.getShardIndex();        // 查询数据        List&lt;UserMobilePlan&gt; userMobilePlans = null;        if(shardTotal == 1) &#123;            userMobilePlans = userMobilePlanMapper.selectAll();        &#125;else&#123;            userMobilePlans = userMobilePlanMapper.selectByMod(shardIndex, shardTotal);        &#125;        // 处理数据        System.out.println(&quot;开始执行任务时间：&quot; + new Date() + &quot;，需要处理的数据总量：&quot; + userMobilePlans.size());        long begin = System.currentTimeMillis();        userMobilePlans.forEach(item -&gt; &#123;            try &#123;                TimeUnit.MICROSECONDS.sleep(10);            &#125; catch (InterruptedException e) &#123;                throw new RuntimeException(e);            &#125;        &#125;);        System.out.println(&quot;结束执行任务时间：&quot; + new Date());        long end = System.currentTimeMillis();        System.out.println(&quot;处理任务总耗时&quot; + (end - begin) + &quot;毫秒&quot;);    &#125;&#125;
-新建任务
 
-启动执行
+简写：g = generate，s = server，d = deploy，c = clean
+九、常见问题
+1. 修改配置后预览没变化？
+改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？
+按顺序检查：
 
-启动两个实例，并启动任务，观察输出
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
 
+3. 部署后看不到更新？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？
+_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
 
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
 ]]></content>
       <categories>
-        <category>开发</category>
+        <category>博客搭建</category>
       </categories>
-  </entry>
-  <entry>
-    <title>缓存技术常见问题及解决</title>
-    <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题
-缓存雪崩
-认识
-
-当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
-
-解决方案
-
-为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
-
-缓存穿透
-认识
-
-解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
-
-举个栗子:
-
-假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
-
-解决方案
-
-为了应对上述情况，可以选择如下两种策略：
-
-
-
-当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
-
-这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
-为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
-
-
-
-引入布隆过滤器；
-
-布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
-布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
-
-将数据库中的所有用户数据加入布隆过滤器中；
-当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
-若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
-若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
-
-
-
-
-缓存击穿
-认识
-
-解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
-
-解决方案
-为了应对上述情况，可以选择如下方案：
-
-
-缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
-
-
-加分布式锁；
-
-当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
-
-
-
-引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
-
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
   </entry>
   <entry>
     <title>文章分类、置顶与短链配置</title>
@@ -2054,95 +2358,302 @@ front-matter 加 series_order: 数字（越小越靠前）
       </tags>
   </entry>
   <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+    <title>如何配置网站外观与个人信息</title>
+    <url>/posts/9fa0ea99/</url>
+    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
 
 
 
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语
-接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+文件
+作用
 
 
 
-VU (并发用户) 和 TPS 换算
 
-公式描述：TPS = VU/RT，（RT单位：秒）。
+_config.yml
+Hexo 站点级配置（站名、作者、语言、部署等）
 
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比
-目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeter
-Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
 
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
+_config.butterfly.yml
+Butterfly 主题配置（头像、背景、菜单、侧边栏等）
 
-ApacheBench
-ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
 
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
 
-wrk
-wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息
+编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
 
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+title：浏览器标签页和首页大标题都读这里
+description：搜索引擎抓取的站点描述，写一句话介绍即可
+author：改一次，全站的作者署名、版权信息都会同步
+
+二、头像
+编辑 _config.butterfly.yml：
+avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
+图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
+
+支持 png / jpg / webp，建议用正方形图，否则会被裁切。
+
+三、网站背景
+背景在 _config.butterfly.yml 的 background 字段：
+# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
+本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
+四、顶部图（Top Img）
+顶部图是每页面顶部那张大横图：
+disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
+图片放到 source/img/top-bg.webp（或你指定的路径）。
+
+单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
+
+五、导航菜单
+菜单在 _config.butterfly.yml 顶部：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标class。
+
+显示名：菜单上显示的文字
+路径：页面的 URL，比如 /tags/
+图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
+
+新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
+六、社交链接
+侧边栏的社交图标：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
+格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
+七、侧边栏作者卡片
+侧边栏那个带头像和按钮的卡片：
+card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
+description 是作者名下面那一行小字，改成自己的签名即可。
+八、Favicon（浏览器标签页小图标）
+favicon: /img/favicon.png
+图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
+九、图片资源放哪
+所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
+引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
+十、图片灯箱（lightbox）
+文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+在 _config.butterfly.yml 里：
+lightbox: fancybox
+一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
+
+写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
+
+十一、部署生效
+任何配置改完后，三连部署：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
+小结
+
+
+
+想改什么
+改哪里
+
+
+
+
+站点名 / 作者名 / SEO 描述
+_config.yml 的 title / author / description
+
+
+头像
+_config.butterfly.yml 的 avatar.img + 放图到 source/img/
+
+
+背景色 / 渐变
+_config.butterfly.yml 的 background
+
+
+顶部图
+_config.butterfly.yml 的 default_top_img 等
+
+
+导航菜单
+_config.butterfly.yml 的 menu
+
+
+社交图标
+_config.butterfly.yml 的 social
+
+
+作者签名
+_config.butterfly.yml 的 card_author.description
+
+
+图片点击放大
+_config.butterfly.yml 的 lightbox: fancybox
+
+
+标签页小图标
+_config.butterfly.yml 的 favicon
+
+
+
+记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置
+2.1 github新建仓库+token获取
+
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
 
 ]]></content>
       <categories>
-        <category>开发</category>
+        <category>博客搭建</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>补环境</title>
+    <url>/posts/43a51ea6/</url>
+    <content><![CDATA[1. 介绍
+
+由于浏览器环境与node环境的差别，会导致浏览器的JavaScript代码没办法在node环境中正常执行，js代码会根据浏览器所提供的属性来判断你执行的环境是不是通过浏览器来执行的。如果不是则不会返回正确的响应信息
+
+// node 中内置的关键字requireglobalglobalThis  // 浏览器环境也有globalThis, 与global没有任何区别(globalThis支持ES2020语法)process__filename__dirname// 浏览器支持的关键字(对象)/** window* document* navigator* location* ....* */
+2. 浏览器中常见对象
+1. window：窗口对象
+
+window在浏览器中属于顶级变量，任何在全局作用域中声明的变量或函数都会成为window对象的属性。例如：如果你声明一个全局变量var name = 'admin';，你可以通过window.name获取。window仅在浏览器环境中存在，在node或者其他环境中，顶级对象为global。
+
+addEventListener: functionsetInterval: functionsetTimeout: functionnameselfdoucmentnavigatorlocationscreenhistorytoString: function
+2. document：文档对象
+bodydocumentElementcookiecreateElement: functiongetElementByIdgetElementByTagNamegetElementByClassNametoString
+3. navigator：导航对象
+userAgenttoString: function
+4. location：地址栏对象
+hreftoString: function
+5. screen：屏幕对象
+availHeightavailLeftavailTopavailWidthtoString: function
+6. history：历史对象
+back: functionforward: functiongo: functiontoString: function
+7. locationStorage和sessionStorage：本地存储对象
+getItem: functionsetItem: functionremovieItem: functiontoString: function
+8. element：标签对象
+/* 常用标签 */h1 - h6标签p标签input标签div与span标签img标签table标签form标签canvas标签（toDataURL: function）/* 标签对象常用的属性与方法 */ele.styleele.innerHtmlele.getAttribute()
+3. 检测环境的代码示例
+1. 检测代码执行环境是否存在navigator
+navigator = &#123;&#125;navigator.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36&#x27;function ps() &#123;    if (navigator[&#x27;userAgent&#x27;]) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
+2. 检测属性长度，根据长度判断数据是否正确
+location = &#123;&#125;location.href = &#x27;https://www.baidu.com&#x27;function ps() &#123;    if (location[&#x27;href&#x27;].length &gt; 3) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
+3. 异常日志输出
+
+在前端开发中为了代码的健壮性通常会对容易出错的代码进行异常捕获，但是生产环境中的代码一般不会直接输出错误日志到浏览器，需要我们爬虫开发者自行输
+
+// location = &#123;&#125;// location.host = &#x27;8888&#x27;// navigator = &#123;&#125;// navigator.userAgent = &#x27;abc&#x27;function pn() &#123;    try &#123;        console.log(verify_local());        if (navigator[&#x27;userAgent&#x27;]) &#123;            return &#x27;hello world&#x27;        &#125;    &#125; catch (e) &#123;        // console.log(e)  // 输出错误日志        return &#x27;错误的数据&#x27;    &#125;&#125;function verify_local() &#123;    if (location.host.length &gt; 2) &#123;        return &#x27;浏览器环境...&#x27;    &#125;    return &#x27;非浏览器环境...&#x27;&#125;console.log(pn());
+4. 判断浏览器执行环境与node执行环境来验证是否为爬虫程序
+// 浏览器和node差异/*&quot;undefined&quot; != typeof exports：检查 exports 变量的类型是否不是 &quot;undefined&quot;在 Node.js 环境中，exports 是一个预定义的对象，用于模块导出在浏览器环境中，exports 通常是未定义的（undefined）如果 exports 存在（即在 Node.js 环境中），则将 exports 赋给 browser_or_node（object）如果 exports 不存在（即在浏览器环境中），则将 void 0（等同于 undefined）赋给 browser_or_node*/// let browser_or_node = &quot;undefined&quot; != typeof exports ? exports : void 0// console.log(typeof browser_or_node);let glb = &quot;undefined&quot; == typeof window ? global : windowconsole.log(glb)
+5. 基于toString检测
+// window = global;// window.addEventListener = function () &#123;// &#125;//// navigator = &#123;//     toString() &#123;//         return &#x27;[object Navigator]&#x27;//     &#125;,//     userAgent: &quot;&#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36&#x27;&quot;// &#125;//// kw = &#123;//     getAttribute: function () &#123;//     &#125;// &#125;//// document = &#123;//     getElementById(ele) &#123;//         console.log(&quot;document getElementById&quot;, ele)//         if (ele === &quot;kw&quot;) &#123;//             return kw//         &#125;//     &#125;,//     createElement(ele) &#123;//         console.log(&quot;document createElement &quot;, ele)//         if (ele === &quot;canvas&quot;) &#123;//             return canvas//         &#125;//     &#125;// &#125;//// ctx = &#123;//     fillRect() &#123;//     &#125;// &#125;//// canvas = &#123;//     getContext() &#123;//         return ctx//     &#125;// &#125;function get_sign() &#123;    window.addEventListener(&quot;test&quot;)    let kw = document.getElementById(&quot;kw&quot;)    let _class = kw.getAttribute(&quot;class&quot;)    let canvas = document.createElement(&quot;canvas&quot;)    let ctx = canvas.getContext(&quot;2d&quot;);    ctx.fillRect(10, 10, 100, 100);    try &#123;        if (navigator.toString() === &#x27;[object Navigator]&#x27;) &#123;            return btoa(&quot;admin&quot;)  // 输出base64编码        &#125; else &#123;            return &#x27;假数据 - 1&#x27;        &#125;    &#125; catch (e) &#123;        return &#x27;假数据 - 2&#x27;    &#125;&#125;console.log(get_sign())
+4. Proxy代理脚本
+function getEnv(proxy_array) &#123;    for (let i = 0; i &lt; proxy_array.length; i++) &#123;        handler = `&#123;            get: function(target, property, receiver) &#123;                   console.log(&#x27;方法：get&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                   return target[property];            &#125;,            set: function(target, property, value, receiver)&#123;                    console.log(&#x27;方法：set&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                    return Reflect.set(...arguments);            &#125;        &#125;`;        eval(`            try &#123;                $&#123;proxy_array[i]&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125; catch (e) &#123;                $&#123;proxy_array[i]&#125; = &#123;&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125;        `);    &#125;&#125;proxy_array = [&#x27;window&#x27;, &#x27;document&#x27;, &#x27;location&#x27;, &#x27;navigator&#x27;, &#x27;history&#x27;, &#x27;screen&#x27;]getEnv(proxy_array);
+
+5. 原型和原型链
+1. 基础
+
+JavaScript 中，对象需要一个机制来共享属性和方法。如果每个对象都存储自己的方法副本，内存会严重浪费。原型系统正是为了解决这个问题而设计的。
+
+// 每个实例都独立存储方法（浪费内存）function createUser(name) &#123;  return &#123;    name: name,    sayHi: function() &#123;  // 每次调用都创建新函数      console.log(&#x27;Hi, &#x27; + this.name);    &#125;  &#125;;&#125;// 使用原型共享方法（所有实例共享同一个函数）function User(name) &#123;  this.name = name;&#125;User.prototype.sayHi = function() &#123;  console.log(&#x27;Hi, &#x27; + this.name);&#125;;
+2. 属性
+prototype属性(函数独有)
+
+每一个函数都有一个prototype属性，指向通过new创建的实例的原型
+
+function Person() &#123;&#125;console.log(Person.prototype); // &#123; constructor: Person &#125;
+__proto__属性(对象独有)
+
+每一个对象(除了null)都有一个__proto__属性，指向它的原型对象
+
+const obj = &#123;&#125;;console.log(obj.__proto__); // Object.prototypeconst arr = [];console.log(arr.__proto__); // Array.prototype
+constructor属性
+
+原型对象上有一个constructor属性，指回构造函数本身
+
+function Dog() &#123;&#125;console.log(Dog.prototype.constructor === Dog); // trueconst dog = new Dog();console.log(dog.__proto__.constructor === Dog); // true
+3. 使用
+
+传统方法创建类，并将方法存储到公共空间
+
+function FuncStudent(name, score) &#123;    this.name = name;    this.score = score;&#125;// 在类中存在一个默认的prototype属性, 这个属性可以帮助我们创建一个独立公共空间/** 在类对象中的prototype被称之为原型, 通过这个类对象实例化出来的实例对象中也存在原型(__proto__)** prototype: 函数对象上的属性* __proto__: 对象上的属性** */FuncStudent.prototype.print_info = function () &#123;    console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);&#125;func_student_1 = new FuncStudent(&#x27;张三&#x27;, 100)func_student_2 = new FuncStudent(&#x27;李四&#x27;, 90)console.log(func_student_1)console.log(&#x27;-&#x27;.repeat(30))console.log(func_student_2)func_student_1.print_info()console.log(FuncStudent.prototype === func_student_1.__proto__) // true
+
+使用class关键字创建类并实例化对象(会将类中的方法放入公共空间)
+
+class ClsStudent &#123;    constructor(name, score) &#123;        this.name = name;        this.score = score;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);    &#125;&#125;cls_student_1 = new ClsStudent(&#x27;张三&#x27;, 100)console.log(cls_student_1)
+4. 原型链
+
+在继承多个类的时候，他的原型层数会比较多，会形成一个原型网络。那我们通过这个原型网上找的这个链路就称为原型链。
+
+class Person &#123;    constructor(name) &#123;        this.name = name;    &#125;    drink() &#123;        console.log(&#x27;正在喝水...&#x27;);    &#125;&#125;class Teacher extends Person &#123;    constructor(name, subject) &#123;        super(name);        this.subject = subject;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 教$&#123;this.subject&#125;科目...`);    &#125;&#125;let teacher = new Teacher(&#x27;张三&#x27;, &#x27;语文&#x27;);// teacher.print_info()// teacher.drink()//  查看原型链关系(通过实例对象的方式查看)console.log(teacher.hasOwnProperty(&#x27;print_info&#x27;)) // false// 查看方法是否在声明这个实例对象的类中console.log(teacher.__proto__.hasOwnProperty(&#x27;print_info&#x27;)) // true  console.log(teacher.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // false// 看方法是否在声明这个实例对象的类的父类中console.log(teacher.__proto__.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // trueconsole.log(&#x27;-&#x27;.repeat(30))// 查看原型链关系(通过类查询)console.log(Teacher.prototype.hasOwnProperty(&#x27;print_info&#x27;)) // trueconsole.log(Teacher.prototype.hasOwnProperty(&#x27;drink&#x27;)) //false// 通过prototype得到的结果是一个原型对象, 如果继续向下查询需要使用__proto__console.log(Teacher.prototype.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // true 
+5. 原型链检测
+
+Object.getOwnPropertyDescriptor() 静态方法返回一个对象，该对象描述给定对象上特定属性（即直接存在于对象上而不在对象的原型链中的属性）的配置。返回的对象是可变的，但对其进行更改不会影响原始属性的配置。
+
+认识
+
+node.js 环境中
+
+// 原型检测代码示例navigator = &#123;    userAgent: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;&#125;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))
+&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+
+浏览器环境中
+
+
+补原型(实例对象)
+navigator = &#123;&#125;navigator.__proto__.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
+undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+补原型(类对象)
+Navigator = function () &#123;&#125;Navigator.prototype.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;navigator = new Navigator()console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
+undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+补原型(方法)
+// 补原型(方法)Document = function () &#123;&#125;Document.prototype.createElement = function () &#123;&#125;HTMLDocument = function () &#123;&#125;Object.setPrototypeOf(HTMLDocument.prototype, Document.prototype)  // 第一个参数为子类， 第二个参数为父类document = new HTMLDocument()console.log(Object.getOwnPropertyDescriptor(document, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__.__proto__, &#x27;createElement&#x27;))
+undefinedundefined&#123;  value: [Function (anonymous)],  writable: true,  enumerable: true,  configurable: true&#125;
+代理脚本
+
+不是用于补环境，只是检测网站的代码是否有原型调用
+
+function watch(obj, name, visited = new WeakSet()) &#123;    // 防止循环引用导致无限递归    if (obj === null || typeof obj !== &#x27;object&#x27; || visited.has(obj)) &#123;        return obj;    &#125;    visited.add(obj);    // 检查原型链访问    const checkPrototypeChain = (target, property) =&gt; &#123;        let current = target;        while (current) &#123;            if (Object.prototype.hasOwnProperty.call(current, property)) &#123;                return false; // 属性直接存在于当前对象上            &#125;            current = Object.getPrototypeOf(current);            if (current &amp;&amp; current !== Object.prototype &amp;&amp; current !== null) &#123;                console.log(`原型链检测:true (对象: $&#123;name&#125;, 属性: $&#123;property&#125;)`);                return true;            &#125;        &#125;        return false;    &#125;;    return new Proxy(obj, &#123;        get: function (target, property, receiver) &#123;            try &#123;                // 排除一些不常见的或可能导致问题的属性                if (typeof property === &#x27;symbol&#x27; || property === &#x27;constructor&#x27; || property === &#x27;__proto__&#x27;) &#123;                    return Reflect.get(target, property, receiver);                &#125;                const value = Reflect.get(target, property, receiver);                // 深度监听嵌套对象                if (typeof value === &#x27;object&#x27; &amp;&amp; value !== null) &#123;                    // 为嵌套对象生成一个更具体的名称                    const nestedName = `$&#123;name&#125;.$&#123;String(property)&#125;`;                    return watch(value, nestedName, visited);                &#125;                // 打印属性访问信息                console.log(`对象 =&gt; $&#123;name&#125;, 读取属性: $&#123;String(property)&#125;, 值为: $&#123;typeof value === &#x27;function&#x27; ? &#x27;function&#x27; : value&#125;, 类型为: $&#123;typeof value&#125;`);                // 检测原型链访问                // 如果属性不在 target 上，但通过原型链访问到，则标记为 true                if (!Object.prototype.hasOwnProperty.call(target, property)) &#123;                    checkPrototypeChain(target, property);                &#125;                // 检测描述符                const descriptor = Object.getOwnPropertyDescriptor(target, property);                if (descriptor) &#123;                    if (descriptor.get || descriptor.set) &#123;                        console.log(`特殊检测: 存在Getter/Setter (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.writable &amp;&amp; !descriptor.get) &#123;                        console.log(`特殊检测: 只读属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.configurable) &#123;                        console.log(`特殊检测: 不可配置属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                &#125;            &#125; catch (e) &#123;                console.error(`Error in get trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.get(target, property, receiver);        &#125;,        set: (target, property, newValue, receiver) =&gt; &#123;            try &#123;                console.log(`对象 =&gt; $&#123;name&#125;, 设置属性: $&#123;String(property)&#125;, 值为: $&#123;typeof newValue === &#x27;function&#x27; ? &#x27;function&#x27; : newValue&#125;, 类型为: $&#123;typeof newValue&#125;`);            &#125; catch (e) &#123;                console.error(`Error in set trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.set(target, property, newValue, receiver);        &#125;,        // 捕获 in 操作符        has: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, in 操作符检测属性: $&#123;String(property)&#125;`);            return Reflect.has(target, property);        &#125;,        // 捕获 delete 操作符        deleteProperty: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 删除属性: $&#123;String(property)&#125;`);            return Reflect.deleteProperty(target, property);        &#125;,        // 捕获 Object.keys(), Object.values(), Object.entries() 等操作        ownKeys: function (target) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 获取自身所有键`);            return Reflect.ownKeys(target);        &#125;,        // 捕获 Object.defineProperty()        defineProperty: function (target, property, descriptor) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 定义属性: $&#123;String(property)&#125;`);            return Reflect.defineProperty(target, property, descriptor);        &#125;,        // 捕获 Object.setPrototypeOf()        setPrototypeOf: function (target, prototype) &#123;            console.log(`特殊检测: setPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.setPrototypeOf(target, prototype);        &#125;,        // 捕获 Object.getPrototypeOf()        getPrototypeOf: function (target) &#123;            console.log(`特殊检测: getPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.getPrototypeOf(target);        &#125;,        getOwnPropertyDescriptor: function (target, property) &#123;            console.log(`特殊检测: getOwnPropertyDescriptor 被调用 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);            return Reflect.getOwnPropertyDescriptor(target, property);        &#125;,        toString: function (target) &#123;            console.log(`特殊检测: toString 被调用 (对象: $&#123;name&#125;)`);            return Reflect.toString(target);        &#125;    &#125;);&#125;
+
+使用
+
+
+]]></content>
+      <categories>
+        <category>爬虫</category>
       </categories>
   </entry>
   <entry>
@@ -2541,513 +3052,5 @@ revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机�
       <tags>
         <tag>MySQL</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置
-2.1 github新建仓库+token获取
-
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Hexo 博客发布笔记完整教程</title>
-    <url>/posts/b9c5d664/</url>
-    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章
-hexo new &quot;文章标题&quot;
-执行后会在 source/_posts/ 下生成两个东西：
-
-文章标题.md：Markdown 文章文件
-文章标题/：同名文件夹，用于存放图片等资源
-
-二、文章结构（Front-matter）
-文章开头 --- 之间是 front-matter，用于配置文章元信息：
----title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-常用字段说明：
-
-
-
-字段
-作用
-必填
-
-
-
-
-title
-文章标题
-是
-
-
-date
-发布时间
-是
-
-
-tags
-标签（列表）
-否
-
-
-categories
-分类（列表）
-否
-
-
-cover
-封面图路径
-否
-
-
-description
-摘要（首页显示）
-否
-
-
-
-三、写作与图片处理
-用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则
-本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式
-文章里用裸文件名引用图片：
-![图片说明](图片名.png)
-
-⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
-
-Typora 配置建议
-如果用 Typora 写作，推荐这样配置：
-
-偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
-路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
-
-这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览
-hexo server
-访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
-预览草稿：
-hexo server --draft
-按 Ctrl+C 停止服务。
-
-修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
-
-五、部署到 GitHub Pages
-写完满意后，一键部署：
-hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-简写形式：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-各步骤作用：
-
-
-
-命令
-作用
-
-
-
-
-hexo clean
-清理缓存（删 db.json 和 public/）
-
-
-hexo generate
-生成静态文件到 public/
-
-
-hexo deploy
-把 public/ 推送到 GitHub 仓库
-
-
-
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客
-部署完成后访问主页：
-https://zenty-me.github.io/
-文章地址格式：
-https://zenty-me.github.io/年/月/日/文章标题/
-
-GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-七、草稿机制
-不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
-新建草稿：
-hexo new draft &quot;草稿标题&quot;
-把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
-hexo publish &quot;草稿标题&quot;
-发布后记得执行部署命令。
-八、常用命令速查
-
-
-
-命令
-作用
-
-
-
-
-hexo new &quot;标题&quot;
-新建文章
-
-
-hexo new draft &quot;标题&quot;
-新建草稿
-
-
-hexo publish &quot;标题&quot;
-草稿转正式
-
-
-hexo server
-本地预览
-
-
-hexo server --draft
-预览含草稿
-
-
-hexo clean
-清理缓存
-
-
-hexo generate
-生成静态文件
-
-
-hexo deploy
-部署到远程
-
-
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-一键发布
-
-
-hexo list
-列出所有文章
-
-
-hexo version
-查看版本
-
-
-
-简写：g = generate，s = server，d = deploy，c = clean
-九、常见问题
-1. 修改配置后预览没变化？
-改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？
-按顺序检查：
-
-确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
-确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
-确认 _config.yml 里 post_asset_folder: true 已开启
-确认 marked 配置了 postAsset: true
-
-3. 部署后看不到更新？
-GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？
-_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
-
-以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何配置网站外观与个人信息</title>
-    <url>/posts/9fa0ea99/</url>
-    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
-
-
-
-文件
-作用
-
-
-
-
-_config.yml
-Hexo 站点级配置（站名、作者、语言、部署等）
-
-
-_config.butterfly.yml
-Butterfly 主题配置（头像、背景、菜单、侧边栏等）
-
-
-
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息
-编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
-
-title：浏览器标签页和首页大标题都读这里
-description：搜索引擎抓取的站点描述，写一句话介绍即可
-author：改一次，全站的作者署名、版权信息都会同步
-
-二、头像
-编辑 _config.butterfly.yml：
-avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
-
-支持 png / jpg / webp，建议用正方形图，否则会被裁切。
-
-三、网站背景
-背景在 _config.butterfly.yml 的 background 字段：
-# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）
-顶部图是每页面顶部那张大横图：
-disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-图片放到 source/img/top-bg.webp（或你指定的路径）。
-
-单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
-
-五、导航菜单
-菜单在 _config.butterfly.yml 顶部：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标class。
-
-显示名：菜单上显示的文字
-路径：页面的 URL，比如 /tags/
-图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
-
-新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接
-侧边栏的社交图标：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-七、侧边栏作者卡片
-侧边栏那个带头像和按钮的卡片：
-card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）
-favicon: /img/favicon.png
-图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪
-所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
-source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）
-文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
-在 _config.butterfly.yml 里：
-lightbox: fancybox
-一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
-
-写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
-
-十一、部署生效
-任何配置改完后，三连部署：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
-小结
-
-
-
-想改什么
-改哪里
-
-
-
-
-站点名 / 作者名 / SEO 描述
-_config.yml 的 title / author / description
-
-
-头像
-_config.butterfly.yml 的 avatar.img + 放图到 source/img/
-
-
-背景色 / 渐变
-_config.butterfly.yml 的 background
-
-
-顶部图
-_config.butterfly.yml 的 default_top_img 等
-
-
-导航菜单
-_config.butterfly.yml 的 menu
-
-
-社交图标
-_config.butterfly.yml 的 social
-
-
-作者签名
-_config.butterfly.yml 的 card_author.description
-
-
-图片点击放大
-_config.butterfly.yml 的 lightbox: fancybox
-
-
-标签页小图标
-_config.butterfly.yml 的 favicon
-
-
-
-记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>补环境</title>
-    <url>/posts/43a51ea6/</url>
-    <content><![CDATA[1. 介绍
-
-由于浏览器环境与node环境的差别，会导致浏览器的JavaScript代码没办法在node环境中正常执行，js代码会根据浏览器所提供的属性来判断你执行的环境是不是通过浏览器来执行的。如果不是则不会返回正确的响应信息
-
-// node 中内置的关键字requireglobalglobalThis  // 浏览器环境也有globalThis, 与global没有任何区别(globalThis支持ES2020语法)process__filename__dirname// 浏览器支持的关键字(对象)/** window* document* navigator* location* ....* */
-2. 浏览器中常见对象
-1. window：窗口对象
-
-window在浏览器中属于顶级变量，任何在全局作用域中声明的变量或函数都会成为window对象的属性。例如：如果你声明一个全局变量var name = 'admin';，你可以通过window.name获取。window仅在浏览器环境中存在，在node或者其他环境中，顶级对象为global。
-
-addEventListener: functionsetInterval: functionsetTimeout: functionnameselfdoucmentnavigatorlocationscreenhistorytoString: function
-2. document：文档对象
-bodydocumentElementcookiecreateElement: functiongetElementByIdgetElementByTagNamegetElementByClassNametoString
-3. navigator：导航对象
-userAgenttoString: function
-4. location：地址栏对象
-hreftoString: function
-5. screen：屏幕对象
-availHeightavailLeftavailTopavailWidthtoString: function
-6. history：历史对象
-back: functionforward: functiongo: functiontoString: function
-7. locationStorage和sessionStorage：本地存储对象
-getItem: functionsetItem: functionremovieItem: functiontoString: function
-8. element：标签对象
-/* 常用标签 */h1 - h6标签p标签input标签div与span标签img标签table标签form标签canvas标签（toDataURL: function）/* 标签对象常用的属性与方法 */ele.styleele.innerHtmlele.getAttribute()
-3. 检测环境的代码示例
-1. 检测代码执行环境是否存在navigator
-navigator = &#123;&#125;navigator.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36&#x27;function ps() &#123;    if (navigator[&#x27;userAgent&#x27;]) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
-2. 检测属性长度，根据长度判断数据是否正确
-location = &#123;&#125;location.href = &#x27;https://www.baidu.com&#x27;function ps() &#123;    if (location[&#x27;href&#x27;].length &gt; 3) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
-3. 异常日志输出
-
-在前端开发中为了代码的健壮性通常会对容易出错的代码进行异常捕获，但是生产环境中的代码一般不会直接输出错误日志到浏览器，需要我们爬虫开发者自行输
-
-// location = &#123;&#125;// location.host = &#x27;8888&#x27;// navigator = &#123;&#125;// navigator.userAgent = &#x27;abc&#x27;function pn() &#123;    try &#123;        console.log(verify_local());        if (navigator[&#x27;userAgent&#x27;]) &#123;            return &#x27;hello world&#x27;        &#125;    &#125; catch (e) &#123;        // console.log(e)  // 输出错误日志        return &#x27;错误的数据&#x27;    &#125;&#125;function verify_local() &#123;    if (location.host.length &gt; 2) &#123;        return &#x27;浏览器环境...&#x27;    &#125;    return &#x27;非浏览器环境...&#x27;&#125;console.log(pn());
-4. 判断浏览器执行环境与node执行环境来验证是否为爬虫程序
-// 浏览器和node差异/*&quot;undefined&quot; != typeof exports：检查 exports 变量的类型是否不是 &quot;undefined&quot;在 Node.js 环境中，exports 是一个预定义的对象，用于模块导出在浏览器环境中，exports 通常是未定义的（undefined）如果 exports 存在（即在 Node.js 环境中），则将 exports 赋给 browser_or_node（object）如果 exports 不存在（即在浏览器环境中），则将 void 0（等同于 undefined）赋给 browser_or_node*/// let browser_or_node = &quot;undefined&quot; != typeof exports ? exports : void 0// console.log(typeof browser_or_node);let glb = &quot;undefined&quot; == typeof window ? global : windowconsole.log(glb)
-5. 基于toString检测
-// window = global;// window.addEventListener = function () &#123;// &#125;//// navigator = &#123;//     toString() &#123;//         return &#x27;[object Navigator]&#x27;//     &#125;,//     userAgent: &quot;&#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36&#x27;&quot;// &#125;//// kw = &#123;//     getAttribute: function () &#123;//     &#125;// &#125;//// document = &#123;//     getElementById(ele) &#123;//         console.log(&quot;document getElementById&quot;, ele)//         if (ele === &quot;kw&quot;) &#123;//             return kw//         &#125;//     &#125;,//     createElement(ele) &#123;//         console.log(&quot;document createElement &quot;, ele)//         if (ele === &quot;canvas&quot;) &#123;//             return canvas//         &#125;//     &#125;// &#125;//// ctx = &#123;//     fillRect() &#123;//     &#125;// &#125;//// canvas = &#123;//     getContext() &#123;//         return ctx//     &#125;// &#125;function get_sign() &#123;    window.addEventListener(&quot;test&quot;)    let kw = document.getElementById(&quot;kw&quot;)    let _class = kw.getAttribute(&quot;class&quot;)    let canvas = document.createElement(&quot;canvas&quot;)    let ctx = canvas.getContext(&quot;2d&quot;);    ctx.fillRect(10, 10, 100, 100);    try &#123;        if (navigator.toString() === &#x27;[object Navigator]&#x27;) &#123;            return btoa(&quot;admin&quot;)  // 输出base64编码        &#125; else &#123;            return &#x27;假数据 - 1&#x27;        &#125;    &#125; catch (e) &#123;        return &#x27;假数据 - 2&#x27;    &#125;&#125;console.log(get_sign())
-4. Proxy代理脚本
-function getEnv(proxy_array) &#123;    for (let i = 0; i &lt; proxy_array.length; i++) &#123;        handler = `&#123;            get: function(target, property, receiver) &#123;                   console.log(&#x27;方法：get&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                   return target[property];            &#125;,            set: function(target, property, value, receiver)&#123;                    console.log(&#x27;方法：set&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                    return Reflect.set(...arguments);            &#125;        &#125;`;        eval(`            try &#123;                $&#123;proxy_array[i]&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125; catch (e) &#123;                $&#123;proxy_array[i]&#125; = &#123;&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125;        `);    &#125;&#125;proxy_array = [&#x27;window&#x27;, &#x27;document&#x27;, &#x27;location&#x27;, &#x27;navigator&#x27;, &#x27;history&#x27;, &#x27;screen&#x27;]getEnv(proxy_array);
-
-5. 原型和原型链
-1. 基础
-
-JavaScript 中，对象需要一个机制来共享属性和方法。如果每个对象都存储自己的方法副本，内存会严重浪费。原型系统正是为了解决这个问题而设计的。
-
-// 每个实例都独立存储方法（浪费内存）function createUser(name) &#123;  return &#123;    name: name,    sayHi: function() &#123;  // 每次调用都创建新函数      console.log(&#x27;Hi, &#x27; + this.name);    &#125;  &#125;;&#125;// 使用原型共享方法（所有实例共享同一个函数）function User(name) &#123;  this.name = name;&#125;User.prototype.sayHi = function() &#123;  console.log(&#x27;Hi, &#x27; + this.name);&#125;;
-2. 属性
-prototype属性(函数独有)
-
-每一个函数都有一个prototype属性，指向通过new创建的实例的原型
-
-function Person() &#123;&#125;console.log(Person.prototype); // &#123; constructor: Person &#125;
-__proto__属性(对象独有)
-
-每一个对象(除了null)都有一个__proto__属性，指向它的原型对象
-
-const obj = &#123;&#125;;console.log(obj.__proto__); // Object.prototypeconst arr = [];console.log(arr.__proto__); // Array.prototype
-constructor属性
-
-原型对象上有一个constructor属性，指回构造函数本身
-
-function Dog() &#123;&#125;console.log(Dog.prototype.constructor === Dog); // trueconst dog = new Dog();console.log(dog.__proto__.constructor === Dog); // true
-3. 使用
-
-传统方法创建类，并将方法存储到公共空间
-
-function FuncStudent(name, score) &#123;    this.name = name;    this.score = score;&#125;// 在类中存在一个默认的prototype属性, 这个属性可以帮助我们创建一个独立公共空间/** 在类对象中的prototype被称之为原型, 通过这个类对象实例化出来的实例对象中也存在原型(__proto__)** prototype: 函数对象上的属性* __proto__: 对象上的属性** */FuncStudent.prototype.print_info = function () &#123;    console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);&#125;func_student_1 = new FuncStudent(&#x27;张三&#x27;, 100)func_student_2 = new FuncStudent(&#x27;李四&#x27;, 90)console.log(func_student_1)console.log(&#x27;-&#x27;.repeat(30))console.log(func_student_2)func_student_1.print_info()console.log(FuncStudent.prototype === func_student_1.__proto__) // true
-
-使用class关键字创建类并实例化对象(会将类中的方法放入公共空间)
-
-class ClsStudent &#123;    constructor(name, score) &#123;        this.name = name;        this.score = score;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);    &#125;&#125;cls_student_1 = new ClsStudent(&#x27;张三&#x27;, 100)console.log(cls_student_1)
-4. 原型链
-
-在继承多个类的时候，他的原型层数会比较多，会形成一个原型网络。那我们通过这个原型网上找的这个链路就称为原型链。
-
-class Person &#123;    constructor(name) &#123;        this.name = name;    &#125;    drink() &#123;        console.log(&#x27;正在喝水...&#x27;);    &#125;&#125;class Teacher extends Person &#123;    constructor(name, subject) &#123;        super(name);        this.subject = subject;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 教$&#123;this.subject&#125;科目...`);    &#125;&#125;let teacher = new Teacher(&#x27;张三&#x27;, &#x27;语文&#x27;);// teacher.print_info()// teacher.drink()//  查看原型链关系(通过实例对象的方式查看)console.log(teacher.hasOwnProperty(&#x27;print_info&#x27;)) // false// 查看方法是否在声明这个实例对象的类中console.log(teacher.__proto__.hasOwnProperty(&#x27;print_info&#x27;)) // true  console.log(teacher.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // false// 看方法是否在声明这个实例对象的类的父类中console.log(teacher.__proto__.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // trueconsole.log(&#x27;-&#x27;.repeat(30))// 查看原型链关系(通过类查询)console.log(Teacher.prototype.hasOwnProperty(&#x27;print_info&#x27;)) // trueconsole.log(Teacher.prototype.hasOwnProperty(&#x27;drink&#x27;)) //false// 通过prototype得到的结果是一个原型对象, 如果继续向下查询需要使用__proto__console.log(Teacher.prototype.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // true 
-5. 原型链检测
-
-Object.getOwnPropertyDescriptor() 静态方法返回一个对象，该对象描述给定对象上特定属性（即直接存在于对象上而不在对象的原型链中的属性）的配置。返回的对象是可变的，但对其进行更改不会影响原始属性的配置。
-
-认识
-
-node.js 环境中
-
-// 原型检测代码示例navigator = &#123;    userAgent: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;&#125;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))
-&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
-
-浏览器环境中
-
-
-补原型(实例对象)
-navigator = &#123;&#125;navigator.__proto__.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
-undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
-补原型(类对象)
-Navigator = function () &#123;&#125;Navigator.prototype.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;navigator = new Navigator()console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
-undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
-补原型(方法)
-// 补原型(方法)Document = function () &#123;&#125;Document.prototype.createElement = function () &#123;&#125;HTMLDocument = function () &#123;&#125;Object.setPrototypeOf(HTMLDocument.prototype, Document.prototype)  // 第一个参数为子类， 第二个参数为父类document = new HTMLDocument()console.log(Object.getOwnPropertyDescriptor(document, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__.__proto__, &#x27;createElement&#x27;))
-undefinedundefined&#123;  value: [Function (anonymous)],  writable: true,  enumerable: true,  configurable: true&#125;
-代理脚本
-
-不是用于补环境，只是检测网站的代码是否有原型调用
-
-function watch(obj, name, visited = new WeakSet()) &#123;    // 防止循环引用导致无限递归    if (obj === null || typeof obj !== &#x27;object&#x27; || visited.has(obj)) &#123;        return obj;    &#125;    visited.add(obj);    // 检查原型链访问    const checkPrototypeChain = (target, property) =&gt; &#123;        let current = target;        while (current) &#123;            if (Object.prototype.hasOwnProperty.call(current, property)) &#123;                return false; // 属性直接存在于当前对象上            &#125;            current = Object.getPrototypeOf(current);            if (current &amp;&amp; current !== Object.prototype &amp;&amp; current !== null) &#123;                console.log(`原型链检测:true (对象: $&#123;name&#125;, 属性: $&#123;property&#125;)`);                return true;            &#125;        &#125;        return false;    &#125;;    return new Proxy(obj, &#123;        get: function (target, property, receiver) &#123;            try &#123;                // 排除一些不常见的或可能导致问题的属性                if (typeof property === &#x27;symbol&#x27; || property === &#x27;constructor&#x27; || property === &#x27;__proto__&#x27;) &#123;                    return Reflect.get(target, property, receiver);                &#125;                const value = Reflect.get(target, property, receiver);                // 深度监听嵌套对象                if (typeof value === &#x27;object&#x27; &amp;&amp; value !== null) &#123;                    // 为嵌套对象生成一个更具体的名称                    const nestedName = `$&#123;name&#125;.$&#123;String(property)&#125;`;                    return watch(value, nestedName, visited);                &#125;                // 打印属性访问信息                console.log(`对象 =&gt; $&#123;name&#125;, 读取属性: $&#123;String(property)&#125;, 值为: $&#123;typeof value === &#x27;function&#x27; ? &#x27;function&#x27; : value&#125;, 类型为: $&#123;typeof value&#125;`);                // 检测原型链访问                // 如果属性不在 target 上，但通过原型链访问到，则标记为 true                if (!Object.prototype.hasOwnProperty.call(target, property)) &#123;                    checkPrototypeChain(target, property);                &#125;                // 检测描述符                const descriptor = Object.getOwnPropertyDescriptor(target, property);                if (descriptor) &#123;                    if (descriptor.get || descriptor.set) &#123;                        console.log(`特殊检测: 存在Getter/Setter (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.writable &amp;&amp; !descriptor.get) &#123;                        console.log(`特殊检测: 只读属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.configurable) &#123;                        console.log(`特殊检测: 不可配置属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                &#125;            &#125; catch (e) &#123;                console.error(`Error in get trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.get(target, property, receiver);        &#125;,        set: (target, property, newValue, receiver) =&gt; &#123;            try &#123;                console.log(`对象 =&gt; $&#123;name&#125;, 设置属性: $&#123;String(property)&#125;, 值为: $&#123;typeof newValue === &#x27;function&#x27; ? &#x27;function&#x27; : newValue&#125;, 类型为: $&#123;typeof newValue&#125;`);            &#125; catch (e) &#123;                console.error(`Error in set trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.set(target, property, newValue, receiver);        &#125;,        // 捕获 in 操作符        has: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, in 操作符检测属性: $&#123;String(property)&#125;`);            return Reflect.has(target, property);        &#125;,        // 捕获 delete 操作符        deleteProperty: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 删除属性: $&#123;String(property)&#125;`);            return Reflect.deleteProperty(target, property);        &#125;,        // 捕获 Object.keys(), Object.values(), Object.entries() 等操作        ownKeys: function (target) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 获取自身所有键`);            return Reflect.ownKeys(target);        &#125;,        // 捕获 Object.defineProperty()        defineProperty: function (target, property, descriptor) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 定义属性: $&#123;String(property)&#125;`);            return Reflect.defineProperty(target, property, descriptor);        &#125;,        // 捕获 Object.setPrototypeOf()        setPrototypeOf: function (target, prototype) &#123;            console.log(`特殊检测: setPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.setPrototypeOf(target, prototype);        &#125;,        // 捕获 Object.getPrototypeOf()        getPrototypeOf: function (target) &#123;            console.log(`特殊检测: getPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.getPrototypeOf(target);        &#125;,        getOwnPropertyDescriptor: function (target, property) &#123;            console.log(`特殊检测: getOwnPropertyDescriptor 被调用 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);            return Reflect.getOwnPropertyDescriptor(target, property);        &#125;,        toString: function (target) &#123;            console.log(`特殊检测: toString 被调用 (对象: $&#123;name&#125;)`);            return Reflect.toString(target);        &#125;    &#125;);&#125;
-
-使用
-
-
-]]></content>
-      <categories>
-        <category>爬虫</category>
-      </categories>
   </entry>
 </search>
