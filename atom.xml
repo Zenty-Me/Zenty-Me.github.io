@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <author>
+    <name>Zenty</name>
+  </author>
+  <generator uri="https://hexo.io/">Hexo</generator>
+  <icon>https://zenty-me.github.io/img/favicon.png</icon>
+  <id>https://zenty-me.github.io/</id>
+  <link href="https://zenty-me.github.io/" rel="alternate"/>
+  <link href="https://zenty-me.github.io/atom.xml" rel="self"/>
+  <rights>All rights reserved 2026, Zenty</rights>
+  <subtitle>后端开发 · 技术笔记</subtitle>
+  <title>Zenty's Blog</title>
+  <updated>2026-09-17T06:41:49.806Z</updated>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
+    <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
+    <category term="异步编程" scheme="https://zenty-me.github.io/tags/%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B/"/>
+    <category term="并发" scheme="https://zenty-me.github.io/tags/%E5%B9%B6%E5%8F%91/"/>
+    <id>https://zenty-me.github.io/posts/6200c646/</id>
+    <link href="https://zenty-me.github.io/posts/6200c646/"/>
+    <published>2026-09-15T03:47:12.000Z</published>
+    <summary>梳理 Python asyncio 的核心用法：事件循环、async/await、create_task、gather、AsyncIterator 与 Queue，并给出生产者消费者流水线示例。</summary>
+    <title>asyncio模块</title>
+    <updated>2026-09-17T06:41:49.806Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="数据存储" scheme="https://zenty-me.github.io/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
+    <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <id>https://zenty-me.github.io/posts/bae4ff13/</id>
+    <link href="https://zenty-me.github.io/posts/bae4ff13/"/>
+    <published>2026-09-05T01:54:41.000Z</published>
+    <summary>Redis 常用数据结构与基础命令笔记。</summary>
+    <title>Redis</title>
+    <updated>2026-09-17T06:42:05.506Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
+    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
+    <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
+    <id>https://zenty-me.github.io/posts/dd7fb916/</id>
+    <link href="https://zenty-me.github.io/posts/dd7fb916/"/>
+    <published>2026-08-27T11:14:53.000Z</published>
+    <summary>FastAPI 入门教程：用 uv 管理环境，路径操作与路由分发、路径参数与查询参数、请求体与嵌套模型、表单、静态文件和响应模型。</summary>
+    <title>FastAPI教程</title>
+    <updated>2026-09-17T06:42:09.912Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="Spring Security" scheme="https://zenty-me.github.io/tags/Spring-Security/"/>
+    <category term="Spring Boot" scheme="https://zenty-me.github.io/tags/Spring-Boot/"/>
+    <category term="认证授权" scheme="https://zenty-me.github.io/tags/%E8%AE%A4%E8%AF%81%E6%8E%88%E6%9D%83/"/>
+    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
+    <id>https://zenty-me.github.io/posts/af322717/</id>
+    <link href="https://zenty-me.github.io/posts/af322717/"/>
+    <published>2026-08-23T07:52:15.000Z</published>
+    <summary>Spring Security 认证与授权实战：过滤器链原理、基于内存与数据库的用户认证、密码加密，以及前后端分离场景下的认证方案。</summary>
+    <title>SpringSecurity认证与授权</title>
+    <updated>2026-09-17T06:42:15.452Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="其他" scheme="https://zenty-me.github.io/categories/%E5%85%B6%E4%BB%96/"/>
+    <category term="LM Studio" scheme="https://zenty-me.github.io/tags/LM-Studio/"/>
+    <category term="大模型" scheme="https://zenty-me.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/"/>
+    <category term="本地部署" scheme="https://zenty-me.github.io/tags/%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2/"/>
+    <id>https://zenty-me.github.io/posts/17dd0035/</id>
+    <link href="https://zenty-me.github.io/posts/17dd0035/"/>
+    <published>2026-08-19T07:53:43.000Z</published>
+    <summary>国内下载 LM Studio 模型速度慢的解决办法——先从魔搭社区（ModelScope）下载 GGUF 模型，再导入 LM Studio 本地运行。</summary>
+    <title>解决lmstudio下载模型卡顿问题</title>
+    <updated>2026-09-17T06:41:55.332Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="爬虫" scheme="https://zenty-me.github.io/categories/%E7%88%AC%E8%99%AB/"/>
+    <category term="爬虫" scheme="https://zenty-me.github.io/tags/%E7%88%AC%E8%99%AB/"/>
+    <category term="JavaScript" scheme="https://zenty-me.github.io/tags/JavaScript/"/>
+    <category term="逆向" scheme="https://zenty-me.github.io/tags/%E9%80%86%E5%90%91/"/>
+    <category term="补环境" scheme="https://zenty-me.github.io/tags/%E8%A1%A5%E7%8E%AF%E5%A2%83/"/>
+    <id>https://zenty-me.github.io/posts/43a51ea6/</id>
+    <link href="https://zenty-me.github.io/posts/43a51ea6/"/>
+    <published>2026-08-15T15:15:44.000Z</published>
+    <summary>JS 逆向补环境实战笔记：浏览器常见对象（window、document、navigator 等）、常见环境检测手段、Proxy 代理脚本与原型链补全思路。</summary>
+    <title>补环境</title>
+    <updated>2026-09-17T06:42:26.756Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
+    <category term="XXL-JOB" scheme="https://zenty-me.github.io/tags/XXL-JOB/"/>
+    <category term="分布式" scheme="https://zenty-me.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
+    <category term="任务调度" scheme="https://zenty-me.github.io/tags/%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/"/>
+    <id>https://zenty-me.github.io/posts/9d7f76ba/</id>
+    <link href="https://zenty-me.github.io/posts/9d7f76ba/"/>
+    <published>2026-08-14T06:55:53.000Z</published>
+    <summary>XXL-JOB 分布式任务调度平台使用笔记：调度中心与执行器的搭建配置、GLUE 模式、路由策略、任务分片与集群执行。</summary>
+    <title>XXL-Job分布式任务调度平台</title>
+    <updated>2026-09-17T06:42:15.480Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="数据存储" scheme="https://zenty-me.github.io/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/"/>
+    <category term="MySQL" scheme="https://zenty-me.github.io/tags/MySQL/"/>
+    <category term="数据库" scheme="https://zenty-me.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    <category term="SQL" scheme="https://zenty-me.github.io/tags/SQL/"/>
+    <id>https://zenty-me.github.io/posts/6cac71de/</id>
+    <link href="https://zenty-me.github.io/posts/6cac71de/"/>
+    <published>2026-08-12T07:23:16.000Z</published>
+    <summary>MySQL 基础语法速查：DDL 库表操作与数据类型、DML 增删改、DQL 条件 / 聚合 / 分组 / 排序 / 分页查询，以及 DCL 权限管理。</summary>
+    <title>MySql</title>
+    <updated>2026-09-17T06:46:13.175Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="AI飞升" scheme="https://zenty-me.github.io/categories/AI%E9%A3%9E%E5%8D%87/"/>
+    <category term="机器学习" scheme="https://zenty-me.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    <category term="数学" scheme="https://zenty-me.github.io/tags/%E6%95%B0%E5%AD%A6/"/>
+    <category term="降维" scheme="https://zenty-me.github.io/tags/%E9%99%8D%E7%BB%B4/"/>
+    <id>https://zenty-me.github.io/posts/44cb4915/</id>
+    <link href="https://zenty-me.github.io/posts/44cb4915/"/>
+    <published>2026-08-10T06:32:28.000Z</published>
+    <summary>从向量内积、基变换、协方差矩阵一路讲到拉格朗日乘子法，完整推导 PCA 降维的数学原理、求解过程与计算步骤。</summary>
+    <title>PCA降维</title>
+    <updated>2026-09-17T06:41:49.781Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="Elasticsearch" scheme="https://zenty-me.github.io/tags/Elasticsearch/"/>
+    <category term="Kibana" scheme="https://zenty-me.github.io/tags/Kibana/"/>
+    <category term="全文检索" scheme="https://zenty-me.github.io/tags/%E5%85%A8%E6%96%87%E6%A3%80%E7%B4%A2/"/>
+    <id>https://zenty-me.github.io/posts/78c3da92/</id>
+    <link href="https://zenty-me.github.io/posts/78c3da92/"/>
+    <published>2026-08-09T09:08:02.000Z</published>
+    <summary>Elasticsearch 7 入门笔记：用 Docker 安装 ES 与 Kibana、解决跨域，以及索引和文档的增删改查与条件、精确、范围、分页搜索语法。</summary>
+    <title>Elasticsearch使用</title>
+    <updated>2026-09-17T06:42:09.892Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
+    <category term="图床" scheme="https://zenty-me.github.io/tags/%E5%9B%BE%E5%BA%8A/"/>
+    <category term="PicList" scheme="https://zenty-me.github.io/tags/PicList/"/>
+    <category term="GitHub" scheme="https://zenty-me.github.io/tags/GitHub/"/>
+    <id>https://zenty-me.github.io/posts/f7ade587/</id>
+    <link href="https://zenty-me.github.io/posts/f7ade587/"/>
+    <published>2026-08-07T13:15:42.000Z</published>
+    <summary>用 GitHub 仓库加 PicList 搭建免费图床：创建仓库与 Token、配置 PicList，并让 Hexo 博客里的图片自动上传。</summary>
+    <title>图床搭建</title>
+    <updated>2026-09-17T06:41:55.310Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="Docker" scheme="https://zenty-me.github.io/tags/Docker/"/>
+    <id>https://zenty-me.github.io/posts/f255ffad/</id>
+    <link href="https://zenty-me.github.io/posts/f255ffad/"/>
+    <published>2026-08-07T12:10:58.000Z</published>
+    <summary>Docker 常用命令以及镜像、容器管理笔记。</summary>
+    <title>docker</title>
+    <updated>2026-09-17T06:42:01.254Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
+    <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
+    <id>https://zenty-me.github.io/posts/aad9f202/</id>
+    <link href="https://zenty-me.github.io/posts/aad9f202/"/>
+    <published>2026-08-06T08:33:20.000Z</published>
+    <summary>缓存雪崩、缓存穿透、缓存击穿的定义、成因与解决方案，以及在 Redis 中的常见落地做法。</summary>
+    <title>缓存技术常见问题及解决</title>
+    <updated>2026-09-17T06:42:21.204Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
+    <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
+    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+    <id>https://zenty-me.github.io/posts/1784a007/</id>
+    <link href="https://zenty-me.github.io/posts/1784a007/"/>
+    <published>2026-08-06T07:00:00.000Z</published>
+    <summary>用文件夹自动归类文章，用 sticky 字段置顶，用 abbrlink 生成永久短链。</summary>
+    <title>文章分类、置顶与短链配置</title>
+    <updated>2026-08-07T17:44:46.068Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
+    <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
+    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+    <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
+    <id>https://zenty-me.github.io/posts/35a7b521/</id>
+    <link href="https://zenty-me.github.io/posts/35a7b521/"/>
+    <published>2026-08-06T06:30:00.000Z</published>
+    <summary>面向零基础用户的 Hexo + Butterfly 博客搭建全流程，从环境安装到部署上线，手把手教学。</summary>
+    <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
+    <updated>2026-08-07T17:40:18.481Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
+    <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
+    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+    <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
+    <id>https://zenty-me.github.io/posts/9fa0ea99/</id>
+    <link href="https://zenty-me.github.io/posts/9fa0ea99/"/>
+    <published>2026-08-06T05:00:00.000Z</published>
+    <summary>讲解 Butterfly 主题下站点信息、头像、背景、顶部图、导航菜单等常用配置的修改方法。</summary>
+    <title>如何配置网站外观与个人信息</title>
+    <updated>2026-08-07T17:47:09.658Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
+    <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
+    <category term="书签" scheme="https://zenty-me.github.io/tags/%E4%B9%A6%E7%AD%BE/"/>
+    <id>https://zenty-me.github.io/posts/3ffe122/</id>
+    <link href="https://zenty-me.github.io/posts/3ffe122/"/>
+    <published>2026-08-06T04:00:00.000Z</published>
+    <summary>讲解如何通过编辑 link.yml 文件给书签页添加、删除书签并部署上线。</summary>
+    <title>如何添加书签</title>
+    <updated>2026-08-07T17:40:21.593Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="性能测试" scheme="https://zenty-me.github.io/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/"/>
+    <category term="压测" scheme="https://zenty-me.github.io/tags/%E5%8E%8B%E6%B5%8B/"/>
+    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
+    <id>https://zenty-me.github.io/posts/d189c3ce/</id>
+    <link href="https://zenty-me.github.io/posts/d189c3ce/"/>
+    <published>2026-08-06T03:12:03.000Z</published>
+    <summary>性能测试核心术语整理：并发用户（VU）、QPS、TPS、RPS 的含义与区别，以及容量规划和限流中常用的性能指标。</summary>
+    <title>性能测试</title>
+    <updated>2026-09-17T06:42:21.176Z</updated>
+  </entry>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
+    <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
+    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+    <id>https://zenty-me.github.io/posts/b9c5d664/</id>
+    <link href="https://zenty-me.github.io/posts/b9c5d664/"/>
+    <published>2026-08-06T02:00:00.000Z</published>
+    <summary>从新建文章到部署上线的完整流程，涵盖写作、图片处理、本地预览、部署和草稿管理。</summary>
+    <title>Hexo 博客发布笔记完整教程</title>
+    <updated>2026-08-07T17:40:19.277Z</updated>
+  </entry>
+</feed>
