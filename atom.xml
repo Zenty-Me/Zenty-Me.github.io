@@ -32,8 +32,8 @@
       <name>Zenty</name>
     </author>
     <category term="数据存储" scheme="https://zenty-me.github.io/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/"/>
-    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <id>https://zenty-me.github.io/posts/bae4ff13/</id>
     <link href="https://zenty-me.github.io/posts/bae4ff13/"/>
     <published>2026-09-05T01:54:41.000Z</published>
@@ -197,9 +197,9 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
-    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
-    <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
     <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
+    <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <id>https://zenty-me.github.io/posts/aad9f202/</id>
     <link href="https://zenty-me.github.io/posts/aad9f202/"/>
     <published>2026-08-06T08:33:20.000Z</published>
@@ -270,9 +270,9 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
-    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
     <category term="性能测试" scheme="https://zenty-me.github.io/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/"/>
     <category term="压测" scheme="https://zenty-me.github.io/tags/%E5%8E%8B%E6%B5%8B/"/>
+    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/d189c3ce/</id>
     <link href="https://zenty-me.github.io/posts/d189c3ce/"/>
     <published>2026-08-06T03:12:03.000Z</published>
