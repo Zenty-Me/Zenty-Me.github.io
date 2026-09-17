@@ -32,8 +32,8 @@
       <name>Zenty</name>
     </author>
     <category term="数据存储" scheme="https://zenty-me.github.io/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/"/>
-    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <id>https://zenty-me.github.io/posts/bae4ff13/</id>
     <link href="https://zenty-me.github.io/posts/bae4ff13/"/>
     <published>2026-09-05T01:54:41.000Z</published>
@@ -197,9 +197,9 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
-    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
-    <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
     <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
+    <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <id>https://zenty-me.github.io/posts/aad9f202/</id>
     <link href="https://zenty-me.github.io/posts/aad9f202/"/>
     <published>2026-08-06T08:33:20.000Z</published>
@@ -227,8 +227,8 @@
     </author>
     <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
     <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
     <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
+    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
     <id>https://zenty-me.github.io/posts/35a7b521/</id>
     <link href="https://zenty-me.github.io/posts/35a7b521/"/>
     <published>2026-08-06T06:30:00.000Z</published>
@@ -242,8 +242,8 @@
     </author>
     <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
     <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
     <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
+    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
     <id>https://zenty-me.github.io/posts/9fa0ea99/</id>
     <link href="https://zenty-me.github.io/posts/9fa0ea99/"/>
     <published>2026-08-06T05:00:00.000Z</published>
