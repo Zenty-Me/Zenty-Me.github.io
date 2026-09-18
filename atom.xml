@@ -11,18 +11,19 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-09-17T09:33:59.815Z</updated>
+  <updated>2026-09-17T09:34:38.690Z</updated>
   <entry>
     <author>
       <name>Zenty</name>
     </author>
+    <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
     <category term="uv" scheme="https://zenty-me.github.io/tags/uv/"/>
     <id>https://zenty-me.github.io/posts/587dcf3b/</id>
     <link href="https://zenty-me.github.io/posts/587dcf3b/"/>
     <published>2026-09-17T09:27:31.000Z</published>
     <summary>uv 是 Astral 开发的 Python 项目与包管理工具，基于 Rust 构建。它将解释器下载、虚拟环境配置、依赖安装和锁文件管理整合到了单一二进制文件中，可以直接替代 pip、virtualenv、pyenv 和 Poetry。 macOS 与 Li…</summary>
     <title>使用uv管理环境</title>
-    <updated>2026-09-17T09:33:59.815Z</updated>
+    <updated>2026-09-17T09:34:38.690Z</updated>
   </entry>
   <entry>
     <author>
@@ -239,8 +240,8 @@
     </author>
     <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
     <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
     <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
+    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
     <id>https://zenty-me.github.io/posts/35a7b521/</id>
     <link href="https://zenty-me.github.io/posts/35a7b521/"/>
     <published>2026-08-06T06:30:00.000Z</published>
@@ -254,8 +255,8 @@
     </author>
     <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
     <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
     <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
+    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
     <id>https://zenty-me.github.io/posts/9fa0ea99/</id>
     <link href="https://zenty-me.github.io/posts/9fa0ea99/"/>
     <published>2026-08-06T05:00:00.000Z</published>
@@ -282,9 +283,9 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
-    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
     <category term="性能测试" scheme="https://zenty-me.github.io/tags/%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/"/>
     <category term="压测" scheme="https://zenty-me.github.io/tags/%E5%8E%8B%E6%B5%8B/"/>
+    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/d189c3ce/</id>
     <link href="https://zenty-me.github.io/posts/d189c3ce/"/>
     <published>2026-08-06T03:12:03.000Z</published>
