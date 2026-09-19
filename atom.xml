@@ -11,17 +11,18 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-09-19T11:38:16.460Z</updated>
+  <updated>2026-09-19T11:38:47.438Z</updated>
   <entry>
     <author>
       <name>Zenty</name>
     </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/c2881daa/</id>
     <link href="https://zenty-me.github.io/posts/c2881daa/"/>
     <published>2026-09-19T11:36:08.000Z</published>
     <summary>在切入业务代码前，需要先厘清 Kafka 的通信模型与基础组件。如果不理解这些设计动机，使用 、 与 时就容易陷入机械配置的误区。 假设一个电商系统在处理创建订单请求 时，采用传统的单体同步调用： 整个请求的链路耗时为各项之和（约 650ms）。但在多数业务…</summary>
     <title>kafka实践教程</title>
-    <updated>2026-09-19T11:38:16.460Z</updated>
+    <updated>2026-09-19T11:38:47.438Z</updated>
   </entry>
   <entry>
     <author>
@@ -68,8 +69,8 @@
       <name>Zenty</name>
     </author>
     <category term="数据存储" scheme="https://zenty-me.github.io/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/"/>
-    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <id>https://zenty-me.github.io/posts/bae4ff13/</id>
     <link href="https://zenty-me.github.io/posts/bae4ff13/"/>
     <published>2026-09-05T01:54:41.000Z</published>
@@ -97,10 +98,10 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
-    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
     <category term="Spring Security" scheme="https://zenty-me.github.io/tags/Spring-Security/"/>
     <category term="Spring Boot" scheme="https://zenty-me.github.io/tags/Spring-Boot/"/>
     <category term="认证授权" scheme="https://zenty-me.github.io/tags/%E8%AE%A4%E8%AF%81%E6%8E%88%E6%9D%83/"/>
+    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
     <id>https://zenty-me.github.io/posts/af322717/</id>
     <link href="https://zenty-me.github.io/posts/af322717/"/>
     <published>2026-08-23T07:52:15.000Z</published>
@@ -144,10 +145,10 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
     <category term="XXL-JOB" scheme="https://zenty-me.github.io/tags/XXL-JOB/"/>
     <category term="分布式" scheme="https://zenty-me.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
     <category term="任务调度" scheme="https://zenty-me.github.io/tags/%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/"/>
-    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
     <id>https://zenty-me.github.io/posts/9d7f76ba/</id>
     <link href="https://zenty-me.github.io/posts/9d7f76ba/"/>
     <published>2026-08-14T06:55:53.000Z</published>
@@ -234,8 +235,8 @@
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
     <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
-    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <id>https://zenty-me.github.io/posts/aad9f202/</id>
     <link href="https://zenty-me.github.io/posts/aad9f202/"/>
     <published>2026-08-06T08:33:20.000Z</published>
@@ -263,8 +264,8 @@
     </author>
     <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
     <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
     <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+    <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
     <id>https://zenty-me.github.io/posts/35a7b521/</id>
     <link href="https://zenty-me.github.io/posts/35a7b521/"/>
     <published>2026-08-06T06:30:00.000Z</published>
@@ -278,8 +279,8 @@
     </author>
     <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
     <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
     <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+    <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
     <id>https://zenty-me.github.io/posts/9fa0ea99/</id>
     <link href="https://zenty-me.github.io/posts/9fa0ea99/"/>
     <published>2026-08-06T05:00:00.000Z</published>

@@ -257,668 +257,6 @@ https://zhuanlan.zhihu.com/p/77151308
       </tags>
   </entry>
   <entry>
-    <title>解决lmstudio下载模型卡顿问题</title>
-    <url>/posts/17dd0035/</url>
-    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
-引言
-在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
-本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
-一、准备工作
-在开始之前，请确保：
-
-安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
-注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
-了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
-
-二、从魔搭社区下载模型
-魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
-方式一：网页直接下载（最直观）
-
-进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
-搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
-进入模型详情页：点击目标模型，进入其详情页面。
-进入文件列表：点击页面中的“模型文件”标签。
-选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
-
-
-提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
-
-方式二：命令行CLI下载（推荐）
-魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
-首先安装modelscope库：
-pip install modelscope
-然后使用以下命令下载：
-modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
-示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
-modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
-方式三：Python SDK下载
-如果你更习惯使用Python，也可以使用SDK进行下载：
-from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
-三、导入LM Studio
-下载好模型文件后，有两种方式将其导入LM Studio。
-方式一：使用 lms import 命令（最推荐）
-LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
-
-
-打开终端（Windows用户可使用PowerShell或CMD）。
-
-
-执行导入命令：
-基本导入（默认会移动文件）：
-lms import /path/to/your/model.gguf
-保留原文件（复制一份）：
-lms import /path/to/your/model.gguf --copy
-创建符号链接（不复制也不移动，在原位置创建引用）：
-lms import /path/to/your/model.gguf --symbolic-link
-这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
-
-
-根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
-
-
-方式二：手动放置文件（备选）
-如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
-
-
-找到LM Studio的模型目录：
-
-Windows: C:\Users\你的用户名\.lmstudio\models\
-macOS/Linux: ~/.lmstudio/models/
-
-你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
-
-
-创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
-.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
-如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
-
-
-刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
-
-
-
-注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
-
-四、验证与使用
-导入成功后，在LM Studio中：
-
-点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
-点击模型进行加载。
-切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
-
-提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
-五、常见问题与技巧
-Q：下载的模型在LM Studio中无法识别？
-A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
-Q：LM Studio内置下载速度太慢怎么办？
-A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
-Q：如何选择合适量化版本的模型？
-A：一般来说：
-
-q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
-q8_0：质量更好，体积也更大
-f16：接近原始精度，但又大又慢
-
-如果显存有限（如8GB），推荐使用Q4量化版本。
-结语
-通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
-]]></content>
-      <categories>
-        <category>其他</category>
-      </categories>
-      <tags>
-        <tag>LM Studio</tag>
-        <tag>大模型</tag>
-        <tag>本地部署</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ModelMeter 开发复盘</title>
-    <url>/posts/4c268a9c/</url>
-    <content><![CDATA[这次参加初试，我选了方向 A 的模型价格计算器，交付作品是 ModelMeter。
-在线体验：https://modelmeter.vercel.app/
-源码仓库：https://github.com/Zenty-Me/modelmeter
-最开始构思时，我以为这只是一个把各家 Token 价格相乘再加总的简单工具。只要拿到几家官方数字，拉个表单乘以调用量就能交卷。
-但真正动手写数据层时，我发现厂商的计价体系远比想象中杂乱。有的模型只按百万 Token 计费，有的带有上下文长度阈值，超过 128k 后价格整体翻倍；还有的区分了缓存命中、批处理和推理 Token。
-如果图省事把价格硬编码在前端组件里，代码确实能跑，但未来官方一旦调整计价策略，维护成本会非常高。所以我放弃了单纯给模型写两个固定数字的做法，改用规则驱动的 Pricing Tier。我写了一个解析器，根据用户输入的单次平均 Prompt 长度，自动选择对应区间的价格阶梯。UI 组件只消费处理后的成本明细，把业务规则与界面渲染彻底解耦。
-在搭建项目的过程中，AI 帮我省掉了大量机械劳动。初始化 Next.js App Router 架构、搭建 TypeScript 接口类型、编写 Tailwind 响应式样式以及补充 Vitest 基础测试用例，这些工作 AI 都能以极高的速度交付。
-但这也再次印证了一个事实：AI 生成的代码必须逐行推敲业务语意。
-最明显的一个坑出现在降本比例的计算上。有一版代码运行后，页面赫然写着“切换模型可节省 2,221.4%”。从常识来看，在成本均为正数的前提下，省钱幅度不可能突破 100%。深入排查后发现，AI 把“A 比 B 贵了多少”与“从 A 换到 B 能省多少”混为一谈，错把最低价格当成了计算百分比的分母。我重新拆分了两个维度的计算逻辑，将分母修正为最高成本，并补充了测试断言。
-数据源也是需要人工死守的环节。让 AI 凭记忆填充模型参数很容易，但其中常夹杂过时甚至捏造的数据。在这个项目里，我坚持逐条核对 OpenAI、Anthropic、Google 的官方 Pricing 页面，把一手 URL 和人工验证日期落库，同时在前端展示新鲜度标识。
-复盘整个过程，有几点体会比较明确：
-首先，做产品时要先跑通核心闭环，不要在一开始就陷入各种分支特性的泥潭。
-其次，向 AI 提需求时，必须给出明确的数学边界、输入输出约束和验收条件，模糊的提问只会得到充满隐患的代码。
-最后，无论工具演进到什么程度，代码的正确性、数据的真实性，最终必须由开发者自己负责。
-技术栈：Next.js / React / TypeScript / Tailwind CSS / Vitest / Vercel
-项目仓库：https://github.com/Zenty-Me/modelmeter
-]]></content>
-      <categories>
-        <category>其他</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
-    <url>/posts/35a7b521/</url>
-    <content><![CDATA[本篇面向完全没接触过代码的同学。跟着做完，你会得到一个有独立网址（你的名字.github.io）、能写文章、手机电脑都能看的个人博客。
-一、先认识几个概念
-别急着动手，花两分钟搞清楚我们在做什么。
-
-
-
-名词
-是什么
-在本教程里干嘛
-
-
-
-
-Hexo
-一个博客生成工具
-把你写的 Markdown 文章变成网页
-
-
-Butterfly
-一个博客主题（皮肤）
-让博客好看
-
-
-Node.js
-运行环境
-Hexo 依赖它才能运行
-
-
-Git
-版本控制工具
-把博客推送到网上
-
-
-GitHub
-代码托管平台
-免费存放你的博客
-
-
-GitHub Pages
-GitHub 的建站服务
-让别人能通过网址访问你的博客
-
-
-
-一句话流程：用 Hexo 在本地写文章 → 用 Git 推到 GitHub → GitHub Pages 自动发布 → 全网可访问。
-二、准备工作
-1. 注册 GitHub 账号
-打开 https://github.com/ 注册账号。用户名要记住，因为你的博客网址会是 用户名.github.io。
-2. 安装 Node.js
-去 https://nodejs.org/ 下载 LTS（长期支持版），一路下一步安装即可。
-安装完打开命令行（Windows 按 Win+R 输入 cmd 回车），输入：
-node -vnpm -v
-能看到版本号就说明装好了。
-
-💡 国内用户如果后面安装很慢，可以换淘宝镜像：
-npm config set registry https://registry.npmmirror.com
-
-3. 安装 Git
-去 https://git-scm.com/ 下载安装，一路下一步。验证：
-git --version
-三、安装 Hexo
-在命令行执行：
-npm install -g hexo-cli
--g 表示全局安装，装一次到处能用。验证：
-hexo version
-四、初始化博客
-先在电脑上新建一个空文件夹放博客（比如 D:\blog），然后命令行进入这个文件夹，执行：
-hexo initnpm install
-等一会儿，会生成这些文件：
-blog/├── _config.yml        # 站点配置文件（改站名、作者、部署等）├── package.json├── source/            # 文章和资源都放这里│   └── _posts/        # 文章目录（你写的文章在这）└── themes/            # 主题目录
-五、本地预览
-hexo server
-浏览器打开 http://localhost:4000/ ，看到一个默认博客就成功了。按 Ctrl+C 停止。
-六、安装 Butterfly 主题
-在博客根目录执行（推荐用 npm 安装，升级方便、不会有嵌套 git 仓库的坑）：
-npm install hexo-theme-butterfly --save
-再装主题需要的两个渲染依赖：
-npm install hexo-renderer-pug hexo-renderer-stylus --save
-打开 _config.yml，找到 theme 字段改成：
-theme: butterfly
-
-💡 接着在博客根目录新建一个文件 _config.butterfly.yml，把 node_modules/hexo-theme-butterfly/_config.yml 里的内容全部复制过去。以后改主题配置就改这个文件，升级主题不会丢配置。本文说的&quot;主题配置&quot;都指它。
-
-再次 hexo server 预览，能看到 Butterfly 的样式就对了。
-七、站点基础配置（_config.yml）
-打开 _config.yml，改这几项：
-title: 我的博客                     # 站点标题subtitle: &quot;&quot;description: &quot;&quot;author: 你的名字                    # 作者名（全站署名读这里）language: zh-CNtimezone: Asia/Shanghaiurl: https://用户名.github.io       # 换成你的 GitHub 用户名permalink: :year/:month/:day/:title/
-
-permalink 是文章网址格式，上面是默认值。想用更短的固定网址，可参考《文章分类、置顶与短链配置》装 abbrlink 插件。
-
-八、主题配置（_config.butterfly.yml）
-这里只列最常用的几项，完整外观配置见《如何配置网站外观与个人信息》。
-导航菜单：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标。图标去 https://fontawesome.com/icons 搜，复制 class 名。
-头像： 准备一张正方形图片放到 source/img/avatar.png（没有 img 文件夹就新建），然后：
-avatar:  img: /img/avatar.png  effect: false       # true 会一直转圈，一般关掉
-建菜单对应页面： 菜单里写了的页面要手动建，否则点进去 404：
-hexo new page tagshexo new page categorieshexo new page archiveshexo new page about
-然后编辑 source/tags/index.md，开头加上 type: tags；source/categories/index.md 加 type: categories。归档页和关于页不用加。
-九、写第一篇文章
-hexo new &quot;我的第一篇文章&quot;
-会在 source/_posts/ 生成 我的第一篇文章.md。用 Typora 或任意编辑器打开，开头是 front-matter（两行 --- 之间的配置）：
----title: 我的第一篇文章date: 2026-08-06 14:30:00tags:  - 随笔categories:  - 生活---
-下面用 Markdown 写正文，常用语法：
-# 大标题## 二级标题普通段落直接写。- 列表项一- 列表项二**加粗** *斜体* `行内代码`[链接文字](https://example.com)![图片说明](图片名.png)
-写完 hexo server 预览效果。
-十、部署到 GitHub Pages
-最后一步，把博客发布到网上。
-1. 新建仓库
-在 GitHub 点 New repository，名字必须是 用户名.github.io（用户名换成你的）。选 Public，其他不勾，创建。
-2. 配置 SSH（让电脑有权推送到 GitHub）
-git config --global user.name &quot;你的名字&quot;git config --global user.email &quot;你的邮箱&quot;ssh-keygen -t ed25519 -C &quot;你的邮箱&quot;
-一路回车。然后打开生成的公钥文件（Windows 路径 C:\Users\你的用户名\.ssh\id_ed25519.pub），用记事本打开，复制全部内容。
-到 GitHub → 右上角头像 → Settings → SSH and GPG keys → New SSH key，Title 随便填，Key 粘贴刚才复制的内容，保存。
-验证：
-ssh -T git@github.com
-第一次问 yes/no 输 yes。看到 Hi 用户名! 就成功了。
-3. 安装部署插件
-npm install hexo-deployer-git --save
-4. 配置部署信息
-打开 _config.yml，翻到最下面的 deploy，改成：
-deploy:  type: git  repo: git@github.com:用户名/用户名.github.io.git  branch: main
-
-用户名要换成你自己的。repo 地址也能在 GitHub 仓库页面点 Code → SSH 复制。
-
-5. 一键发布
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-三个命令的作用：
-
-
-
-命令
-作用
-
-
-
-
-hexo clean
-清理缓存
-
-
-hexo g
-生成静态网页
-
-
-hexo d
-推送到 GitHub
-
-
-
-第一次推送可能要确认，输 yes。等 1-2 分钟，访问 https://用户名.github.io/ 就能看到你的博客了！
-十一、日常使用
-博客搭好后，日常写文章就三步：
-hexo new &quot;新文章&quot;                  # 1. 建文章# （用编辑器写内容）hexo clean &amp;&amp; hexo g &amp;&amp; hexo d     # 2. 发布
-想先看看效果不发布，用 hexo server 本地预览。
-完整的写作发布流程（图片处理、草稿、本地预览细节）见《Hexo 博客发布笔记完整教程》。
-十二、进阶推荐
-博客跑起来后，可以接着折腾：
-
-《如何配置网站外观与个人信息》——改背景、菜单、社交链接、公告
-《文章分类、置顶与短链配置》——文章自动归类、置顶、固定短网址
-《如何添加书签》——做个网址收藏页
-
-十三、常见问题
-Q：hexo server 打不开 localhost:4000？
-看命令行有没有报错。端口可能被占用，换一个：hexo server -p 5000。
-Q：部署报错 Permission denied (publickey)？
-SSH 没配好。重新按第十步生成 key 并添加到 GitHub，确认 ssh -T git@github.com 能通过。
-Q：部署成功了但访问 404？
-按顺序检查：仓库名是不是严格的 用户名.github.io；仓库是不是 Public；去仓库 Settings → Pages 看是否已开启。
-Q：部署后看到的还是旧内容？
-GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可去仓库 Actions 页面看部署状态。
-Q：中文文章网址又长又丑？
-默认网址带中文和日期。装 hexo-abbrlink 插件可生成 8 位固定短链，详见《文章分类、置顶与短链配置》。
-Q：图片显示不出来？
-在 _config.yml 设置 post_asset_folder: true，图片放文章同名文件夹，用裸文件名引用 ![](图片.png)。详见《Hexo 博客发布笔记完整教程》。
-小结
-
-
-
-步骤
-命令 / 操作
-
-
-
-
-装环境
-Node.js + Git
-
-
-装 Hexo
-npm install -g hexo-cli
-
-
-建博客
-hexo init
-
-
-装主题
-npm install hexo-theme-butterfly --save + 改 theme: butterfly
-
-
-改配置
-_config.yml + _config.butterfly.yml
-
-
-写文章
-hexo new &quot;标题&quot;
-
-
-发布
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-
-
-搭一次，以后写文章只需要后两行。祝写作愉快。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何添加书签</title>
-    <url>/posts/3ffe122/</url>
-    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
-一、书签数据文件
-所有书签数据存放在：
-source/_data/link.yml
-用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
-二、文件结构
-文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
-- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
-三、添加书签到已有分类
-在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
-- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
-注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
-四、新建分类
-在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
-- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
-新分类前面留一个空行和上个分类隔开。
-五、缩进规则（重要）
-YAML 对缩进敏感，必须用空格，不能用 Tab：
-
-
-
-层级
-内容
-缩进
-
-
-
-
-1
-class_name
-0 空格（顶格）
-
-
-2
-class_desc / link_list
-2 空格
-
-
-3
-name
-4 空格
-
-
-4
-link / avatar / descr
-6 空格
-
-
-
-六、图标自动获取
-avatar 字段填网站自己的 favicon，格式固定：
-https://网站域名/favicon.ico
-例如：
-
-GitHub → https://github.com/favicon.ico
-掘金 → https://juejin.cn/favicon.ico
-
-不用手动下载图标，浏览器会自动加载网站图标。
-七、删除书签
-找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
-八、部署上线
-改完 link.yml 后，执行：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
-
-GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-九、完整示例
-下面是一个包含两个分类的完整 link.yml 示例：
-- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
-照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>书签</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hexo 博客发布笔记完整教程</title>
-    <url>/posts/b9c5d664/</url>
-    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章
-hexo new &quot;文章标题&quot;
-执行后会在 source/_posts/ 下生成两个东西：
-
-文章标题.md：Markdown 文章文件
-文章标题/：同名文件夹，用于存放图片等资源
-
-二、文章结构（Front-matter）
-文章开头 --- 之间是 front-matter，用于配置文章元信息：
----title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-常用字段说明：
-
-
-
-字段
-作用
-必填
-
-
-
-
-title
-文章标题
-是
-
-
-date
-发布时间
-是
-
-
-tags
-标签（列表）
-否
-
-
-categories
-分类（列表）
-否
-
-
-cover
-封面图路径
-否
-
-
-description
-摘要（首页显示）
-否
-
-
-
-三、写作与图片处理
-用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则
-本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式
-文章里用裸文件名引用图片：
-![图片说明](图片名.png)
-
-⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
-
-Typora 配置建议
-如果用 Typora 写作，推荐这样配置：
-
-偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
-路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
-
-这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览
-hexo server
-访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
-预览草稿：
-hexo server --draft
-按 Ctrl+C 停止服务。
-
-修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
-
-五、部署到 GitHub Pages
-写完满意后，一键部署：
-hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-简写形式：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-各步骤作用：
-
-
-
-命令
-作用
-
-
-
-
-hexo clean
-清理缓存（删 db.json 和 public/）
-
-
-hexo generate
-生成静态文件到 public/
-
-
-hexo deploy
-把 public/ 推送到 GitHub 仓库
-
-
-
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客
-部署完成后访问主页：
-https://zenty-me.github.io/
-文章地址格式：
-https://zenty-me.github.io/年/月/日/文章标题/
-
-GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-七、草稿机制
-不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
-新建草稿：
-hexo new draft &quot;草稿标题&quot;
-把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
-hexo publish &quot;草稿标题&quot;
-发布后记得执行部署命令。
-八、常用命令速查
-
-
-
-命令
-作用
-
-
-
-
-hexo new &quot;标题&quot;
-新建文章
-
-
-hexo new draft &quot;标题&quot;
-新建草稿
-
-
-hexo publish &quot;标题&quot;
-草稿转正式
-
-
-hexo server
-本地预览
-
-
-hexo server --draft
-预览含草稿
-
-
-hexo clean
-清理缓存
-
-
-hexo generate
-生成静态文件
-
-
-hexo deploy
-部署到远程
-
-
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-一键发布
-
-
-hexo list
-列出所有文章
-
-
-hexo version
-查看版本
-
-
-
-简写：g = generate，s = server，d = deploy，c = clean
-九、常见问题
-1. 修改配置后预览没变化？
-改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？
-按顺序检查：
-
-确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
-确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
-确认 _config.yml 里 post_asset_folder: true 已开启
-确认 marked 配置了 postAsset: true
-
-3. 部署后看不到更新？
-GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？
-_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
-
-以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>FastAPI教程</title>
     <url>/posts/FastAPI%E6%95%99%E7%A8%8B/</url>
     <content><![CDATA[
@@ -1365,338 +703,6 @@ import timeimport asynciores = await asyncio.to_thread(time.sleep, 2)
       </tags>
   </entry>
   <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置
-2.1 github新建仓库+token获取
-
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>图床</tag>
-        <tag>PicList</tag>
-        <tag>GitHub</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>文章分类、置顶与短链配置</title>
-    <url>/posts/1784a007/</url>
-    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
-一、文件夹自动归类（auto_category）
-装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
-用法
-在 source/_posts/ 下建文件夹，文章放进去：
-source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
-上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
-注意
-
-手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
-_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
-建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
-
-配置（已设好，一般不用改）
-_config.yml 里：
-auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
-想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
-二、置顶排序（sticky）
-首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
----title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
-规则
-
-有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
-没 sticky 的文章：按日期倒序排在置顶文章之后
-sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
-
-示例
-本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
-三、永久短链（abbrlink）
-装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
-https://zenty-me.github.io/posts/b9c5d664/
-为什么用短链
-
-永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
-简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
-适合分享：短链好看，外链稳定
-
-工作机制
-
-第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
-之后这个值永久不变，URL 固定为 /posts/abbrlink值/
-不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
-
-配置（已设好）
-_config.yml 里：
-permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
-四、系列文章（series）
-写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
-归入系列
-在 front-matter 加 series: 系列名，同名的就是一个系列：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
-加完后该文章自动获得：
-
-文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
-侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
-
-自定义顺序
-默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
-series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
-排序规则
-
-
-
-情况
-排序方式
-
-
-
-
-系列里有任一篇带 series_order
-按 series_order 数字升序（没加的排最后）
-
-
-全都没加 series_order
-按 date 排序
-
-
-
-配置在 _config.butterfly.yml：
-series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
-示例
-本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
-五、日常写笔记流程
-结合三个机制，写一篇新笔记的完整流程：
-
-建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
-移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
-（可选）置顶：在 front-matter 加 sticky: 100
-（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
-编辑：Typora 写正文
-部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
-小结
-
-
-
-需求
-怎么做
-
-
-
-
-给文章归类
-把 md 文件放进 _posts/分类名/ 文件夹
-
-
-新建分类
-在 _posts/ 下新建文件夹并放入文章
-
-
-置顶文章
-front-matter 加 sticky: 100
-
-
-文章 URL
-自动生成 /posts/xxxxxxxx/，不用管
-
-
-多级分类
-auto_category.depth 改大、multiple: true
-
-
-组成系列文章
-front-matter 加 series: 系列名
-
-
-指定系列内顺序
-front-matter 加 series_order: 数字（越小越靠前）
-
-
-
-一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何配置网站外观与个人信息</title>
-    <url>/posts/9fa0ea99/</url>
-    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
-
-
-
-文件
-作用
-
-
-
-
-_config.yml
-Hexo 站点级配置（站名、作者、语言、部署等）
-
-
-_config.butterfly.yml
-Butterfly 主题配置（头像、背景、菜单、侧边栏等）
-
-
-
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息
-编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
-
-title：浏览器标签页和首页大标题都读这里
-description：搜索引擎抓取的站点描述，写一句话介绍即可
-author：改一次，全站的作者署名、版权信息都会同步
-
-二、头像
-编辑 _config.butterfly.yml：
-avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
-
-支持 png / jpg / webp，建议用正方形图，否则会被裁切。
-
-三、网站背景
-背景在 _config.butterfly.yml 的 background 字段：
-# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）
-顶部图是每页面顶部那张大横图：
-disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-图片放到 source/img/top-bg.webp（或你指定的路径）。
-
-单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
-
-五、导航菜单
-菜单在 _config.butterfly.yml 顶部：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标class。
-
-显示名：菜单上显示的文字
-路径：页面的 URL，比如 /tags/
-图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
-
-新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接
-侧边栏的社交图标：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-七、侧边栏作者卡片
-侧边栏那个带头像和按钮的卡片：
-card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）
-favicon: /img/favicon.png
-图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪
-所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
-source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）
-文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
-在 _config.butterfly.yml 里：
-lightbox: fancybox
-一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
-
-写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
-
-十一、部署生效
-任何配置改完后，三连部署：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
-小结
-
-
-
-想改什么
-改哪里
-
-
-
-
-站点名 / 作者名 / SEO 描述
-_config.yml 的 title / author / description
-
-
-头像
-_config.butterfly.yml 的 avatar.img + 放图到 source/img/
-
-
-背景色 / 渐变
-_config.butterfly.yml 的 background
-
-
-顶部图
-_config.butterfly.yml 的 default_top_img 等
-
-
-导航菜单
-_config.butterfly.yml 的 menu
-
-
-社交图标
-_config.butterfly.yml 的 social
-
-
-作者签名
-_config.butterfly.yml 的 card_author.description
-
-
-图片点击放大
-_config.butterfly.yml 的 lightbox: fancybox
-
-
-标签页小图标
-_config.butterfly.yml 的 favicon
-
-
-
-记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>使用uv管理环境</title>
     <url>/posts/587dcf3b/</url>
     <content><![CDATA[uv 是 Astral 开发的 Python 项目与包管理工具，基于 Rust 构建。它将解释器下载、虚拟环境配置、依赖安装和锁文件管理整合到了单一二进制文件中，可以直接替代 pip、virtualenv、pyenv 和 Poetry。
@@ -1848,179 +854,6 @@ uvx &lt;tool&gt; [args]
       </categories>
       <tags>
         <tag>uv</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>XXL-Job分布式任务调度平台</title>
-    <url>/posts/9d7f76ba/</url>
-    <content><![CDATA[介绍
-XXL-JOB 是一个轻量级分布式任务调度框架，通过中心化的调度器（支持集群）统一管理任务，解决 Spring@Scheduled在分布式环境下的任务重复执行问题，并提供任务分片、失败重试、可视化监控等功能。
-核心点：分布式协调 + 避免重复执行 + 运维友好
-
-开源地址：https://www.xuxueli.com/xxl-job/
-
-使用
-环境准备和初始化
-
-源码下载：https://gitee.com/xuxueli0323/xxl-job
-找到初始化数据库文件并执行
-
-
-
-修改配置
-
-
-调度中心配置文件地址：/xxl-job/xxl-job-admin/src/main/resources/application.properties
-该配置文件当下需要重点修改一下数据源的配置。主要修改：url、username、password。
-
-
-
-启动项目
-
-
-
-访问调度中心
-
-地址：http://localhost:8080，端口号可自己在配置文件中指定
-账号：admin
-密码：123456
-
-配置部署&quot;执行器项目&quot;
-新建项目
-
-添加依赖并配置
-
-注意版本尽量和你下载的源码的版本一致
-
-&lt;dependency&gt;  &lt;groupId&gt;com.xuxueli&lt;/groupId&gt;  &lt;artifactId&gt;xxl-job-core&lt;/artifactId&gt;  &lt;version&gt;3.0.0&lt;/version&gt;&lt;/dependency&gt;
-
-配置
-
-xxl:  job:    adminAddresses: http://127.0.0.1:8081 # xxl-job 调度中心部署根地址，如调度中心集群部署存在多个地址则用逗号分隔    accessToken: default_token # 需要和 xxl-job 上创建的 token 保持一致    appName: test # 需要和 xxl-job 上创建的执行器名称保持一致    ip: # 执行器 ip, 为空表示自动获取 ip    port: 10001 # 执行器端口号    logPath: /data/applogs/xxl-job/jobhandler # 执行器日志存放路径    logRetentionDays: 30 # 日志保留时间（单位：天）
-新建执行器和任务
-
-
-新建config文件夹：读取配置并注入使用
-
-配置类
-
-package com.zzh.xxxjobdemo.config;import lombok.Data;import org.springframework.boot.context.properties.ConfigurationProperties;import org.springframework.stereotype.Component;@ConfigurationProperties(prefix = XxlJobProperties.PREFIX)@Component@Datapublic class XxlJobProperties &#123;    public static final String PREFIX = &quot;xxl.job&quot;;    private String adminAddresses;    private String accessToken;    private String appName;    private String ip;    private int port;    private String logPath;    private int logRetentionDays = 30;&#125;
-
-注入使用
-
-package com.zzh.xxxjobdemo.config;import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;import jakarta.annotation.Resource;import lombok.extern.slf4j.Slf4j;import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;@Configuration@Slf4jpublic class XxlJobConfig &#123;    @Resource    private XxlJobProperties xxlJobProperties;    /**     * 初始化执行器     * @return     */    @Bean    public XxlJobSpringExecutor xxlJobExecutor() &#123;        log.info(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; xxl-job config init.&quot;);        XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();        xxlJobSpringExecutor.setAdminAddresses(xxlJobProperties.getAdminAddresses());        xxlJobSpringExecutor.setAppname(xxlJobProperties.getAppName());        xxlJobSpringExecutor.setIp(xxlJobProperties.getIp());        xxlJobSpringExecutor.setPort(xxlJobProperties.getPort());        xxlJobSpringExecutor.setAccessToken(xxlJobProperties.getAccessToken());        xxlJobSpringExecutor.setLogPath(xxlJobProperties.getLogPath());        xxlJobSpringExecutor.setLogRetentionDays(xxlJobProperties.getLogRetentionDays());        return xxlJobSpringExecutor;    &#125;&#125;
-
-新建一个任务类
-
-package com.zzh.xxxjobdemo.job;import com.xxl.job.core.handler.annotation.XxlJob;import org.springframework.stereotype.Component;import java.util.Date;@Componentpublic class SimpleXxlJob &#123;    @XxlJob(&quot;demoJobHandler&quot;)    public void demoJobHandler() throws Exception&#123;        System.out.println(&quot;执行定时任务，执行时间：&quot; + new Date());    &#125;&#125;
-demoJobHandler 和创建任务时的 JobHandler 保持一致
-执行
-
-在任务管理界面选中任务并选择执行一次
-
-
-
-日志
-
-
-
-GLUE 模式使用
-
-先在 demo 项目中注入一个 service 类后并重启项目
-
-package com.zzh.xxxjobdemo.service;import org.springframework.stereotype.Service;@Servicepublic class HelloService &#123;    public void doSome()&#123;        System.out.println(&quot;do some!&quot;);    &#125;    public void doOther()&#123;        System.out.println(&quot;do other!&quot;);    &#125;&#125;
-
-新建一个任务，选择 GLUE 模式
-
-
-
-编辑代码
-
-
-package com.xxl.job.service.handler;import com.xxl.job.core.context.XxlJobHelper;import com.xxl.job.core.handler.IJobHandler;import org.springframework.beans.factory.annotation.Autowired;import com.zzh.xxxjobdemo.service.HelloService;public class DemoGlueJobHandler extends IJobHandler &#123;      // 注入业务实现类  	@Autowired  	private HelloService helloService;	@Override	public void execute() throws Exception &#123;		helloService.doSome();	&#125;&#125;
-
-点击执行任务即可
-
-
-路由策略
-在IDE中模拟集群
-
-
-修改配置，添加 VM Options 选项，配置实例启动端口和执行器监听端口
-
--Dserver.port=8088 -Dxxl.job.port=10010
-
-修改路由策略为轮询
-
-
-在后台管理界面执行两次任务，可以观察到每一个实例都执行了一次
-
-
-其他策略
-
-第一个：直接选任务列表里的第一个机器干活。
-最后一个：直接选任务列表里的最后一个机器干活。
-轮询：轮流让每台机器干活，大家排队，一人一次。
-随机：随便抽一台机器干活，全凭运气。
-一致性HASH：同样的任务永远找同一台机器干，避免换来换去。
-最不经常使用：挑平时干活最少的机器去干，雨露均沾。
-最近最久未使用：挑最闲的机器（好久没干活的）去干。
-故障转移：如果一台机器挂了，自动换另一台好的继续干。
-忙碌转移：如果一台机器正忙着，就找其他闲着的机器干。
-分片广播：让所有机器一起干同一个活，各自分一小块任务。
-
-分片功能
-需求：自指定的节假日，需要给平台所有用户发送祝福短信
-在分片广播方面涉及到两个概念：
-
-分片总数：一共有多少台
-分片索引：当前这台机器的下标（下标从0开始）
-
-准备
-
-数据库文件生成提示词
-
-你是一名 MySQL 数据库专家和数据生成专家。请帮我编写一个脚本，用于生成包含建表 SQL 以及 5000 条模拟数据的 SQL 文件。### 一、 表结构要求 (DDL)- **数据库/ Schema**: `xxl_job`- **表名**: `t_user_mobile_plan`- **Engine/字符集**: `InnoDB`, `utf8mb4`, 排序规则 `utf8mb4_0900_ai_ci`- **字段定义**:  1. `id`: bigint, NOT NULL, AUTO_INCREMENT, 主键, 注释 &#x27;主键&#x27;  2. `username`: varchar(50), NOT NULL, 注释 &#x27;用户名&#x27;  3. `nickname`: varchar(50), NULL DEFAULT NULL, 注释 &#x27;昵称&#x27;  4. `phone`: varchar(20), NOT NULL, 注释 &#x27;手机号码&#x27;  5. `info`: varchar(500), NULL DEFAULT NULL, 注释 &#x27;备注&#x27;- **其他**: 包含 `DROP TABLE IF EXISTS `t_user_mobile_plan`;` 语句，并在脚本开头和结尾分别加上 `SET FOREIGN_KEY_CHECKS = 0;` 和 `SET FOREIGN_KEY_CHECKS = 1;`。设置建表后的 `AUTO_INCREMENT = 5001`。### 二、 数据生成规则 (5000条，ID 从 1 到 5000)1. **`id`**: 从 1 递增至 5000。2. **`username`**: 格式为 `user_&#123;id&#125;`（如 `user_1`, `user_2`）。3. **`nickname`**: 格式为 `用户&#123;id&#125;`（如 `用户1`, `用户2`）。4. **`phone`**: 生成符合中国大陆手机号规则的数据（如 131, 151, 181 开头，按 ID 规律递增或合理伪随机生成 11 位号码）。5. **`info`**: 根据 `id % 5` 的余数按如下规律循环填入：   - `id % 5 == 1`: `&quot;普通用户，创建于批次&#123;batch&#125;&quot;` （其中 batch 计算公式为: (id - 1) // 100 + 1，即 1~100 为批次1，101~200 为批次2，以此类推）   - `id % 5 == 2`: `&quot;测试账号，序号：&#123;id&#125;&quot;`   - `id % 5 == 3`: `&quot;无特殊备注&quot;`   - `id % 5 == 4`: `&quot;手机套餐用户，编号：&#123;id&#125;&quot;`   - `id % 5 == 0`: `&quot;VIP客户，第&#123;id&#125;号用户&quot;`### 三、 输出要求由于 5000 条 SQL 超过了单次回答的字数限制，请提供以下 2 种实现方式：1. **Python 生成脚本**：提供一段完整的 Python 代码，运行后可直接生成目标 `.sql` 文件。2. **MySQL 存储过程**：提供一段可以在 MySQL 中直接执行的存储过程代码，调用后自动创建表并插入这 5000 条数据。3. **SQL 示例**：展示前 10 条和最后 5 条生成的 `INSERT INTO` SQL 语句样例。
-
-添加依赖
-
-&lt;!--mybatis依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.mybatis.spring.boot&lt;/groupId&gt;  &lt;artifactId&gt;mybatis-spring-boot-starter&lt;/artifactId&gt;  &lt;version&gt;3.0.4&lt;/version&gt;&lt;/dependency&gt;&lt;!--mysql依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;com.mysql&lt;/groupId&gt;  &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;  &lt;scope&gt;runtime&lt;/scope&gt;&lt;/dependency&gt;&lt;!--lombok依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;  &lt;artifactId&gt;lombok&lt;/artifactId&gt;  &lt;optional&gt;true&lt;/optional&gt;&lt;/dependency&gt;
-
-数据库配置
-
-spring:  datasource:    type: com.zaxxer.hikari.HikariDataSource    driver-class-name: com.mysql.cj.jdbc.Driver    url: jdbc:mysql://localhost:3306/xxl_job_demo    name: root    password: xxxxxx
-
-启动类上添加扫描类
-
-@MapperScan(basePackages = &quot;com.zzh.xxxjobdemo.mapper&quot;)@SpringBootApplicationpublic class XxxJobDemoApplication &#123;    public static void main(String[] args) &#123;        SpringApplication.run(XxxJobDemoApplication.class, args);    &#125;&#125;
-
-实体类
-
-@Datapublic class UserMobilePlan &#123;    // 主键    private Long id;    // 用户名    private String username;    // 昵称    private String nickname;    // 手机号码    private String phone;    // 备注    private String info;&#125;
-
-mapper 类
-
-public interface UserMobilePlanMapper &#123;    @Select(&quot;select * from t_user_mobile_plan&quot;)    List&lt;UserMobilePlan&gt; selectAll();    @Select(&quot;select * from t_user_mobile_plan where mod(id, #&#123;shardTotal&#125;) = #&#123;shardIndex&#125;&quot;)    List&lt;UserMobilePlan&gt; selectByMod(@Param(&quot;shardIndex&quot;) int shardIndex, @Param(&quot;shardTotal&quot;) int shardTotal);&#125;
-
-Job 类
-
-@Componentpublic class SendJob &#123;    @Resource    private  UserMobilePlanMapper userMobilePlanMapper;    @XxlJob(&quot;sendMsgHandler&quot;)    public void sendMsgHandler()&#123;        // 分片总数        int shardTotal = XxlJobHelper.getShardTotal();        // 分片索引        int shardIndex = XxlJobHelper.getShardIndex();        // 查询数据        List&lt;UserMobilePlan&gt; userMobilePlans = null;        if(shardTotal == 1) &#123;            userMobilePlans = userMobilePlanMapper.selectAll();        &#125;else&#123;            userMobilePlans = userMobilePlanMapper.selectByMod(shardIndex, shardTotal);        &#125;        // 处理数据        System.out.println(&quot;开始执行任务时间：&quot; + new Date() + &quot;，需要处理的数据总量：&quot; + userMobilePlans.size());        long begin = System.currentTimeMillis();        userMobilePlans.forEach(item -&gt; &#123;            try &#123;                TimeUnit.MICROSECONDS.sleep(10);            &#125; catch (InterruptedException e) &#123;                throw new RuntimeException(e);            &#125;        &#125;);        System.out.println(&quot;结束执行任务时间：&quot; + new Date());        long end = System.currentTimeMillis();        System.out.println(&quot;处理任务总耗时&quot; + (end - begin) + &quot;毫秒&quot;);    &#125;&#125;
-新建任务
-
-启动执行
-
-启动两个实例，并启动任务，观察输出
-
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-      <tags>
-        <tag>XXL-JOB</tag>
-        <tag>分布式</tag>
-        <tag>任务调度</tag>
-        <tag>Java</tag>
       </tags>
   </entry>
   <entry>
@@ -2744,10 +1577,10 @@ isFullyAuthenticated()
         <category>开发</category>
       </categories>
       <tags>
-        <tag>Java</tag>
         <tag>Spring Security</tag>
         <tag>Spring Boot</tag>
         <tag>认证授权</tag>
+        <tag>Java</tag>
       </tags>
   </entry>
   <entry>
@@ -3432,112 +2265,292 @@ filter 里多用 term：对于精确匹配（如 ID、状态、标签），请�
       </tags>
   </entry>
   <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
+    <title>解决lmstudio下载模型卡顿问题</title>
+    <url>/posts/17dd0035/</url>
+    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
+引言
+在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
+本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
+一、准备工作
+在开始之前，请确保：
 
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
+注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
+了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
 
+二、从魔搭社区下载模型
+魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
+方式一：网页直接下载（最直观）
 
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语
-接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
+搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
+进入模型详情页：点击目标模型，进入其详情页面。
+进入文件列表：点击页面中的“模型文件”标签。
+选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
 
 
-QPS vs. RPS
+提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
 
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+方式二：命令行CLI下载（推荐）
+魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
+首先安装modelscope库：
+pip install modelscope
+然后使用以下命令下载：
+modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
+示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
+modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
+方式三：Python SDK下载
+如果你更习惯使用Python，也可以使用SDK进行下载：
+from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
+三、导入LM Studio
+下载好模型文件后，有两种方式将其导入LM Studio。
+方式一：使用 lms import 命令（最推荐）
+LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
 
 
-TPS vs. RPS
-
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+打开终端（Windows用户可使用PowerShell或CMD）。
 
 
+执行导入命令：
+基本导入（默认会移动文件）：
+lms import /path/to/your/model.gguf
+保留原文件（复制一份）：
+lms import /path/to/your/model.gguf --copy
+创建符号链接（不复制也不移动，在原位置创建引用）：
+lms import /path/to/your/model.gguf --symbolic-link
+这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
 
-VU (并发用户) 和 TPS 换算
 
-公式描述：TPS = VU/RT，（RT单位：秒）。
+根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
 
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比
-目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeter
-Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
 
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
+方式二：手动放置文件（备选）
+如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
 
-ApacheBench
-ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
 
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+找到LM Studio的模型目录：
 
-wrk
-wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+Windows: C:\Users\你的用户名\.lmstudio\models\
+macOS/Linux: ~/.lmstudio/models/
 
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
+
+
+创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
+.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
+如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
+
+
+刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
+
+
+
+注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
+
+四、验证与使用
+导入成功后，在LM Studio中：
+
+点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
+点击模型进行加载。
+切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
+
+提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
+五、常见问题与技巧
+Q：下载的模型在LM Studio中无法识别？
+A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
+Q：LM Studio内置下载速度太慢怎么办？
+A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
+Q：如何选择合适量化版本的模型？
+A：一般来说：
+
+q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
+q8_0：质量更好，体积也更大
+f16：接近原始精度，但又大又慢
+
+如果显存有限（如8GB），推荐使用Q4量化版本。
+结语
+通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
+]]></content>
+      <categories>
+        <category>其他</category>
+      </categories>
+      <tags>
+        <tag>LM Studio</tag>
+        <tag>大模型</tag>
+        <tag>本地部署</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>XXL-Job分布式任务调度平台</title>
+    <url>/posts/9d7f76ba/</url>
+    <content><![CDATA[介绍
+XXL-JOB 是一个轻量级分布式任务调度框架，通过中心化的调度器（支持集群）统一管理任务，解决 Spring@Scheduled在分布式环境下的任务重复执行问题，并提供任务分片、失败重试、可视化监控等功能。
+核心点：分布式协调 + 避免重复执行 + 运维友好
+
+开源地址：https://www.xuxueli.com/xxl-job/
+
+使用
+环境准备和初始化
+
+源码下载：https://gitee.com/xuxueli0323/xxl-job
+找到初始化数据库文件并执行
+
+
+
+修改配置
+
+
+调度中心配置文件地址：/xxl-job/xxl-job-admin/src/main/resources/application.properties
+该配置文件当下需要重点修改一下数据源的配置。主要修改：url、username、password。
+
+
+
+启动项目
+
+
+
+访问调度中心
+
+地址：http://localhost:8080，端口号可自己在配置文件中指定
+账号：admin
+密码：123456
+
+配置部署&quot;执行器项目&quot;
+新建项目
+
+添加依赖并配置
+
+注意版本尽量和你下载的源码的版本一致
+
+&lt;dependency&gt;  &lt;groupId&gt;com.xuxueli&lt;/groupId&gt;  &lt;artifactId&gt;xxl-job-core&lt;/artifactId&gt;  &lt;version&gt;3.0.0&lt;/version&gt;&lt;/dependency&gt;
+
+配置
+
+xxl:  job:    adminAddresses: http://127.0.0.1:8081 # xxl-job 调度中心部署根地址，如调度中心集群部署存在多个地址则用逗号分隔    accessToken: default_token # 需要和 xxl-job 上创建的 token 保持一致    appName: test # 需要和 xxl-job 上创建的执行器名称保持一致    ip: # 执行器 ip, 为空表示自动获取 ip    port: 10001 # 执行器端口号    logPath: /data/applogs/xxl-job/jobhandler # 执行器日志存放路径    logRetentionDays: 30 # 日志保留时间（单位：天）
+新建执行器和任务
+
+
+新建config文件夹：读取配置并注入使用
+
+配置类
+
+package com.zzh.xxxjobdemo.config;import lombok.Data;import org.springframework.boot.context.properties.ConfigurationProperties;import org.springframework.stereotype.Component;@ConfigurationProperties(prefix = XxlJobProperties.PREFIX)@Component@Datapublic class XxlJobProperties &#123;    public static final String PREFIX = &quot;xxl.job&quot;;    private String adminAddresses;    private String accessToken;    private String appName;    private String ip;    private int port;    private String logPath;    private int logRetentionDays = 30;&#125;
+
+注入使用
+
+package com.zzh.xxxjobdemo.config;import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;import jakarta.annotation.Resource;import lombok.extern.slf4j.Slf4j;import org.springframework.context.annotation.Bean;import org.springframework.context.annotation.Configuration;@Configuration@Slf4jpublic class XxlJobConfig &#123;    @Resource    private XxlJobProperties xxlJobProperties;    /**     * 初始化执行器     * @return     */    @Bean    public XxlJobSpringExecutor xxlJobExecutor() &#123;        log.info(&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; xxl-job config init.&quot;);        XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();        xxlJobSpringExecutor.setAdminAddresses(xxlJobProperties.getAdminAddresses());        xxlJobSpringExecutor.setAppname(xxlJobProperties.getAppName());        xxlJobSpringExecutor.setIp(xxlJobProperties.getIp());        xxlJobSpringExecutor.setPort(xxlJobProperties.getPort());        xxlJobSpringExecutor.setAccessToken(xxlJobProperties.getAccessToken());        xxlJobSpringExecutor.setLogPath(xxlJobProperties.getLogPath());        xxlJobSpringExecutor.setLogRetentionDays(xxlJobProperties.getLogRetentionDays());        return xxlJobSpringExecutor;    &#125;&#125;
+
+新建一个任务类
+
+package com.zzh.xxxjobdemo.job;import com.xxl.job.core.handler.annotation.XxlJob;import org.springframework.stereotype.Component;import java.util.Date;@Componentpublic class SimpleXxlJob &#123;    @XxlJob(&quot;demoJobHandler&quot;)    public void demoJobHandler() throws Exception&#123;        System.out.println(&quot;执行定时任务，执行时间：&quot; + new Date());    &#125;&#125;
+demoJobHandler 和创建任务时的 JobHandler 保持一致
+执行
+
+在任务管理界面选中任务并选择执行一次
+
+
+
+日志
+
+
+
+GLUE 模式使用
+
+先在 demo 项目中注入一个 service 类后并重启项目
+
+package com.zzh.xxxjobdemo.service;import org.springframework.stereotype.Service;@Servicepublic class HelloService &#123;    public void doSome()&#123;        System.out.println(&quot;do some!&quot;);    &#125;    public void doOther()&#123;        System.out.println(&quot;do other!&quot;);    &#125;&#125;
+
+新建一个任务，选择 GLUE 模式
+
+
+
+编辑代码
+
+
+package com.xxl.job.service.handler;import com.xxl.job.core.context.XxlJobHelper;import com.xxl.job.core.handler.IJobHandler;import org.springframework.beans.factory.annotation.Autowired;import com.zzh.xxxjobdemo.service.HelloService;public class DemoGlueJobHandler extends IJobHandler &#123;      // 注入业务实现类  	@Autowired  	private HelloService helloService;	@Override	public void execute() throws Exception &#123;		helloService.doSome();	&#125;&#125;
+
+点击执行任务即可
+
+
+路由策略
+在IDE中模拟集群
+
+
+修改配置，添加 VM Options 选项，配置实例启动端口和执行器监听端口
+
+-Dserver.port=8088 -Dxxl.job.port=10010
+
+修改路由策略为轮询
+
+
+在后台管理界面执行两次任务，可以观察到每一个实例都执行了一次
+
+
+其他策略
+
+第一个：直接选任务列表里的第一个机器干活。
+最后一个：直接选任务列表里的最后一个机器干活。
+轮询：轮流让每台机器干活，大家排队，一人一次。
+随机：随便抽一台机器干活，全凭运气。
+一致性HASH：同样的任务永远找同一台机器干，避免换来换去。
+最不经常使用：挑平时干活最少的机器去干，雨露均沾。
+最近最久未使用：挑最闲的机器（好久没干活的）去干。
+故障转移：如果一台机器挂了，自动换另一台好的继续干。
+忙碌转移：如果一台机器正忙着，就找其他闲着的机器干。
+分片广播：让所有机器一起干同一个活，各自分一小块任务。
+
+分片功能
+需求：自指定的节假日，需要给平台所有用户发送祝福短信
+在分片广播方面涉及到两个概念：
+
+分片总数：一共有多少台
+分片索引：当前这台机器的下标（下标从0开始）
+
+准备
+
+数据库文件生成提示词
+
+你是一名 MySQL 数据库专家和数据生成专家。请帮我编写一个脚本，用于生成包含建表 SQL 以及 5000 条模拟数据的 SQL 文件。### 一、 表结构要求 (DDL)- **数据库/ Schema**: `xxl_job`- **表名**: `t_user_mobile_plan`- **Engine/字符集**: `InnoDB`, `utf8mb4`, 排序规则 `utf8mb4_0900_ai_ci`- **字段定义**:  1. `id`: bigint, NOT NULL, AUTO_INCREMENT, 主键, 注释 &#x27;主键&#x27;  2. `username`: varchar(50), NOT NULL, 注释 &#x27;用户名&#x27;  3. `nickname`: varchar(50), NULL DEFAULT NULL, 注释 &#x27;昵称&#x27;  4. `phone`: varchar(20), NOT NULL, 注释 &#x27;手机号码&#x27;  5. `info`: varchar(500), NULL DEFAULT NULL, 注释 &#x27;备注&#x27;- **其他**: 包含 `DROP TABLE IF EXISTS `t_user_mobile_plan`;` 语句，并在脚本开头和结尾分别加上 `SET FOREIGN_KEY_CHECKS = 0;` 和 `SET FOREIGN_KEY_CHECKS = 1;`。设置建表后的 `AUTO_INCREMENT = 5001`。### 二、 数据生成规则 (5000条，ID 从 1 到 5000)1. **`id`**: 从 1 递增至 5000。2. **`username`**: 格式为 `user_&#123;id&#125;`（如 `user_1`, `user_2`）。3. **`nickname`**: 格式为 `用户&#123;id&#125;`（如 `用户1`, `用户2`）。4. **`phone`**: 生成符合中国大陆手机号规则的数据（如 131, 151, 181 开头，按 ID 规律递增或合理伪随机生成 11 位号码）。5. **`info`**: 根据 `id % 5` 的余数按如下规律循环填入：   - `id % 5 == 1`: `&quot;普通用户，创建于批次&#123;batch&#125;&quot;` （其中 batch 计算公式为: (id - 1) // 100 + 1，即 1~100 为批次1，101~200 为批次2，以此类推）   - `id % 5 == 2`: `&quot;测试账号，序号：&#123;id&#125;&quot;`   - `id % 5 == 3`: `&quot;无特殊备注&quot;`   - `id % 5 == 4`: `&quot;手机套餐用户，编号：&#123;id&#125;&quot;`   - `id % 5 == 0`: `&quot;VIP客户，第&#123;id&#125;号用户&quot;`### 三、 输出要求由于 5000 条 SQL 超过了单次回答的字数限制，请提供以下 2 种实现方式：1. **Python 生成脚本**：提供一段完整的 Python 代码，运行后可直接生成目标 `.sql` 文件。2. **MySQL 存储过程**：提供一段可以在 MySQL 中直接执行的存储过程代码，调用后自动创建表并插入这 5000 条数据。3. **SQL 示例**：展示前 10 条和最后 5 条生成的 `INSERT INTO` SQL 语句样例。
+
+添加依赖
+
+&lt;!--mybatis依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.mybatis.spring.boot&lt;/groupId&gt;  &lt;artifactId&gt;mybatis-spring-boot-starter&lt;/artifactId&gt;  &lt;version&gt;3.0.4&lt;/version&gt;&lt;/dependency&gt;&lt;!--mysql依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;com.mysql&lt;/groupId&gt;  &lt;artifactId&gt;mysql-connector-j&lt;/artifactId&gt;  &lt;scope&gt;runtime&lt;/scope&gt;&lt;/dependency&gt;&lt;!--lombok依赖--&gt;&lt;dependency&gt;  &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;  &lt;artifactId&gt;lombok&lt;/artifactId&gt;  &lt;optional&gt;true&lt;/optional&gt;&lt;/dependency&gt;
+
+数据库配置
+
+spring:  datasource:    type: com.zaxxer.hikari.HikariDataSource    driver-class-name: com.mysql.cj.jdbc.Driver    url: jdbc:mysql://localhost:3306/xxl_job_demo    name: root    password: xxxxxx
+
+启动类上添加扫描类
+
+@MapperScan(basePackages = &quot;com.zzh.xxxjobdemo.mapper&quot;)@SpringBootApplicationpublic class XxxJobDemoApplication &#123;    public static void main(String[] args) &#123;        SpringApplication.run(XxxJobDemoApplication.class, args);    &#125;&#125;
+
+实体类
+
+@Datapublic class UserMobilePlan &#123;    // 主键    private Long id;    // 用户名    private String username;    // 昵称    private String nickname;    // 手机号码    private String phone;    // 备注    private String info;&#125;
+
+mapper 类
+
+public interface UserMobilePlanMapper &#123;    @Select(&quot;select * from t_user_mobile_plan&quot;)    List&lt;UserMobilePlan&gt; selectAll();    @Select(&quot;select * from t_user_mobile_plan where mod(id, #&#123;shardTotal&#125;) = #&#123;shardIndex&#125;&quot;)    List&lt;UserMobilePlan&gt; selectByMod(@Param(&quot;shardIndex&quot;) int shardIndex, @Param(&quot;shardTotal&quot;) int shardTotal);&#125;
+
+Job 类
+
+@Componentpublic class SendJob &#123;    @Resource    private  UserMobilePlanMapper userMobilePlanMapper;    @XxlJob(&quot;sendMsgHandler&quot;)    public void sendMsgHandler()&#123;        // 分片总数        int shardTotal = XxlJobHelper.getShardTotal();        // 分片索引        int shardIndex = XxlJobHelper.getShardIndex();        // 查询数据        List&lt;UserMobilePlan&gt; userMobilePlans = null;        if(shardTotal == 1) &#123;            userMobilePlans = userMobilePlanMapper.selectAll();        &#125;else&#123;            userMobilePlans = userMobilePlanMapper.selectByMod(shardIndex, shardTotal);        &#125;        // 处理数据        System.out.println(&quot;开始执行任务时间：&quot; + new Date() + &quot;，需要处理的数据总量：&quot; + userMobilePlans.size());        long begin = System.currentTimeMillis();        userMobilePlans.forEach(item -&gt; &#123;            try &#123;                TimeUnit.MICROSECONDS.sleep(10);            &#125; catch (InterruptedException e) &#123;                throw new RuntimeException(e);            &#125;        &#125;);        System.out.println(&quot;结束执行任务时间：&quot; + new Date());        long end = System.currentTimeMillis();        System.out.println(&quot;处理任务总耗时&quot; + (end - begin) + &quot;毫秒&quot;);    &#125;&#125;
+新建任务
+
+启动执行
+
+启动两个实例，并启动任务，观察输出
+
 
 ]]></content>
       <categories>
         <category>开发</category>
       </categories>
       <tags>
-        <tag>性能测试</tag>
-        <tag>压测</tag>
-        <tag>高并发</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Redis</title>
-    <url>/posts/bae4ff13/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>数据存储</category>
-      </categories>
-      <tags>
-        <tag>Redis</tag>
-        <tag>缓存</tag>
+        <tag>Java</tag>
+        <tag>XXL-JOB</tag>
+        <tag>分布式</tag>
+        <tag>任务调度</tag>
       </tags>
   </entry>
   <entry>
@@ -3552,378 +2565,28 @@ wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
       </tags>
   </entry>
   <entry>
-    <title>kafka实践教程</title>
-    <url>/posts/c2881daa/</url>
-    <content><![CDATA[kafka实践教程
-
-第一章 Kafka 核心概念
-在切入业务代码前，需要先厘清 Kafka 的通信模型与基础组件。如果不理解这些设计动机，使用 KafkaTemplate、@KafkaListener 与 DefaultErrorHandler 时就容易陷入机械配置的误区。
-1.1 同步调用的瓶颈
-假设一个电商系统在处理创建订单请求 POST /orders 时，采用传统的单体同步调用：
-public void createOrder() &#123;    orderService.create();    // 100ms    stockService.decrease();  // 100ms    smsService.send();        // 300ms    pointService.add();       // 100ms    logService.record();      // 50ms&#125;
-整个请求的链路耗时为各项之和（约 650ms）。但在多数业务场景下，调用方只需确认“订单是否创建成功”，而短信通知、积分发放、行为日志与推荐更新等操作，延迟数百毫秒甚至数秒并不会破坏业务一致性。
-引入事件驱动后，订单服务仅需在本地完成核心入库逻辑，随后对外发布一条“订单已创建”事件即可返回响应，耗时直接压缩到 100ms 左右：
-                 ┌── 短信服务                 │OrderCreated ────┼── 积分服务                 │                 ├── 推荐服务                 │                 └── 日志服务
-后续旁路系统各自监听事件、异步消费，彼此独立执行。
-1.2 引入消息队列的收益
-消息队列充当了调用方与处理方之间的缓冲媒介：
-
-异步加速：将非强一致性的从属逻辑剥离出主响应链路，直接降低接口延迟。
-系统解耦：上游只负责投递结构化事件，下游增减消费者（如新增风控系统）无需改动订单核心服务的代码。
-流量削峰：当下游数据库最大承载能力为 1000 QPS，而瞬时请求激增到 10000 QPS 时，消息先在队列中持久化排队，消费者按自身处理能力匀速拉取，避免底层存储被瞬间压垮。
-
-1.3 Kafka 消息模型与关键拓扑
-Apache Kafka 是一套高吞吐、持久化、支持水平扩展的分布式事件流平台。在本项目中，各组件承载如下分工：
-OrderController -&gt; OrderProducer -&gt; Kafka -&gt; OrderConsumer -&gt; OrderProcessService
-一条写入 Kafka 的物理记录通常包含以下属性：
-topic:      所属逻辑主题partition:  所在物理分区编号offset:     分区内的位点key:        路由键，决定分区归属value:      实际业务载荷（如序列化后的 JSON 字符串）timestamp:  时间戳headers:    元数据键值对
-项目消费者在参数中拿到的 ConsumerRecord&lt;String, String&gt;，即是该记录在客户端中的映射对象。
-Broker 与集群
-Broker 是 Kafka 的服务节点。生产集群通常由多个 Broker 协同工作以实现高可用；本 Demo 为简化部署，配置单节点服务监听于 localhost:9092。
-Topic 与 Partition
-Topic 是划分消息类型的逻辑主题，例如 order-events（正常事件）与 order-events-dlt（死信事件）。每个 Topic 可进一步切分为多个 Partition。
-Partition 是 Kafka 保证并发能力与横向扩展的物理单元。单 Partition 同一时刻只能由同一 Consumer Group 内的一个消费者实例独占拉取。增加 Partition 数量，能够提升该消费组的消费并发上限。
-单分区有序性
-Partition 是仅支持顺序追加写（Append-only）的提交日志。消息按入队次序依次分配单调递增的偏移量：
-Partition 0:  [offset 0: A] -&gt; [offset 1: B] -&gt; [offset 2: C] -&gt; [offset 3: D]
-Kafka 仅保证单个 Partition 内部的消息有序，不同 Partition 之间不存在全局顺序保证。
-Offset
-Offset 是消息在其所属 Partition 内的序列编号。它是相对概念，并非全局唯一 ID。定位一条物理记录的完整坐标为：Topic + Partition + Offset。消费者通过提交已消费的 Offset，向集群记录当前组在该分区的读取进度。
-Consumer Group
-同属一个 Consumer Group 的消费者协同消费一个 Topic。若 Topic 包含 3 个分区：
-
-组内有 1 个 Consumer 时，该实例同时处理 3 个分区；
-组内有 3 个 Consumer 时，每个实例分别独占消费 1 个分区；
-组内若启动 4 个以上的 Consumer，多出的实例将处于空闲待命状态。
-
-若有两个不同的 Consumer Group（例如订单处理服务与数据分析服务）订阅同一 Topic，两组会完全独立地推进各自的 Offset，互不影响。
-消息路由键：Key 的选择
-Kafka 默认使用 Murmur2 算法对 Key 计算哈希，并对 Partition 总数取模，以此决定消息路由的目标分区。只要 Topic 的分区数量不发生变更，相同 Key 的消息将始终落入同一个 Partition。
-如果使用每个事件唯一的 UUID 作为 Key，同一订单的“创建”、“支付”、“发货”可能会散落到不同分区，被不同线程并发处理，从而导致“支付先于创建被消费”的乱序问题。因此本项目强制将业务主键 orderId 设为 Kafka Key，以单分区有序性守住单订单的生命周期顺序；而将每次操作唯一的 eventId 留在消息体中，专门负责消费端的幂等排重。
-ACK 与重复消费成因
-ACK 是消费者向框架确认消息已处理完成的信号。在手动 ACK 模式下，代码必须在本地事务成功提交之后调用 acknowledge()。如果过早确认，后续业务执行抛出异常时，该消息在 Kafka 看来已被消费，将直接引发漏处理风险。
-相反，如果业务处理已在 MySQL 中成功入库，但在执行 ACK 或框架提交 Offset 的瞬间进程宕机，Kafka 由于未收到确认，在消费者重启后仍会自上次已提交的 Offset 处重新投递该消息。这种“处理成功但确认丢失”的边缘场景，决定了消费端必须设计业务幂等防线。
-临时重试与死信队列（DLT）
-网络抖动或短时死锁属于瞬时异常，通常在重试一到两次后即可自愈；而 JSON 结构损坏属于永久性异常，原地无限重试只会白白占用线程与数据库连接，甚至造成单分区阻塞（即毒消息，Poison Message）。因此系统需要实施有限退避重试，耗尽重试次数后将数据投递至死信队列（order-events-dlt），隔离异常并交由告警系统介入。
-
-第二章 项目架构总览
-2.1 技术栈
-
-
-
-组件
-版本 / 来源
-用途
-
-
-
-
-Spring Boot
-4.1.1
-基础设施框架
-
-
-Spring Kafka
-与 Boot 版本配套
-Kafka 客户端封装
-
-
-Jackson
-与 Boot 版本配套
-JSON 序列化工具
-
-
-MySQL
-8.0+
-业务存储与防重记录
-
-
-Java
-17
-运行环境
-
-
-
-2.2 目录组织
-com.zzh.kafkademo├── config│   ├── JacksonConfig.java        # 序列化配置│   ├── KafkaErrorConfig.java     # 重试与死信队列拓扑配置│   └── KafkaTopicConfig.java     # 主题声明与分区参数├── consumer│   ├── OrderConsumer.java        # 订单业务监听器│   └── OrderDltConsumer.java     # 死信消息监听器├── controller│   └── OrderController.java      # 发送与重放接口├── exception│   └── BadMessageException.java  # 不可重试异常标识├── model│   ├── CreateOrderRequest.java   # HTTP 请求体│   ├── OrderEvent.java           # 核心领域事件│   └── ProcessResult.java        # 处理状态枚举（SUCCESS/DUPLICATE）├── producer│   └── OrderProducer.java        # 消息发送与回调组件└── service    ├── FailureSimulator.java     # 故障注入工具    └── OrderProcessService.java  # 事务落库与去重核心逻辑
-2.3 核心数据流
-整个生命周期严格遵循“先业务事务、后位点确认”的顺序流转：
-HTTP POST /orders    │    ▼OrderController (生成事件 UUID，设定 orderId 为路由键)    │    ▼OrderProducer (通过 Jackson 序列化为 JSON 文本)    │    ▼Kafka Broker (落入 order-events 的特定 Partition)    │    ▼OrderConsumer (拉取记录，解析 JSON 为 OrderEvent)    │    ▼OrderProcessService.process() [@Transactional 事务保护]    ├── 1. INSERT IGNORE INTO processed_event (占位排重)    │      若主键冲突直接返回 DUPLICATE    ├── 2. FailureSimulator.maybeFail() (故障模拟拦截)    └── 3. INSERT INTO orders (业务落库)    │    ├─ 正常提交 ──&gt; 执行 acknowledgment.acknowledge()    │    └─ 抛出异常 ──&gt; 触发数据库 ROLLBACK (去重占位同步撤销)                   │                   ▼ 异常传递给 DefaultErrorHandler                   ├── 可重试异常：按 FixedBackOff 重新拉取                   └── 达到上限或不可重试：转入 order-events-dlt
-
-第三章 环境搭建
-3.1 容器化运行 Kafka（KRaft 模式）
-Kafka 现代版本原生支持 KRaft 协议管理集群元数据，去除了对 ZooKeeper 的外部依赖。通过 Docker Compose 启动单节点服务：
-services:  kafka:    image: confluentinc/cp-kafka:7.6.0    container_name: kafka    ports:      - &quot;9092:9092&quot;    environment:      KAFKA_NODE_ID: 1      KAFKA_PROCESS_ROLES: broker,controller      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-执行命令在后台拉起实例：
-docker compose up -d
-3.2 数据库 Schema 设计
-在 MySQL 中创建去重表与订单业务表：
-CREATE DATABASE IF NOT EXISTS kafka_demoDEFAULT CHARACTER SET utf8mb4DEFAULT COLLATE utf8mb4_general_ci;USE kafka_demo;-- 幂等去重底表CREATE TABLE IF NOT EXISTS processed_event (    event_id     VARCHAR(36) PRIMARY KEY COMMENT &#x27;事件唯一标识&#x27;,    order_id     BIGINT      NOT NULL COMMENT &#x27;订单ID&#x27;,    processed_at DATETIME    NOT NULL COMMENT &#x27;处理时间&#x27;) ENGINE = InnoDB;-- 业务订单表CREATE TABLE IF NOT EXISTS orders (    order_id   BIGINT        PRIMARY KEY COMMENT &#x27;订单ID&#x27;,    user_id    BIGINT        NOT NULL COMMENT &#x27;用户ID&#x27;,    product_id BIGINT        NOT NULL COMMENT &#x27;商品ID&#x27;,    amount     DECIMAL(10,2) NOT NULL COMMENT &#x27;订单金额&#x27;,    status     VARCHAR(20)   NOT NULL COMMENT &#x27;订单状态&#x27;,    created_at DATETIME      NOT NULL COMMENT &#x27;创建时间&#x27;) ENGINE = InnoDB;
-去重表的核心在于 event_id 主键约束。依靠 InnoDB 的唯一性索引，并发或重复投递的相同事件在写入时将被数据库强行拦截。
-3.3 验证环境可用性
-# 验证 Kafka Broker 协议响应docker exec kafka kafka-broker-api-versions --bootstrap-server localhost:9092# 验证 MySQL 库创建成功mysql -u root -p -e &quot;SHOW DATABASES LIKE &#x27;kafka_demo&#x27;&quot;
-
-第四章 Kafka 配置详解
-配置项服务于传输可靠性与消费进度控制，而非简单的语法开关。
-4.1 配置文件一览 (application.yml)
-spring:  kafka:    bootstrap-servers: localhost:9092    producer:      key-serializer: org.apache.kafka.common.serialization.StringSerializer      value-serializer: org.apache.kafka.common.serialization.StringSerializer      acks: all      properties:        enable.idempotence: true    consumer:      group-id: order-service-v2      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer      enable-auto-commit: false      auto-offset-reset: earliest    listener:      ack-mode: manual_immediate
-4.2 生产端核心参数
-acks = all
-该参数指示 Leader 副本在收到消息后，必须等待同步副本集合（In-Sync Replicas, ISR）全量完成同步确认，才向生产者返回成功响应。这是单节点向集群演进时防止 Leader 掉线丢失消息的基石。
-enable.idempotence = true
-开启生产端原生幂等后，Kafka 客户端会为每个 Producer 实例分配唯一的 PID，并为发送到每个分区的消息维护单调自增的 Sequence Number。一旦因网络丢包导致客户端未收到 Broker 确认并自动重试，Broker 端可根据 PID 与序列号过滤掉重复追加的记录。需要注意，这只防范了 Producer 到 Broker 链路的写入重复，不能解决消费端的业务重复问题。
-为什么选择手写 JSON 序列化？
-Spring Kafka 提供了开箱即用的 JsonSerializer，但其默认会在 Record Header 中塞入全限定 Java 类名，导致不同微服务间存在强类路径耦合。直接将领域对象通过 Jackson 序列化为规范 JSON 字符串，再交给 StringSerializer 转化为字节流，能够让报文保持通用与透明，降低跨系统通信时的解析摩擦。
-4.3 消费端与进度控制
-enable-auto-commit = falseack-mode = manual_immediate
-默认的自动提交是基于固定时间窗口（如每 5 秒一次）提交已拉取到的最大 Offset。如果在处理一批消息的中途系统突然重启，后半部分未处理完成的消息由于进度已被提前提交，将彻底丢失。将其关闭并设置为 manual_immediate，意味着消费端由业务代码明确驱动 Offset 提交，只有当一段消息的处理逻辑真正跑通，位点才被推向 Broker。
-auto-offset-reset = earliest
-当一个全新的 Consumer Group 首次接入，或者其原有的位点已在集群中过期淘汰时，该参数决定读取策略。earliest 表示从该分区当前尚存的最早位点开始回放；latest 则只接收启动之后新追加的消息。若该消费组在集群中已存在有效的提交记录，Kafka 将始终沿用现有进度，不会盲目从头全量读取。
-4.4 Topic 编排
-@Configurationpublic class KafkaTopicConfig &#123;    public static final String ORDER_TOPIC = &quot;order-events&quot;;    public static final String ORDER_DLT = &quot;order-events-dlt&quot;;    @Bean    public NewTopic orderTopic() &#123;        return new NewTopic(ORDER_TOPIC, 3, (short) 1);    &#125;    @Bean    public NewTopic orderDltTopic() &#123;        return new NewTopic(ORDER_DLT, 3, (short) 1);    &#125;&#125;
-通过 Spring 容器管理 NewTopic，应用在启动时会自动补全缺失的主题定义。分区数设为 3，意味着当前消费组最多可由 3 个工作线程并发分工消费。副本因子受限于单节点 Broker 环境，在此设置为 1。
-
-第五章 消息生产者
-5.1 生产端逻辑实现
-@Servicepublic class OrderProducer &#123;    private final KafkaTemplate&lt;String, String&gt; kafkaTemplate;    private final ObjectMapper objectMapper;    public OrderProducer(KafkaTemplate&lt;String, String&gt; kafkaTemplate, ObjectMapper objectMapper) &#123;        this.kafkaTemplate = kafkaTemplate;        this.objectMapper = objectMapper;    &#125;    public void send(OrderEvent event) &#123;        try &#123;            // 1. 将事件统一转化为标准化 JSON 载荷            String json = objectMapper.writeValueAsString(event);            // 2. 路由键采用 orderId，确保同一个订单的数据落入固定分区            String key = String.valueOf(event.orderId());            // 3. 异步发送并挂载 CompletableFuture 回调            kafkaTemplate.send(KafkaTopicConfig.ORDER_TOPIC, key, json)                    .whenComplete((result, ex) -&gt; &#123;                        if (ex != null) &#123;                            System.err.println(&quot;Kafka发送失败: &quot; + ex.getMessage());                            return;                        &#125;                        var metadata = result.getRecordMetadata();                        System.out.printf(&quot;Kafka发送成功 topic=%s partition=%d offset=%d%n&quot;,                                metadata.topic(), metadata.partition(), metadata.offset());                    &#125;);        &#125; catch (JsonProcessingException e) &#123;            throw new RuntimeException(&quot;订单事件序列化失败&quot;, e);        &#125;    &#125;&#125;
-5.2 发送行为与模式对比
-发送消息通常有三种交互方式：
-
-发后即忘（Fire-and-forget）：调用 send() 后不处理返回值。响应极快，但在网络故障时无法感知投递丢失，可靠性最弱。
-同步阻塞（Synchronous）：调用 send().get() 显式等待服务端应答。吞吐量极低，线程常年阻塞于网络 I/O，违背了事件驱动的初衷。
-异步回调（Asynchronous Callback）：使用 whenComplete() 注册监听逻辑。业务主线程向底层发送缓冲区追加消息后即可继续向下执行，底层的 I/O 线程会在收到 ACK 时异步触发相应回调，兼顾吞吐与可观测性。
-
-5.3 控制器入口与测试设计
-@RestController@RequestMapping(&quot;/orders&quot;)public class OrderController &#123;    private final OrderProducer orderProducer;    public OrderController(OrderProducer orderProducer) &#123;        this.orderProducer = orderProducer;    &#125;    @PostMapping    public OrderEvent createOrder(@RequestBody CreateOrderRequest request) &#123;        OrderEvent event = new OrderEvent(                UUID.randomUUID().toString(),                request.orderId(),                request.userId(),                request.productId(),                request.amount(),                LocalDateTime.now()        );        orderProducer.send(event);        return event;    &#125;    @PostMapping(&quot;/replay&quot;)    public OrderEvent replay(@RequestBody OrderEvent event) &#123;        // 原封不动重投指定事件，用于测试幂等判定与死信逻辑        orderProducer.send(event);        return event;    &#125;&#125;
-
-第六章 消息消费者
-6.1 消费端监听逻辑
-@Componentpublic class OrderConsumer &#123;    private final ObjectMapper objectMapper;    private final OrderProcessService orderProcessService;    public OrderConsumer(ObjectMapper objectMapper, OrderProcessService orderProcessService) &#123;        this.objectMapper = objectMapper;        this.orderProcessService = orderProcessService;    &#125;    @KafkaListener(topics = KafkaTopicConfig.ORDER_TOPIC, groupId = &quot;order-service-v2&quot;)    public void consume(ConsumerRecord&lt;String, String&gt; record, Acknowledgment acknowledgment) &#123;        System.out.printf(&quot;收到消息 topic=%s partition=%d offset=%d key=%s%n&quot;,                record.topic(), record.partition(), record.offset(), record.key());        OrderEvent event;        try &#123;            event = objectMapper.readValue(record.value(), OrderEvent.class);        &#125; catch (JsonProcessingException e) &#123;            // 静态畸形报文，反序列化必然永久失败，必须抛出非可重试异常直接推进死信流程            throw new BadMessageException(&quot;订单消息 JSON 无法解析&quot;, e);        &#125;        // 业务持久化处理        orderProcessService.process(event);        // 业务处理无异常后，向外确认位点        acknowledgment.acknowledge();    &#125;&#125;
-6.2 异常传递与位点提交控制
-编写 Consumer 时最常见的误区是随意包裹大粒度的 try-catch (Exception e) 并在 catch 块中仅打印一条日志后继续向下执行。这会导致异常被内部消化，Spring Kafka 容器认为本轮消费正常结束，进而触发 ACK 并推进 Offset，最终使得失败的消息在不知不觉中被跳过。
-正确的做法是让业务异常向外抛出至容器层。Spring Kafka 拦截到未处理异常后，会中止本次位点确认，并将其转交给配置好的 DefaultErrorHandler 执行后续重试或降级分流。
-
-第七章 重试与死信队列
-7.1 异常的区分与分流策略
-生产环境中的消费异常大致可归为两类：
-
-瞬态故障（Transient Failure）：如数据库连接池打满、慢查超时、微服务网络毛刺。这些错误通常在数秒内具备自愈可能，应当使用退避策略原地重试。
-确定性故障（Deterministic Failure）：如业务载荷字段缺失、JSON 字符串破损、数字反序列化溢出。这类输入无论尝试多少次结果均不会发生改变，盲目重试只会消耗系统资源，必须直接拦截并路由至死信队列。
-
-7.2 错误处理器配置
-@Configurationpublic class KafkaErrorConfig &#123;    @Bean    public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate&lt;String, String&gt; kafkaTemplate) &#123;        // 1. 指定死信转储目标：追加 -dlt 后缀，并尽可能保留源分区编号        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(                kafkaTemplate,                (record, exception) -&gt; new TopicPartition(record.topic() + &quot;-dlt&quot;, record.partition())        );        // 2. 固定退避：间隔 2000ms，最多追加重试 2 次（加上首次执行共计 3 次）        FixedBackOff fixedBackOff = new FixedBackOff(2000L, 2L);        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, fixedBackOff);        // 3. 注册不可重试异常黑名单        errorHandler.addNotRetryableExceptions(BadMessageException.class);        // 4. 当消息成功转入 DLT 后，必须提交原消息的消费进度，防止其重启后无限阻塞分区        errorHandler.setCommitRecovered(true);        // 5. 打印异常根因链        errorHandler.setRetryListeners((record, exception, deliveryAttempt) -&gt; &#123;            Throwable rootCause = exception;            while (rootCause.getCause() != null) &#123;                rootCause = rootCause.getCause();            &#125;            System.err.printf(&quot;消费失败 [Topic: %s, Partition: %d, Offset: %d, 尝试序号: %d] 根因: %s: %s%n&quot;,                    record.topic(), record.partition(), record.offset(), deliveryAttempt,                    rootCause.getClass().getSimpleName(), rootCause.getMessage());        &#125;);        return errorHandler;    &#125;&#125;
-setCommitRecovered 的必要性
-当一条消息耗尽所有重试机会并成功转储至 DLT 后，setCommitRecovered(true) 会通知容器自动提交该原消息在业务 Partition 的 Offset。若未开启此项，消费者实例一旦在后续某个时刻发生重平衡或重启，仍会从这条未提交的“毒消息”处重新拉取，从而再次陷入无效的死循环。
-7.3 死信队列监听器
-@Componentpublic class OrderDltConsumer &#123;    @KafkaListener(topics = KafkaTopicConfig.ORDER_DLT, groupId = &quot;order-dlt-inspector&quot;)    public void consume(ConsumerRecord&lt;String, String&gt; record, Acknowledgment acknowledgment) &#123;        System.err.printf(&quot;[死信告警] 捕获不可恢复事件 Key: %s, 内容: %s%n&quot;, record.key(), record.value());        // 生产实践中，应在此处接入钉钉/企业微信报警通知，并将记录持久化至异常巡检表供人工介入        acknowledgment.acknowledge();    &#125;&#125;
-
-第八章 幂等消费与事件去重
-8.1 为什么必须在业务层做幂等
-在分布式环境下，Kafka 遵循 At-Least-Once（至少投递一次）语义保证。只要网络层面存在抖动可能，消息的重复消费就是不可避免的客观规律。
-配置了 enable.idempotence = true 的 Producer 只能确保同一个消息批次写入 Kafka 日志时不重复；一旦 Consumer 处理完毕但位点在返回提交时由于断网未能打到 Kafka，这条记录在重新平衡或重启后必会被二次投递。
-8.2 基于本地事务的去重实现
-@Servicepublic class OrderProcessService &#123;    private final JdbcTemplate jdbcTemplate;    private final FailureSimulator failureSimulator;    public OrderProcessService(JdbcTemplate jdbcTemplate, FailureSimulator failureSimulator) &#123;        this.jdbcTemplate = jdbcTemplate;        this.failureSimulator = failureSimulator;    &#125;    @Transactional    public ProcessResult process(OrderEvent event) &#123;        // 第一步：利用 INSERT IGNORE 抢占事件主键        int inserted = jdbcTemplate.update(                &quot;INSERT IGNORE INTO processed_event (event_id, order_id, processed_at) VALUES (?, ?, ?)&quot;,                event.eventId(),                event.orderId(),                Timestamp.valueOf(LocalDateTime.now())        );        // 主键已存在说明属于重复投递，立即平稳返回        if (inserted == 0) &#123;            return ProcessResult.DUPLICATE;        &#125;        // 第二步：故障模拟判定        failureSimulator.maybeFail(event);        // 第三步：核心业务落库        jdbcTemplate.update(                &quot;INSERT INTO orders (order_id, user_id, product_id, amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?)&quot;,                event.orderId(),                event.userId(),                event.productId(),                event.amount(),                &quot;CREATED&quot;,                Timestamp.valueOf(event.createdAt())        );        return ProcessResult.SUCCESS;    &#125;&#125;
-为什么去重记录与业务操作必须绑定在同一个 @Transactional 中？
-假设将去重标志写入内存 Set，或在非事务环境下提前独立写入去重表：
-
-消费端拉取消息，在去重表中插入了记录；
-随后在执行业务落库或外部逻辑时抛出异常崩溃；
-本次消费流程失败中断，Kafka 触发稍后重试；
-重试拉取同一条消息再次执行，此时由于去重表中已存在记录，系统直接返回 DUPLICATE 并确认位点。
-
-这会导致订单实际根本没有创建，业务数据彻底丢失。只有将 processed_event 和 orders 划入同一个本地事务，当业务出现异常回滚时，去重占位记录才会一同被撤销；只有当下一次重试真正通盘走完，两者才同步固化进磁盘。
-
-第九章 故障模拟与实战验证
-9.1 模拟器实现
-@Componentpublic class FailureSimulator &#123;    private final ConcurrentHashMap&lt;String, AtomicInteger&gt; attempts = new ConcurrentHashMap&lt;&gt;();    public void maybeFail(OrderEvent event) &#123;        int attempt = attempts.computeIfAbsent(event.eventId(), key -&gt; new AtomicInteger(0))                .incrementAndGet();        // 订单号为 8888 时，前两次执行主动抛出运行时异常，模拟短时偶发故障        if (event.orderId().equals(8888L) &amp;&amp; attempt &lt;= 2) &#123;            throw new RuntimeException(&quot;模拟临时故障，第 &quot; + attempt + &quot; 次失败&quot;);        &#125;        // 订单号为 9999 时，无限抛出不可恢复异常        if (event.orderId().equals(9999L)) &#123;            throw new RuntimeException(&quot;模拟永久业务异常&quot;);        &#125;    &#125;&#125;
-9.2 场景验证
-场景一：正常流程写入
-curl -X POST http://localhost:8080/orders \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;orderId&quot;:1001,&quot;userId&quot;:1,&quot;productId&quot;:100,&quot;amount&quot;:99.9&#125;&#x27;
-控制台正常打印写入日志，MySQL 中 orders 与 processed_event 均生成相应记录，位点正常提交。
-场景二：瞬时异常与退避自愈
-curl -X POST http://localhost:8080/orders \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;orderId&quot;:8888,&quot;userId&quot;:1,&quot;productId&quot;:100,&quot;amount&quot;:50.0&#125;&#x27;
-
-T = 0s：首次执行，触发异常，本地事务回滚，打印第 1 次失败；
-T = 2s：等待 2 秒退避后自动重试，再次触发异常回滚，打印第 2 次失败；
-T = 4s：等待 2 秒后发起第 2 次重试（第 3 次执行），模拟器放行，事务提交，向 Kafka 发起 ACK。数据最终一致。
-
-场景三：永久异常耗尽重试入死信
-curl -X POST http://localhost:8080/orders \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;orderId&quot;:9999,&quot;userId&quot;:1,&quot;productId&quot;:100,&quot;amount&quot;:50.0&#125;&#x27;
-经历初次执行与 2 次退避重试后，系统确认重试次数耗尽，DeadLetterPublishingRecoverer 捕获该事件并转发至 order-events-dlt。死信监听器输出告警，原队列位点向前推进。
-场景四：重复投递与幂等拦截
-先发送一笔正常订单并记录其返回报文中的 eventId：
-curl -X POST http://localhost:8080/orders \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;orderId&quot;:2001,&quot;userId&quot;:2,&quot;productId&quot;:200,&quot;amount&quot;:199.9&#125;&#x27;
-将刚才的完整报文原样通过重放接口二次投递：
-curl -X POST http://localhost:8080/orders/replay \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;eventId&quot;:&quot;&lt;替换为上述实际ID&gt;&quot;,&quot;orderId&quot;:2001,&quot;userId&quot;:2,&quot;productId&quot;:200,&quot;amount&quot;:199.9,&quot;createdAt&quot;:&quot;2026-09-19T10:00:00&quot;&#125;&#x27;
-控制台输出 ProcessResult: DUPLICATE，业务跳过实际 SQL 插入直接确认位点，MySQL 中并未产生重复订单行。
-场景五：格式损坏直接分流
-直接使用官方脚本向控制台投递非法非 JSON 文本：
-docker exec -it kafka kafka-console-producer \--bootstrap-server localhost:9092 \--topic order-events \--property &quot;parse.key=true&quot; \--property &quot;key.separator=:&quot;
-输入非法载荷：
-1002:this is not json
-Consumer 捕获到 JsonProcessingException 并重新包裹为 BadMessageException 向上抛出。由于该异常被显式标记为不可重试，系统跳过退避等待，直接将其投递进 order-events-dlt。
-
-第十章 生产环境最佳实践
-10.1 轮询生命周期参数管理
-max.poll.records
-定义了消费者底层单次调用 KafkaConsumer.poll() 允许返回的最大数据条数（默认 500）。如果单次拉取数据过多，而每条业务处理耗时较长，整批任务的总耗时就可能超出心跳保护期。因此耗时较重的任务应当主动调低该阈值。
-max.poll.interval.ms
-两次 poll 之间允许的最大时间跨度（默认 5 分钟）。如果某批记录处理过慢导致超过该阈值，Kafka 集群会判定该消费者工作线程已挂死，直接将其踢出 Consumer Group 并触发 Rebalance，导致该分区的任务被频繁重新指派并二次执行。
-10.2 重平衡（Rebalance）与规避
-Rebalance 是 Consumer Group 重新分配分区的过程。触发条件包括：
-
-组内实例扩容、缩容或滚动发布重启；
-某个实例因 Full GC 暂停或业务长时阻塞，导致心跳超时（session.timeout.ms）或轮询超时（max.poll.interval.ms）；
-订阅的主题发生了分区扩容。
-
-发生频繁重平衡期间，消费者需要挂起当前工作重新认领分区，易造成消费抖动与 Lag 攀升。规避手段包括设置合理的 GC 策略避免长暂停、调大心跳超时窗口、并将耗时过长的非核心业务（如第三方支付验证）异步化。
-10.3 消费积压（Consumer Lag）的排查路径
-当监控平台发出 Lag 持续增长告警时，排查次序通常如下：
-
-检查消费状态：确认工作节点是否存在大量错误重试日志，或者发生频繁 Rebalance；
-分析耗时瓶颈：排查数据库是否有慢查引发了线程池等待，或者外部 RPC 调用出现高延迟；
-核算并行度上限：如果所有消费者节点 CPU 与 I/O 正常，仅为纯粹的业务流量突增，应评估当前的分区数。若 Topic 仅有 3 个 Partition，盲目将消费者实例堆到 10 个没有任何效果，必须同步扩充 Partition 数量后再做横向水平扩容。
-
-10.4 消息契约演进原则
-生产系统不可避免需要变更报文格式，制定演进规范尤为重要：
-
-只增不减：只允许向报文中新增可为空的字段，严禁删除已有字段或变更现有字段的物理类型；
-宽容解析：消费端 ObjectMapper 应当启用反序列化忽略未知属性配置，避免生产端发出新属性时下游全线崩溃；
-复杂体系契约治理：对于跨部门的大规模微服务架构，可逐步引入 Apache Avro 或 Protobuf，依托 Schema Registry 服务在集群服务端进行 Schema 兼容性强校验。
-
-
-附录 A 常见问题排查
-A.1 为什么消费端始终无法拉取到消息？
-依次排查以下节点：
-
-执行 kafka-topics --list，确认投递的主题名称拼写是否一致；
-执行 GetOffsetShell 检查该主题分区的 LOG-END-OFFSET 是否在持续递增，确认消息是否真正写进了集群；
-执行 kafka-consumer-groups --describe --group &lt;group-id&gt;，核对当前消费组的分配拓扑，排查是否由于组内节点数量多于分区数导致当前节点处于空闲状态。
-
-A.2 为什么修改了 group-id 后旧消息全部重新被消费了一遍？
-当更换了全新的 group-id 时，Kafka 会认为这是一个完全未曾见过的消费群体。由于该群体在服务端不存在任何已提交的 Offset 记录，客户端将退回并应用 auto-offset-reset: earliest 的策略，从当前依然保存在日志中的最老位点从头回放全量数据。
-A.3 为什么增加消费者节点后消费速率毫无变化？
-Kafka 的核心分配约束是：同一个 Consumer Group 内，单个 Partition 在同一时刻只能指派给唯一的 Consumer 线程。如果主题只有 3 个分区，那么组内最多只有 3 个消费者在并行工作。继续追加节点只会使其陷入无分区可分配的闲置状态，必须对 Topic 执行分区扩容才能解锁更高的并行度。
-
-附录 B 关键配置速查表
-B.1 核心概念边界判定
-
-
-
-概念
-核心定位
-核心防线
-
-
-
-
-orderId
-业务主键 / Kafka Key
-决定消息散列的分区，守住单订单维度的有序处理
-
-
-eventId
-操作唯一标识 (UUID)
-存入去重表 processed_event，防止重复消费产生业务副作用
-
-
-Partition
-物理并发与存储单元
-决定 Consumer Group 消费吞吐量的并发上限
-
-
-Offset
-单分区日志递增位点
-供消费者标记当前分区的进度，作为故障恢复的基点
-
-
-
-B.2 三种幂等与事务的边界区分
-
-Producer 幂等 (enable.idempotence = true)：利用内部 PID 与 Sequence Number，消除生产客户端向 Broker 投递时因网络重试引发的日志重复写入。
-Consumer 幂等 (processed_event 约束)：解决消费端在接收到多次重复投递时，防止业务执行（如扣款、插表）产生重复副作用。
-本地事务 (@Transactional)：确保“去重标记插入”与“订单业务插入”在本地数据库中同生共死。业务异常回滚时，去重记录同步消失，从而保证后续的重试得以正常重入。
-
-]]></content>
-  </entry>
-  <entry>
-    <title>缓存技术常见问题及解决</title>
-    <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题
-缓存雪崩
-认识
-
-当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
-
-解决方案
-
-为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
-
-缓存穿透
-认识
-
-解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
-
-举个栗子:
-
-假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
-
-解决方案
-
-为了应对上述情况，可以选择如下两种策略：
-
-
-
-当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
-
-这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
-为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
-
-
-
-引入布隆过滤器；
-
-布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
-布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
-
-将数据库中的所有用户数据加入布隆过滤器中；
-当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
-若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
-若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
-
-
-
-
-缓存击穿
-认识
-
-解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
-
-解决方案
-为了应对上述情况，可以选择如下方案：
-
-
-缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
-
-
-加分布式锁；
-
-当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
-
-
-
-引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
-
-
+    <title>ModelMeter 开发复盘</title>
+    <url>/posts/4c268a9c/</url>
+    <content><![CDATA[这次参加初试，我选了方向 A 的模型价格计算器，交付作品是 ModelMeter。
+在线体验：https://modelmeter.vercel.app/
+源码仓库：https://github.com/Zenty-Me/modelmeter
+最开始构思时，我以为这只是一个把各家 Token 价格相乘再加总的简单工具。只要拿到几家官方数字，拉个表单乘以调用量就能交卷。
+但真正动手写数据层时，我发现厂商的计价体系远比想象中杂乱。有的模型只按百万 Token 计费，有的带有上下文长度阈值，超过 128k 后价格整体翻倍；还有的区分了缓存命中、批处理和推理 Token。
+如果图省事把价格硬编码在前端组件里，代码确实能跑，但未来官方一旦调整计价策略，维护成本会非常高。所以我放弃了单纯给模型写两个固定数字的做法，改用规则驱动的 Pricing Tier。我写了一个解析器，根据用户输入的单次平均 Prompt 长度，自动选择对应区间的价格阶梯。UI 组件只消费处理后的成本明细，把业务规则与界面渲染彻底解耦。
+在搭建项目的过程中，AI 帮我省掉了大量机械劳动。初始化 Next.js App Router 架构、搭建 TypeScript 接口类型、编写 Tailwind 响应式样式以及补充 Vitest 基础测试用例，这些工作 AI 都能以极高的速度交付。
+但这也再次印证了一个事实：AI 生成的代码必须逐行推敲业务语意。
+最明显的一个坑出现在降本比例的计算上。有一版代码运行后，页面赫然写着“切换模型可节省 2,221.4%”。从常识来看，在成本均为正数的前提下，省钱幅度不可能突破 100%。深入排查后发现，AI 把“A 比 B 贵了多少”与“从 A 换到 B 能省多少”混为一谈，错把最低价格当成了计算百分比的分母。我重新拆分了两个维度的计算逻辑，将分母修正为最高成本，并补充了测试断言。
+数据源也是需要人工死守的环节。让 AI 凭记忆填充模型参数很容易，但其中常夹杂过时甚至捏造的数据。在这个项目里，我坚持逐条核对 OpenAI、Anthropic、Google 的官方 Pricing 页面，把一手 URL 和人工验证日期落库，同时在前端展示新鲜度标识。
+复盘整个过程，有几点体会比较明确：
+首先，做产品时要先跑通核心闭环，不要在一开始就陷入各种分支特性的泥潭。
+其次，向 AI 提需求时，必须给出明确的数学边界、输入输出约束和验收条件，模糊的提问只会得到充满隐患的代码。
+最后，无论工具演进到什么程度，代码的正确性、数据的真实性，最终必须由开发者自己负责。
+技术栈：Next.js / React / TypeScript / Tailwind CSS / Vitest / Vercel
+项目仓库：https://github.com/Zenty-Me/modelmeter
 ]]></content>
       <categories>
-        <category>开发</category>
+        <category>其他</category>
       </categories>
-      <tags>
-        <tag>高并发</tag>
-        <tag>Redis</tag>
-        <tag>缓存</tag>
-      </tags>
   </entry>
   <entry>
     <title>MySql</title>
@@ -4322,6 +2985,1346 @@ revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机�
         <tag>MySQL</tag>
         <tag>数据库</tag>
         <tag>SQL</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+
+
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+
+
+
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
+
+
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
+
+
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
+
+
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
+
+
+易混淆的术语
+接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+
+
+QPS vs. RPS
+
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+
+
+TPS vs. RPS
+
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+
+
+
+VU (并发用户) 和 TPS 换算
+
+公式描述：TPS = VU/RT，（RT单位：秒）。
+
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比
+目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeter
+Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
+
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
+
+ApacheBench
+ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
+
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrk
+wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+      <tags>
+        <tag>性能测试</tag>
+        <tag>压测</tag>
+        <tag>高并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>kafka实践教程</title>
+    <url>/posts/c2881daa/</url>
+    <content><![CDATA[kafka实践教程
+
+第一章 Kafka 核心概念
+在切入业务代码前，需要先厘清 Kafka 的通信模型与基础组件。如果不理解这些设计动机，使用 KafkaTemplate、@KafkaListener 与 DefaultErrorHandler 时就容易陷入机械配置的误区。
+1.1 同步调用的瓶颈
+假设一个电商系统在处理创建订单请求 POST /orders 时，采用传统的单体同步调用：
+public void createOrder() &#123;    orderService.create();    // 100ms    stockService.decrease();  // 100ms    smsService.send();        // 300ms    pointService.add();       // 100ms    logService.record();      // 50ms&#125;
+整个请求的链路耗时为各项之和（约 650ms）。但在多数业务场景下，调用方只需确认“订单是否创建成功”，而短信通知、积分发放、行为日志与推荐更新等操作，延迟数百毫秒甚至数秒并不会破坏业务一致性。
+引入事件驱动后，订单服务仅需在本地完成核心入库逻辑，随后对外发布一条“订单已创建”事件即可返回响应，耗时直接压缩到 100ms 左右：
+                 ┌── 短信服务                 │OrderCreated ────┼── 积分服务                 │                 ├── 推荐服务                 │                 └── 日志服务
+后续旁路系统各自监听事件、异步消费，彼此独立执行。
+1.2 引入消息队列的收益
+消息队列充当了调用方与处理方之间的缓冲媒介：
+
+异步加速：将非强一致性的从属逻辑剥离出主响应链路，直接降低接口延迟。
+系统解耦：上游只负责投递结构化事件，下游增减消费者（如新增风控系统）无需改动订单核心服务的代码。
+流量削峰：当下游数据库最大承载能力为 1000 QPS，而瞬时请求激增到 10000 QPS 时，消息先在队列中持久化排队，消费者按自身处理能力匀速拉取，避免底层存储被瞬间压垮。
+
+1.3 Kafka 消息模型与关键拓扑
+Apache Kafka 是一套高吞吐、持久化、支持水平扩展的分布式事件流平台。在本项目中，各组件承载如下分工：
+OrderController -&gt; OrderProducer -&gt; Kafka -&gt; OrderConsumer -&gt; OrderProcessService
+一条写入 Kafka 的物理记录通常包含以下属性：
+topic:      所属逻辑主题partition:  所在物理分区编号offset:     分区内的位点key:        路由键，决定分区归属value:      实际业务载荷（如序列化后的 JSON 字符串）timestamp:  时间戳headers:    元数据键值对
+项目消费者在参数中拿到的 ConsumerRecord&lt;String, String&gt;，即是该记录在客户端中的映射对象。
+Broker 与集群
+Broker 是 Kafka 的服务节点。生产集群通常由多个 Broker 协同工作以实现高可用；本 Demo 为简化部署，配置单节点服务监听于 localhost:9092。
+Topic 与 Partition
+Topic 是划分消息类型的逻辑主题，例如 order-events（正常事件）与 order-events-dlt（死信事件）。每个 Topic 可进一步切分为多个 Partition。
+Partition 是 Kafka 保证并发能力与横向扩展的物理单元。单 Partition 同一时刻只能由同一 Consumer Group 内的一个消费者实例独占拉取。增加 Partition 数量，能够提升该消费组的消费并发上限。
+单分区有序性
+Partition 是仅支持顺序追加写（Append-only）的提交日志。消息按入队次序依次分配单调递增的偏移量：
+Partition 0:  [offset 0: A] -&gt; [offset 1: B] -&gt; [offset 2: C] -&gt; [offset 3: D]
+Kafka 仅保证单个 Partition 内部的消息有序，不同 Partition 之间不存在全局顺序保证。
+Offset
+Offset 是消息在其所属 Partition 内的序列编号。它是相对概念，并非全局唯一 ID。定位一条物理记录的完整坐标为：Topic + Partition + Offset。消费者通过提交已消费的 Offset，向集群记录当前组在该分区的读取进度。
+Consumer Group
+同属一个 Consumer Group 的消费者协同消费一个 Topic。若 Topic 包含 3 个分区：
+
+组内有 1 个 Consumer 时，该实例同时处理 3 个分区；
+组内有 3 个 Consumer 时，每个实例分别独占消费 1 个分区；
+组内若启动 4 个以上的 Consumer，多出的实例将处于空闲待命状态。
+
+若有两个不同的 Consumer Group（例如订单处理服务与数据分析服务）订阅同一 Topic，两组会完全独立地推进各自的 Offset，互不影响。
+消息路由键：Key 的选择
+Kafka 默认使用 Murmur2 算法对 Key 计算哈希，并对 Partition 总数取模，以此决定消息路由的目标分区。只要 Topic 的分区数量不发生变更，相同 Key 的消息将始终落入同一个 Partition。
+如果使用每个事件唯一的 UUID 作为 Key，同一订单的“创建”、“支付”、“发货”可能会散落到不同分区，被不同线程并发处理，从而导致“支付先于创建被消费”的乱序问题。因此本项目强制将业务主键 orderId 设为 Kafka Key，以单分区有序性守住单订单的生命周期顺序；而将每次操作唯一的 eventId 留在消息体中，专门负责消费端的幂等排重。
+ACK 与重复消费成因
+ACK 是消费者向框架确认消息已处理完成的信号。在手动 ACK 模式下，代码必须在本地事务成功提交之后调用 acknowledge()。如果过早确认，后续业务执行抛出异常时，该消息在 Kafka 看来已被消费，将直接引发漏处理风险。
+相反，如果业务处理已在 MySQL 中成功入库，但在执行 ACK 或框架提交 Offset 的瞬间进程宕机，Kafka 由于未收到确认，在消费者重启后仍会自上次已提交的 Offset 处重新投递该消息。这种“处理成功但确认丢失”的边缘场景，决定了消费端必须设计业务幂等防线。
+临时重试与死信队列（DLT）
+网络抖动或短时死锁属于瞬时异常，通常在重试一到两次后即可自愈；而 JSON 结构损坏属于永久性异常，原地无限重试只会白白占用线程与数据库连接，甚至造成单分区阻塞（即毒消息，Poison Message）。因此系统需要实施有限退避重试，耗尽重试次数后将数据投递至死信队列（order-events-dlt），隔离异常并交由告警系统介入。
+
+第二章 项目架构总览
+2.1 技术栈
+
+
+
+组件
+版本 / 来源
+用途
+
+
+
+
+Spring Boot
+4.1.1
+基础设施框架
+
+
+Spring Kafka
+与 Boot 版本配套
+Kafka 客户端封装
+
+
+Jackson
+与 Boot 版本配套
+JSON 序列化工具
+
+
+MySQL
+8.0+
+业务存储与防重记录
+
+
+Java
+17
+运行环境
+
+
+
+2.2 目录组织
+com.zzh.kafkademo├── config│   ├── JacksonConfig.java        # 序列化配置│   ├── KafkaErrorConfig.java     # 重试与死信队列拓扑配置│   └── KafkaTopicConfig.java     # 主题声明与分区参数├── consumer│   ├── OrderConsumer.java        # 订单业务监听器│   └── OrderDltConsumer.java     # 死信消息监听器├── controller│   └── OrderController.java      # 发送与重放接口├── exception│   └── BadMessageException.java  # 不可重试异常标识├── model│   ├── CreateOrderRequest.java   # HTTP 请求体│   ├── OrderEvent.java           # 核心领域事件│   └── ProcessResult.java        # 处理状态枚举（SUCCESS/DUPLICATE）├── producer│   └── OrderProducer.java        # 消息发送与回调组件└── service    ├── FailureSimulator.java     # 故障注入工具    └── OrderProcessService.java  # 事务落库与去重核心逻辑
+2.3 核心数据流
+整个生命周期严格遵循“先业务事务、后位点确认”的顺序流转：
+HTTP POST /orders    │    ▼OrderController (生成事件 UUID，设定 orderId 为路由键)    │    ▼OrderProducer (通过 Jackson 序列化为 JSON 文本)    │    ▼Kafka Broker (落入 order-events 的特定 Partition)    │    ▼OrderConsumer (拉取记录，解析 JSON 为 OrderEvent)    │    ▼OrderProcessService.process() [@Transactional 事务保护]    ├── 1. INSERT IGNORE INTO processed_event (占位排重)    │      若主键冲突直接返回 DUPLICATE    ├── 2. FailureSimulator.maybeFail() (故障模拟拦截)    └── 3. INSERT INTO orders (业务落库)    │    ├─ 正常提交 ──&gt; 执行 acknowledgment.acknowledge()    │    └─ 抛出异常 ──&gt; 触发数据库 ROLLBACK (去重占位同步撤销)                   │                   ▼ 异常传递给 DefaultErrorHandler                   ├── 可重试异常：按 FixedBackOff 重新拉取                   └── 达到上限或不可重试：转入 order-events-dlt
+
+第三章 环境搭建
+3.1 容器化运行 Kafka（KRaft 模式）
+Kafka 现代版本原生支持 KRaft 协议管理集群元数据，去除了对 ZooKeeper 的外部依赖。通过 Docker Compose 启动单节点服务：
+services:  kafka:    image: confluentinc/cp-kafka:7.6.0    container_name: kafka    ports:      - &quot;9092:9092&quot;    environment:      KAFKA_NODE_ID: 1      KAFKA_PROCESS_ROLES: broker,controller      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+执行命令在后台拉起实例：
+docker compose up -d
+3.2 数据库 Schema 设计
+在 MySQL 中创建去重表与订单业务表：
+CREATE DATABASE IF NOT EXISTS kafka_demoDEFAULT CHARACTER SET utf8mb4DEFAULT COLLATE utf8mb4_general_ci;USE kafka_demo;-- 幂等去重底表CREATE TABLE IF NOT EXISTS processed_event (    event_id     VARCHAR(36) PRIMARY KEY COMMENT &#x27;事件唯一标识&#x27;,    order_id     BIGINT      NOT NULL COMMENT &#x27;订单ID&#x27;,    processed_at DATETIME    NOT NULL COMMENT &#x27;处理时间&#x27;) ENGINE = InnoDB;-- 业务订单表CREATE TABLE IF NOT EXISTS orders (    order_id   BIGINT        PRIMARY KEY COMMENT &#x27;订单ID&#x27;,    user_id    BIGINT        NOT NULL COMMENT &#x27;用户ID&#x27;,    product_id BIGINT        NOT NULL COMMENT &#x27;商品ID&#x27;,    amount     DECIMAL(10,2) NOT NULL COMMENT &#x27;订单金额&#x27;,    status     VARCHAR(20)   NOT NULL COMMENT &#x27;订单状态&#x27;,    created_at DATETIME      NOT NULL COMMENT &#x27;创建时间&#x27;) ENGINE = InnoDB;
+去重表的核心在于 event_id 主键约束。依靠 InnoDB 的唯一性索引，并发或重复投递的相同事件在写入时将被数据库强行拦截。
+3.3 验证环境可用性
+# 验证 Kafka Broker 协议响应docker exec kafka kafka-broker-api-versions --bootstrap-server localhost:9092# 验证 MySQL 库创建成功mysql -u root -p -e &quot;SHOW DATABASES LIKE &#x27;kafka_demo&#x27;&quot;
+
+第四章 Kafka 配置详解
+配置项服务于传输可靠性与消费进度控制，而非简单的语法开关。
+4.1 配置文件一览 (application.yml)
+spring:  kafka:    bootstrap-servers: localhost:9092    producer:      key-serializer: org.apache.kafka.common.serialization.StringSerializer      value-serializer: org.apache.kafka.common.serialization.StringSerializer      acks: all      properties:        enable.idempotence: true    consumer:      group-id: order-service-v2      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer      enable-auto-commit: false      auto-offset-reset: earliest    listener:      ack-mode: manual_immediate
+4.2 生产端核心参数
+acks = all
+该参数指示 Leader 副本在收到消息后，必须等待同步副本集合（In-Sync Replicas, ISR）全量完成同步确认，才向生产者返回成功响应。这是单节点向集群演进时防止 Leader 掉线丢失消息的基石。
+enable.idempotence = true
+开启生产端原生幂等后，Kafka 客户端会为每个 Producer 实例分配唯一的 PID，并为发送到每个分区的消息维护单调自增的 Sequence Number。一旦因网络丢包导致客户端未收到 Broker 确认并自动重试，Broker 端可根据 PID 与序列号过滤掉重复追加的记录。需要注意，这只防范了 Producer 到 Broker 链路的写入重复，不能解决消费端的业务重复问题。
+为什么选择手写 JSON 序列化？
+Spring Kafka 提供了开箱即用的 JsonSerializer，但其默认会在 Record Header 中塞入全限定 Java 类名，导致不同微服务间存在强类路径耦合。直接将领域对象通过 Jackson 序列化为规范 JSON 字符串，再交给 StringSerializer 转化为字节流，能够让报文保持通用与透明，降低跨系统通信时的解析摩擦。
+4.3 消费端与进度控制
+enable-auto-commit = falseack-mode = manual_immediate
+默认的自动提交是基于固定时间窗口（如每 5 秒一次）提交已拉取到的最大 Offset。如果在处理一批消息的中途系统突然重启，后半部分未处理完成的消息由于进度已被提前提交，将彻底丢失。将其关闭并设置为 manual_immediate，意味着消费端由业务代码明确驱动 Offset 提交，只有当一段消息的处理逻辑真正跑通，位点才被推向 Broker。
+auto-offset-reset = earliest
+当一个全新的 Consumer Group 首次接入，或者其原有的位点已在集群中过期淘汰时，该参数决定读取策略。earliest 表示从该分区当前尚存的最早位点开始回放；latest 则只接收启动之后新追加的消息。若该消费组在集群中已存在有效的提交记录，Kafka 将始终沿用现有进度，不会盲目从头全量读取。
+4.4 Topic 编排
+@Configurationpublic class KafkaTopicConfig &#123;    public static final String ORDER_TOPIC = &quot;order-events&quot;;    public static final String ORDER_DLT = &quot;order-events-dlt&quot;;    @Bean    public NewTopic orderTopic() &#123;        return new NewTopic(ORDER_TOPIC, 3, (short) 1);    &#125;    @Bean    public NewTopic orderDltTopic() &#123;        return new NewTopic(ORDER_DLT, 3, (short) 1);    &#125;&#125;
+通过 Spring 容器管理 NewTopic，应用在启动时会自动补全缺失的主题定义。分区数设为 3，意味着当前消费组最多可由 3 个工作线程并发分工消费。副本因子受限于单节点 Broker 环境，在此设置为 1。
+
+第五章 消息生产者
+5.1 生产端逻辑实现
+@Servicepublic class OrderProducer &#123;    private final KafkaTemplate&lt;String, String&gt; kafkaTemplate;    private final ObjectMapper objectMapper;    public OrderProducer(KafkaTemplate&lt;String, String&gt; kafkaTemplate, ObjectMapper objectMapper) &#123;        this.kafkaTemplate = kafkaTemplate;        this.objectMapper = objectMapper;    &#125;    public void send(OrderEvent event) &#123;        try &#123;            // 1. 将事件统一转化为标准化 JSON 载荷            String json = objectMapper.writeValueAsString(event);            // 2. 路由键采用 orderId，确保同一个订单的数据落入固定分区            String key = String.valueOf(event.orderId());            // 3. 异步发送并挂载 CompletableFuture 回调            kafkaTemplate.send(KafkaTopicConfig.ORDER_TOPIC, key, json)                    .whenComplete((result, ex) -&gt; &#123;                        if (ex != null) &#123;                            System.err.println(&quot;Kafka发送失败: &quot; + ex.getMessage());                            return;                        &#125;                        var metadata = result.getRecordMetadata();                        System.out.printf(&quot;Kafka发送成功 topic=%s partition=%d offset=%d%n&quot;,                                metadata.topic(), metadata.partition(), metadata.offset());                    &#125;);        &#125; catch (JsonProcessingException e) &#123;            throw new RuntimeException(&quot;订单事件序列化失败&quot;, e);        &#125;    &#125;&#125;
+5.2 发送行为与模式对比
+发送消息通常有三种交互方式：
+
+发后即忘（Fire-and-forget）：调用 send() 后不处理返回值。响应极快，但在网络故障时无法感知投递丢失，可靠性最弱。
+同步阻塞（Synchronous）：调用 send().get() 显式等待服务端应答。吞吐量极低，线程常年阻塞于网络 I/O，违背了事件驱动的初衷。
+异步回调（Asynchronous Callback）：使用 whenComplete() 注册监听逻辑。业务主线程向底层发送缓冲区追加消息后即可继续向下执行，底层的 I/O 线程会在收到 ACK 时异步触发相应回调，兼顾吞吐与可观测性。
+
+5.3 控制器入口与测试设计
+@RestController@RequestMapping(&quot;/orders&quot;)public class OrderController &#123;    private final OrderProducer orderProducer;    public OrderController(OrderProducer orderProducer) &#123;        this.orderProducer = orderProducer;    &#125;    @PostMapping    public OrderEvent createOrder(@RequestBody CreateOrderRequest request) &#123;        OrderEvent event = new OrderEvent(                UUID.randomUUID().toString(),                request.orderId(),                request.userId(),                request.productId(),                request.amount(),                LocalDateTime.now()        );        orderProducer.send(event);        return event;    &#125;    @PostMapping(&quot;/replay&quot;)    public OrderEvent replay(@RequestBody OrderEvent event) &#123;        // 原封不动重投指定事件，用于测试幂等判定与死信逻辑        orderProducer.send(event);        return event;    &#125;&#125;
+
+第六章 消息消费者
+6.1 消费端监听逻辑
+@Componentpublic class OrderConsumer &#123;    private final ObjectMapper objectMapper;    private final OrderProcessService orderProcessService;    public OrderConsumer(ObjectMapper objectMapper, OrderProcessService orderProcessService) &#123;        this.objectMapper = objectMapper;        this.orderProcessService = orderProcessService;    &#125;    @KafkaListener(topics = KafkaTopicConfig.ORDER_TOPIC, groupId = &quot;order-service-v2&quot;)    public void consume(ConsumerRecord&lt;String, String&gt; record, Acknowledgment acknowledgment) &#123;        System.out.printf(&quot;收到消息 topic=%s partition=%d offset=%d key=%s%n&quot;,                record.topic(), record.partition(), record.offset(), record.key());        OrderEvent event;        try &#123;            event = objectMapper.readValue(record.value(), OrderEvent.class);        &#125; catch (JsonProcessingException e) &#123;            // 静态畸形报文，反序列化必然永久失败，必须抛出非可重试异常直接推进死信流程            throw new BadMessageException(&quot;订单消息 JSON 无法解析&quot;, e);        &#125;        // 业务持久化处理        orderProcessService.process(event);        // 业务处理无异常后，向外确认位点        acknowledgment.acknowledge();    &#125;&#125;
+6.2 异常传递与位点提交控制
+编写 Consumer 时最常见的误区是随意包裹大粒度的 try-catch (Exception e) 并在 catch 块中仅打印一条日志后继续向下执行。这会导致异常被内部消化，Spring Kafka 容器认为本轮消费正常结束，进而触发 ACK 并推进 Offset，最终使得失败的消息在不知不觉中被跳过。
+正确的做法是让业务异常向外抛出至容器层。Spring Kafka 拦截到未处理异常后，会中止本次位点确认，并将其转交给配置好的 DefaultErrorHandler 执行后续重试或降级分流。
+
+第七章 重试与死信队列
+7.1 异常的区分与分流策略
+生产环境中的消费异常大致可归为两类：
+
+瞬态故障（Transient Failure）：如数据库连接池打满、慢查超时、微服务网络毛刺。这些错误通常在数秒内具备自愈可能，应当使用退避策略原地重试。
+确定性故障（Deterministic Failure）：如业务载荷字段缺失、JSON 字符串破损、数字反序列化溢出。这类输入无论尝试多少次结果均不会发生改变，盲目重试只会消耗系统资源，必须直接拦截并路由至死信队列。
+
+7.2 错误处理器配置
+@Configurationpublic class KafkaErrorConfig &#123;    @Bean    public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate&lt;String, String&gt; kafkaTemplate) &#123;        // 1. 指定死信转储目标：追加 -dlt 后缀，并尽可能保留源分区编号        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(                kafkaTemplate,                (record, exception) -&gt; new TopicPartition(record.topic() + &quot;-dlt&quot;, record.partition())        );        // 2. 固定退避：间隔 2000ms，最多追加重试 2 次（加上首次执行共计 3 次）        FixedBackOff fixedBackOff = new FixedBackOff(2000L, 2L);        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, fixedBackOff);        // 3. 注册不可重试异常黑名单        errorHandler.addNotRetryableExceptions(BadMessageException.class);        // 4. 当消息成功转入 DLT 后，必须提交原消息的消费进度，防止其重启后无限阻塞分区        errorHandler.setCommitRecovered(true);        // 5. 打印异常根因链        errorHandler.setRetryListeners((record, exception, deliveryAttempt) -&gt; &#123;            Throwable rootCause = exception;            while (rootCause.getCause() != null) &#123;                rootCause = rootCause.getCause();            &#125;            System.err.printf(&quot;消费失败 [Topic: %s, Partition: %d, Offset: %d, 尝试序号: %d] 根因: %s: %s%n&quot;,                    record.topic(), record.partition(), record.offset(), deliveryAttempt,                    rootCause.getClass().getSimpleName(), rootCause.getMessage());        &#125;);        return errorHandler;    &#125;&#125;
+setCommitRecovered 的必要性
+当一条消息耗尽所有重试机会并成功转储至 DLT 后，setCommitRecovered(true) 会通知容器自动提交该原消息在业务 Partition 的 Offset。若未开启此项，消费者实例一旦在后续某个时刻发生重平衡或重启，仍会从这条未提交的“毒消息”处重新拉取，从而再次陷入无效的死循环。
+7.3 死信队列监听器
+@Componentpublic class OrderDltConsumer &#123;    @KafkaListener(topics = KafkaTopicConfig.ORDER_DLT, groupId = &quot;order-dlt-inspector&quot;)    public void consume(ConsumerRecord&lt;String, String&gt; record, Acknowledgment acknowledgment) &#123;        System.err.printf(&quot;[死信告警] 捕获不可恢复事件 Key: %s, 内容: %s%n&quot;, record.key(), record.value());        // 生产实践中，应在此处接入钉钉/企业微信报警通知，并将记录持久化至异常巡检表供人工介入        acknowledgment.acknowledge();    &#125;&#125;
+
+第八章 幂等消费与事件去重
+8.1 为什么必须在业务层做幂等
+在分布式环境下，Kafka 遵循 At-Least-Once（至少投递一次）语义保证。只要网络层面存在抖动可能，消息的重复消费就是不可避免的客观规律。
+配置了 enable.idempotence = true 的 Producer 只能确保同一个消息批次写入 Kafka 日志时不重复；一旦 Consumer 处理完毕但位点在返回提交时由于断网未能打到 Kafka，这条记录在重新平衡或重启后必会被二次投递。
+8.2 基于本地事务的去重实现
+@Servicepublic class OrderProcessService &#123;    private final JdbcTemplate jdbcTemplate;    private final FailureSimulator failureSimulator;    public OrderProcessService(JdbcTemplate jdbcTemplate, FailureSimulator failureSimulator) &#123;        this.jdbcTemplate = jdbcTemplate;        this.failureSimulator = failureSimulator;    &#125;    @Transactional    public ProcessResult process(OrderEvent event) &#123;        // 第一步：利用 INSERT IGNORE 抢占事件主键        int inserted = jdbcTemplate.update(                &quot;INSERT IGNORE INTO processed_event (event_id, order_id, processed_at) VALUES (?, ?, ?)&quot;,                event.eventId(),                event.orderId(),                Timestamp.valueOf(LocalDateTime.now())        );        // 主键已存在说明属于重复投递，立即平稳返回        if (inserted == 0) &#123;            return ProcessResult.DUPLICATE;        &#125;        // 第二步：故障模拟判定        failureSimulator.maybeFail(event);        // 第三步：核心业务落库        jdbcTemplate.update(                &quot;INSERT INTO orders (order_id, user_id, product_id, amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?)&quot;,                event.orderId(),                event.userId(),                event.productId(),                event.amount(),                &quot;CREATED&quot;,                Timestamp.valueOf(event.createdAt())        );        return ProcessResult.SUCCESS;    &#125;&#125;
+为什么去重记录与业务操作必须绑定在同一个 @Transactional 中？
+假设将去重标志写入内存 Set，或在非事务环境下提前独立写入去重表：
+
+消费端拉取消息，在去重表中插入了记录；
+随后在执行业务落库或外部逻辑时抛出异常崩溃；
+本次消费流程失败中断，Kafka 触发稍后重试；
+重试拉取同一条消息再次执行，此时由于去重表中已存在记录，系统直接返回 DUPLICATE 并确认位点。
+
+这会导致订单实际根本没有创建，业务数据彻底丢失。只有将 processed_event 和 orders 划入同一个本地事务，当业务出现异常回滚时，去重占位记录才会一同被撤销；只有当下一次重试真正通盘走完，两者才同步固化进磁盘。
+
+第九章 故障模拟与实战验证
+9.1 模拟器实现
+@Componentpublic class FailureSimulator &#123;    private final ConcurrentHashMap&lt;String, AtomicInteger&gt; attempts = new ConcurrentHashMap&lt;&gt;();    public void maybeFail(OrderEvent event) &#123;        int attempt = attempts.computeIfAbsent(event.eventId(), key -&gt; new AtomicInteger(0))                .incrementAndGet();        // 订单号为 8888 时，前两次执行主动抛出运行时异常，模拟短时偶发故障        if (event.orderId().equals(8888L) &amp;&amp; attempt &lt;= 2) &#123;            throw new RuntimeException(&quot;模拟临时故障，第 &quot; + attempt + &quot; 次失败&quot;);        &#125;        // 订单号为 9999 时，无限抛出不可恢复异常        if (event.orderId().equals(9999L)) &#123;            throw new RuntimeException(&quot;模拟永久业务异常&quot;);        &#125;    &#125;&#125;
+9.2 场景验证
+场景一：正常流程写入
+curl -X POST http://localhost:8080/orders \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;orderId&quot;:1001,&quot;userId&quot;:1,&quot;productId&quot;:100,&quot;amount&quot;:99.9&#125;&#x27;
+控制台正常打印写入日志，MySQL 中 orders 与 processed_event 均生成相应记录，位点正常提交。
+场景二：瞬时异常与退避自愈
+curl -X POST http://localhost:8080/orders \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;orderId&quot;:8888,&quot;userId&quot;:1,&quot;productId&quot;:100,&quot;amount&quot;:50.0&#125;&#x27;
+
+T = 0s：首次执行，触发异常，本地事务回滚，打印第 1 次失败；
+T = 2s：等待 2 秒退避后自动重试，再次触发异常回滚，打印第 2 次失败；
+T = 4s：等待 2 秒后发起第 2 次重试（第 3 次执行），模拟器放行，事务提交，向 Kafka 发起 ACK。数据最终一致。
+
+场景三：永久异常耗尽重试入死信
+curl -X POST http://localhost:8080/orders \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;orderId&quot;:9999,&quot;userId&quot;:1,&quot;productId&quot;:100,&quot;amount&quot;:50.0&#125;&#x27;
+经历初次执行与 2 次退避重试后，系统确认重试次数耗尽，DeadLetterPublishingRecoverer 捕获该事件并转发至 order-events-dlt。死信监听器输出告警，原队列位点向前推进。
+场景四：重复投递与幂等拦截
+先发送一笔正常订单并记录其返回报文中的 eventId：
+curl -X POST http://localhost:8080/orders \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;orderId&quot;:2001,&quot;userId&quot;:2,&quot;productId&quot;:200,&quot;amount&quot;:199.9&#125;&#x27;
+将刚才的完整报文原样通过重放接口二次投递：
+curl -X POST http://localhost:8080/orders/replay \-H &quot;Content-Type: application/json&quot; \-d &#x27;&#123;&quot;eventId&quot;:&quot;&lt;替换为上述实际ID&gt;&quot;,&quot;orderId&quot;:2001,&quot;userId&quot;:2,&quot;productId&quot;:200,&quot;amount&quot;:199.9,&quot;createdAt&quot;:&quot;2026-09-19T10:00:00&quot;&#125;&#x27;
+控制台输出 ProcessResult: DUPLICATE，业务跳过实际 SQL 插入直接确认位点，MySQL 中并未产生重复订单行。
+场景五：格式损坏直接分流
+直接使用官方脚本向控制台投递非法非 JSON 文本：
+docker exec -it kafka kafka-console-producer \--bootstrap-server localhost:9092 \--topic order-events \--property &quot;parse.key=true&quot; \--property &quot;key.separator=:&quot;
+输入非法载荷：
+1002:this is not json
+Consumer 捕获到 JsonProcessingException 并重新包裹为 BadMessageException 向上抛出。由于该异常被显式标记为不可重试，系统跳过退避等待，直接将其投递进 order-events-dlt。
+
+第十章 生产环境最佳实践
+10.1 轮询生命周期参数管理
+max.poll.records
+定义了消费者底层单次调用 KafkaConsumer.poll() 允许返回的最大数据条数（默认 500）。如果单次拉取数据过多，而每条业务处理耗时较长，整批任务的总耗时就可能超出心跳保护期。因此耗时较重的任务应当主动调低该阈值。
+max.poll.interval.ms
+两次 poll 之间允许的最大时间跨度（默认 5 分钟）。如果某批记录处理过慢导致超过该阈值，Kafka 集群会判定该消费者工作线程已挂死，直接将其踢出 Consumer Group 并触发 Rebalance，导致该分区的任务被频繁重新指派并二次执行。
+10.2 重平衡（Rebalance）与规避
+Rebalance 是 Consumer Group 重新分配分区的过程。触发条件包括：
+
+组内实例扩容、缩容或滚动发布重启；
+某个实例因 Full GC 暂停或业务长时阻塞，导致心跳超时（session.timeout.ms）或轮询超时（max.poll.interval.ms）；
+订阅的主题发生了分区扩容。
+
+发生频繁重平衡期间，消费者需要挂起当前工作重新认领分区，易造成消费抖动与 Lag 攀升。规避手段包括设置合理的 GC 策略避免长暂停、调大心跳超时窗口、并将耗时过长的非核心业务（如第三方支付验证）异步化。
+10.3 消费积压（Consumer Lag）的排查路径
+当监控平台发出 Lag 持续增长告警时，排查次序通常如下：
+
+检查消费状态：确认工作节点是否存在大量错误重试日志，或者发生频繁 Rebalance；
+分析耗时瓶颈：排查数据库是否有慢查引发了线程池等待，或者外部 RPC 调用出现高延迟；
+核算并行度上限：如果所有消费者节点 CPU 与 I/O 正常，仅为纯粹的业务流量突增，应评估当前的分区数。若 Topic 仅有 3 个 Partition，盲目将消费者实例堆到 10 个没有任何效果，必须同步扩充 Partition 数量后再做横向水平扩容。
+
+10.4 消息契约演进原则
+生产系统不可避免需要变更报文格式，制定演进规范尤为重要：
+
+只增不减：只允许向报文中新增可为空的字段，严禁删除已有字段或变更现有字段的物理类型；
+宽容解析：消费端 ObjectMapper 应当启用反序列化忽略未知属性配置，避免生产端发出新属性时下游全线崩溃；
+复杂体系契约治理：对于跨部门的大规模微服务架构，可逐步引入 Apache Avro 或 Protobuf，依托 Schema Registry 服务在集群服务端进行 Schema 兼容性强校验。
+
+
+附录 A 常见问题排查
+A.1 为什么消费端始终无法拉取到消息？
+依次排查以下节点：
+
+执行 kafka-topics --list，确认投递的主题名称拼写是否一致；
+执行 GetOffsetShell 检查该主题分区的 LOG-END-OFFSET 是否在持续递增，确认消息是否真正写进了集群；
+执行 kafka-consumer-groups --describe --group &lt;group-id&gt;，核对当前消费组的分配拓扑，排查是否由于组内节点数量多于分区数导致当前节点处于空闲状态。
+
+A.2 为什么修改了 group-id 后旧消息全部重新被消费了一遍？
+当更换了全新的 group-id 时，Kafka 会认为这是一个完全未曾见过的消费群体。由于该群体在服务端不存在任何已提交的 Offset 记录，客户端将退回并应用 auto-offset-reset: earliest 的策略，从当前依然保存在日志中的最老位点从头回放全量数据。
+A.3 为什么增加消费者节点后消费速率毫无变化？
+Kafka 的核心分配约束是：同一个 Consumer Group 内，单个 Partition 在同一时刻只能指派给唯一的 Consumer 线程。如果主题只有 3 个分区，那么组内最多只有 3 个消费者在并行工作。继续追加节点只会使其陷入无分区可分配的闲置状态，必须对 Topic 执行分区扩容才能解锁更高的并行度。
+
+附录 B 关键配置速查表
+B.1 核心概念边界判定
+
+
+
+概念
+核心定位
+核心防线
+
+
+
+
+orderId
+业务主键 / Kafka Key
+决定消息散列的分区，守住单订单维度的有序处理
+
+
+eventId
+操作唯一标识 (UUID)
+存入去重表 processed_event，防止重复消费产生业务副作用
+
+
+Partition
+物理并发与存储单元
+决定 Consumer Group 消费吞吐量的并发上限
+
+
+Offset
+单分区日志递增位点
+供消费者标记当前分区的进度，作为故障恢复的基点
+
+
+
+B.2 三种幂等与事务的边界区分
+
+Producer 幂等 (enable.idempotence = true)：利用内部 PID 与 Sequence Number，消除生产客户端向 Broker 投递时因网络重试引发的日志重复写入。
+Consumer 幂等 (processed_event 约束)：解决消费端在接收到多次重复投递时，防止业务执行（如扣款、插表）产生重复副作用。
+本地事务 (@Transactional)：确保“去重标记插入”与“订单业务插入”在本地数据库中同生共死。业务异常回滚时，去重记录同步消失，从而保证后续的重试得以正常重入。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>缓存技术常见问题及解决</title>
+    <url>/posts/aad9f202/</url>
+    <content><![CDATA[缓存技术常见的问题
+缓存雪崩
+认识
+
+当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
+
+解决方案
+
+为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
+
+缓存穿透
+认识
+
+解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
+
+举个栗子:
+
+假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
+
+解决方案
+
+为了应对上述情况，可以选择如下两种策略：
+
+
+
+当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
+
+这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
+为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
+
+
+
+引入布隆过滤器；
+
+布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
+布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
+
+将数据库中的所有用户数据加入布隆过滤器中；
+当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
+若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
+若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
+
+
+
+
+缓存击穿
+认识
+
+解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
+
+解决方案
+为了应对上述情况，可以选择如下方案：
+
+
+缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+
+
+加分布式锁；
+
+当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
+
+
+
+引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
+
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+      <tags>
+        <tag>高并发</tag>
+        <tag>缓存</tag>
+        <tag>Redis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何添加书签</title>
+    <url>/posts/3ffe122/</url>
+    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
+一、书签数据文件
+所有书签数据存放在：
+source/_data/link.yml
+用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
+二、文件结构
+文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
+- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
+三、添加书签到已有分类
+在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
+- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
+注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
+四、新建分类
+在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
+- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
+新分类前面留一个空行和上个分类隔开。
+五、缩进规则（重要）
+YAML 对缩进敏感，必须用空格，不能用 Tab：
+
+
+
+层级
+内容
+缩进
+
+
+
+
+1
+class_name
+0 空格（顶格）
+
+
+2
+class_desc / link_list
+2 空格
+
+
+3
+name
+4 空格
+
+
+4
+link / avatar / descr
+6 空格
+
+
+
+六、图标自动获取
+avatar 字段填网站自己的 favicon，格式固定：
+https://网站域名/favicon.ico
+例如：
+
+GitHub → https://github.com/favicon.ico
+掘金 → https://juejin.cn/favicon.ico
+
+不用手动下载图标，浏览器会自动加载网站图标。
+七、删除书签
+找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
+八、部署上线
+改完 link.yml 后，执行：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+
+GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+九、完整示例
+下面是一个包含两个分类的完整 link.yml 示例：
+- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>书签</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Redis</title>
+    <url>/posts/bae4ff13/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>数据存储</category>
+      </categories>
+      <tags>
+        <tag>缓存</tag>
+        <tag>Redis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/posts/b9c5d664/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章
+hexo new &quot;文章标题&quot;
+执行后会在 source/_posts/ 下生成两个东西：
+
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
+
+二、文章结构（Front-matter）
+文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+常用字段说明：
+
+
+
+字段
+作用
+必填
+
+
+
+
+title
+文章标题
+是
+
+
+date
+发布时间
+是
+
+
+tags
+标签（列表）
+否
+
+
+categories
+分类（列表）
+否
+
+
+cover
+封面图路径
+否
+
+
+description
+摘要（首页显示）
+否
+
+
+
+三、写作与图片处理
+用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则
+本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式
+文章里用裸文件名引用图片：
+![图片说明](图片名.png)
+
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
+
+Typora 配置建议
+如果用 Typora 写作，推荐这样配置：
+
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
+
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览
+hexo server
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+按 Ctrl+C 停止服务。
+
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+
+五、部署到 GitHub Pages
+写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+简写形式：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+各步骤作用：
+
+
+
+命令
+作用
+
+
+
+
+hexo clean
+清理缓存（删 db.json 和 public/）
+
+
+hexo generate
+生成静态文件到 public/
+
+
+hexo deploy
+把 public/ 推送到 GitHub 仓库
+
+
+
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客
+部署完成后访问主页：
+https://zenty-me.github.io/
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
+
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+七、草稿机制
+不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+发布后记得执行部署命令。
+八、常用命令速查
+
+
+
+命令
+作用
+
+
+
+
+hexo new &quot;标题&quot;
+新建文章
+
+
+hexo new draft &quot;标题&quot;
+新建草稿
+
+
+hexo publish &quot;标题&quot;
+草稿转正式
+
+
+hexo server
+本地预览
+
+
+hexo server --draft
+预览含草稿
+
+
+hexo clean
+清理缓存
+
+
+hexo generate
+生成静态文件
+
+
+hexo deploy
+部署到远程
+
+
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
+
+
+hexo list
+列出所有文章
+
+
+hexo version
+查看版本
+
+
+
+简写：g = generate，s = server，d = deploy，c = clean
+九、常见问题
+1. 修改配置后预览没变化？
+改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？
+按顺序检查：
+
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
+
+3. 部署后看不到更新？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？
+_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何配置网站外观与个人信息</title>
+    <url>/posts/9fa0ea99/</url>
+    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
+
+
+
+文件
+作用
+
+
+
+
+_config.yml
+Hexo 站点级配置（站名、作者、语言、部署等）
+
+
+_config.butterfly.yml
+Butterfly 主题配置（头像、背景、菜单、侧边栏等）
+
+
+
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息
+编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
+
+title：浏览器标签页和首页大标题都读这里
+description：搜索引擎抓取的站点描述，写一句话介绍即可
+author：改一次，全站的作者署名、版权信息都会同步
+
+二、头像
+编辑 _config.butterfly.yml：
+avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
+图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
+
+支持 png / jpg / webp，建议用正方形图，否则会被裁切。
+
+三、网站背景
+背景在 _config.butterfly.yml 的 background 字段：
+# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
+本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
+四、顶部图（Top Img）
+顶部图是每页面顶部那张大横图：
+disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
+图片放到 source/img/top-bg.webp（或你指定的路径）。
+
+单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
+
+五、导航菜单
+菜单在 _config.butterfly.yml 顶部：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标class。
+
+显示名：菜单上显示的文字
+路径：页面的 URL，比如 /tags/
+图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
+
+新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
+六、社交链接
+侧边栏的社交图标：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
+格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
+七、侧边栏作者卡片
+侧边栏那个带头像和按钮的卡片：
+card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
+description 是作者名下面那一行小字，改成自己的签名即可。
+八、Favicon（浏览器标签页小图标）
+favicon: /img/favicon.png
+图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
+九、图片资源放哪
+所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
+引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
+十、图片灯箱（lightbox）
+文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+在 _config.butterfly.yml 里：
+lightbox: fancybox
+一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
+
+写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
+
+十一、部署生效
+任何配置改完后，三连部署：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
+小结
+
+
+
+想改什么
+改哪里
+
+
+
+
+站点名 / 作者名 / SEO 描述
+_config.yml 的 title / author / description
+
+
+头像
+_config.butterfly.yml 的 avatar.img + 放图到 source/img/
+
+
+背景色 / 渐变
+_config.butterfly.yml 的 background
+
+
+顶部图
+_config.butterfly.yml 的 default_top_img 等
+
+
+导航菜单
+_config.butterfly.yml 的 menu
+
+
+社交图标
+_config.butterfly.yml 的 social
+
+
+作者签名
+_config.butterfly.yml 的 card_author.description
+
+
+图片点击放大
+_config.butterfly.yml 的 lightbox: fancybox
+
+
+标签页小图标
+_config.butterfly.yml 的 favicon
+
+
+
+记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+        <tag>Butterfly</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
+    <url>/posts/35a7b521/</url>
+    <content><![CDATA[本篇面向完全没接触过代码的同学。跟着做完，你会得到一个有独立网址（你的名字.github.io）、能写文章、手机电脑都能看的个人博客。
+一、先认识几个概念
+别急着动手，花两分钟搞清楚我们在做什么。
+
+
+
+名词
+是什么
+在本教程里干嘛
+
+
+
+
+Hexo
+一个博客生成工具
+把你写的 Markdown 文章变成网页
+
+
+Butterfly
+一个博客主题（皮肤）
+让博客好看
+
+
+Node.js
+运行环境
+Hexo 依赖它才能运行
+
+
+Git
+版本控制工具
+把博客推送到网上
+
+
+GitHub
+代码托管平台
+免费存放你的博客
+
+
+GitHub Pages
+GitHub 的建站服务
+让别人能通过网址访问你的博客
+
+
+
+一句话流程：用 Hexo 在本地写文章 → 用 Git 推到 GitHub → GitHub Pages 自动发布 → 全网可访问。
+二、准备工作
+1. 注册 GitHub 账号
+打开 https://github.com/ 注册账号。用户名要记住，因为你的博客网址会是 用户名.github.io。
+2. 安装 Node.js
+去 https://nodejs.org/ 下载 LTS（长期支持版），一路下一步安装即可。
+安装完打开命令行（Windows 按 Win+R 输入 cmd 回车），输入：
+node -vnpm -v
+能看到版本号就说明装好了。
+
+💡 国内用户如果后面安装很慢，可以换淘宝镜像：
+npm config set registry https://registry.npmmirror.com
+
+3. 安装 Git
+去 https://git-scm.com/ 下载安装，一路下一步。验证：
+git --version
+三、安装 Hexo
+在命令行执行：
+npm install -g hexo-cli
+-g 表示全局安装，装一次到处能用。验证：
+hexo version
+四、初始化博客
+先在电脑上新建一个空文件夹放博客（比如 D:\blog），然后命令行进入这个文件夹，执行：
+hexo initnpm install
+等一会儿，会生成这些文件：
+blog/├── _config.yml        # 站点配置文件（改站名、作者、部署等）├── package.json├── source/            # 文章和资源都放这里│   └── _posts/        # 文章目录（你写的文章在这）└── themes/            # 主题目录
+五、本地预览
+hexo server
+浏览器打开 http://localhost:4000/ ，看到一个默认博客就成功了。按 Ctrl+C 停止。
+六、安装 Butterfly 主题
+在博客根目录执行（推荐用 npm 安装，升级方便、不会有嵌套 git 仓库的坑）：
+npm install hexo-theme-butterfly --save
+再装主题需要的两个渲染依赖：
+npm install hexo-renderer-pug hexo-renderer-stylus --save
+打开 _config.yml，找到 theme 字段改成：
+theme: butterfly
+
+💡 接着在博客根目录新建一个文件 _config.butterfly.yml，把 node_modules/hexo-theme-butterfly/_config.yml 里的内容全部复制过去。以后改主题配置就改这个文件，升级主题不会丢配置。本文说的&quot;主题配置&quot;都指它。
+
+再次 hexo server 预览，能看到 Butterfly 的样式就对了。
+七、站点基础配置（_config.yml）
+打开 _config.yml，改这几项：
+title: 我的博客                     # 站点标题subtitle: &quot;&quot;description: &quot;&quot;author: 你的名字                    # 作者名（全站署名读这里）language: zh-CNtimezone: Asia/Shanghaiurl: https://用户名.github.io       # 换成你的 GitHub 用户名permalink: :year/:month/:day/:title/
+
+permalink 是文章网址格式，上面是默认值。想用更短的固定网址，可参考《文章分类、置顶与短链配置》装 abbrlink 插件。
+
+八、主题配置（_config.butterfly.yml）
+这里只列最常用的几项，完整外观配置见《如何配置网站外观与个人信息》。
+导航菜单：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标。图标去 https://fontawesome.com/icons 搜，复制 class 名。
+头像： 准备一张正方形图片放到 source/img/avatar.png（没有 img 文件夹就新建），然后：
+avatar:  img: /img/avatar.png  effect: false       # true 会一直转圈，一般关掉
+建菜单对应页面： 菜单里写了的页面要手动建，否则点进去 404：
+hexo new page tagshexo new page categorieshexo new page archiveshexo new page about
+然后编辑 source/tags/index.md，开头加上 type: tags；source/categories/index.md 加 type: categories。归档页和关于页不用加。
+九、写第一篇文章
+hexo new &quot;我的第一篇文章&quot;
+会在 source/_posts/ 生成 我的第一篇文章.md。用 Typora 或任意编辑器打开，开头是 front-matter（两行 --- 之间的配置）：
+---title: 我的第一篇文章date: 2026-08-06 14:30:00tags:  - 随笔categories:  - 生活---
+下面用 Markdown 写正文，常用语法：
+# 大标题## 二级标题普通段落直接写。- 列表项一- 列表项二**加粗** *斜体* `行内代码`[链接文字](https://example.com)![图片说明](图片名.png)
+写完 hexo server 预览效果。
+十、部署到 GitHub Pages
+最后一步，把博客发布到网上。
+1. 新建仓库
+在 GitHub 点 New repository，名字必须是 用户名.github.io（用户名换成你的）。选 Public，其他不勾，创建。
+2. 配置 SSH（让电脑有权推送到 GitHub）
+git config --global user.name &quot;你的名字&quot;git config --global user.email &quot;你的邮箱&quot;ssh-keygen -t ed25519 -C &quot;你的邮箱&quot;
+一路回车。然后打开生成的公钥文件（Windows 路径 C:\Users\你的用户名\.ssh\id_ed25519.pub），用记事本打开，复制全部内容。
+到 GitHub → 右上角头像 → Settings → SSH and GPG keys → New SSH key，Title 随便填，Key 粘贴刚才复制的内容，保存。
+验证：
+ssh -T git@github.com
+第一次问 yes/no 输 yes。看到 Hi 用户名! 就成功了。
+3. 安装部署插件
+npm install hexo-deployer-git --save
+4. 配置部署信息
+打开 _config.yml，翻到最下面的 deploy，改成：
+deploy:  type: git  repo: git@github.com:用户名/用户名.github.io.git  branch: main
+
+用户名要换成你自己的。repo 地址也能在 GitHub 仓库页面点 Code → SSH 复制。
+
+5. 一键发布
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+三个命令的作用：
+
+
+
+命令
+作用
+
+
+
+
+hexo clean
+清理缓存
+
+
+hexo g
+生成静态网页
+
+
+hexo d
+推送到 GitHub
+
+
+
+第一次推送可能要确认，输 yes。等 1-2 分钟，访问 https://用户名.github.io/ 就能看到你的博客了！
+十一、日常使用
+博客搭好后，日常写文章就三步：
+hexo new &quot;新文章&quot;                  # 1. 建文章# （用编辑器写内容）hexo clean &amp;&amp; hexo g &amp;&amp; hexo d     # 2. 发布
+想先看看效果不发布，用 hexo server 本地预览。
+完整的写作发布流程（图片处理、草稿、本地预览细节）见《Hexo 博客发布笔记完整教程》。
+十二、进阶推荐
+博客跑起来后，可以接着折腾：
+
+《如何配置网站外观与个人信息》——改背景、菜单、社交链接、公告
+《文章分类、置顶与短链配置》——文章自动归类、置顶、固定短网址
+《如何添加书签》——做个网址收藏页
+
+十三、常见问题
+Q：hexo server 打不开 localhost:4000？
+看命令行有没有报错。端口可能被占用，换一个：hexo server -p 5000。
+Q：部署报错 Permission denied (publickey)？
+SSH 没配好。重新按第十步生成 key 并添加到 GitHub，确认 ssh -T git@github.com 能通过。
+Q：部署成功了但访问 404？
+按顺序检查：仓库名是不是严格的 用户名.github.io；仓库是不是 Public；去仓库 Settings → Pages 看是否已开启。
+Q：部署后看到的还是旧内容？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可去仓库 Actions 页面看部署状态。
+Q：中文文章网址又长又丑？
+默认网址带中文和日期。装 hexo-abbrlink 插件可生成 8 位固定短链，详见《文章分类、置顶与短链配置》。
+Q：图片显示不出来？
+在 _config.yml 设置 post_asset_folder: true，图片放文章同名文件夹，用裸文件名引用 ![](图片.png)。详见《Hexo 博客发布笔记完整教程》。
+小结
+
+
+
+步骤
+命令 / 操作
+
+
+
+
+装环境
+Node.js + Git
+
+
+装 Hexo
+npm install -g hexo-cli
+
+
+建博客
+hexo init
+
+
+装主题
+npm install hexo-theme-butterfly --save + 改 theme: butterfly
+
+
+改配置
+_config.yml + _config.butterfly.yml
+
+
+写文章
+hexo new &quot;标题&quot;
+
+
+发布
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+
+
+搭一次，以后写文章只需要后两行。祝写作愉快。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+        <tag>Butterfly</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>文章分类、置顶与短链配置</title>
+    <url>/posts/1784a007/</url>
+    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
+一、文件夹自动归类（auto_category）
+装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
+用法
+在 source/_posts/ 下建文件夹，文章放进去：
+source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
+上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
+注意
+
+手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
+_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
+建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
+
+配置（已设好，一般不用改）
+_config.yml 里：
+auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
+想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
+二、置顶排序（sticky）
+首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
+---title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
+规则
+
+有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
+没 sticky 的文章：按日期倒序排在置顶文章之后
+sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
+
+示例
+本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
+三、永久短链（abbrlink）
+装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
+https://zenty-me.github.io/posts/b9c5d664/
+为什么用短链
+
+永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
+简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
+适合分享：短链好看，外链稳定
+
+工作机制
+
+第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
+之后这个值永久不变，URL 固定为 /posts/abbrlink值/
+不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
+
+配置（已设好）
+_config.yml 里：
+permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
+四、系列文章（series）
+写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
+归入系列
+在 front-matter 加 series: 系列名，同名的就是一个系列：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
+加完后该文章自动获得：
+
+文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
+侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
+
+自定义顺序
+默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
+series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
+排序规则
+
+
+
+情况
+排序方式
+
+
+
+
+系列里有任一篇带 series_order
+按 series_order 数字升序（没加的排最后）
+
+
+全都没加 series_order
+按 date 排序
+
+
+
+配置在 _config.butterfly.yml：
+series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
+示例
+本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
+五、日常写笔记流程
+结合三个机制，写一篇新笔记的完整流程：
+
+建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
+移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
+（可选）置顶：在 front-matter 加 sticky: 100
+（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
+编辑：Typora 写正文
+部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
+小结
+
+
+
+需求
+怎么做
+
+
+
+
+给文章归类
+把 md 文件放进 _posts/分类名/ 文件夹
+
+
+新建分类
+在 _posts/ 下新建文件夹并放入文章
+
+
+置顶文章
+front-matter 加 sticky: 100
+
+
+文章 URL
+自动生成 /posts/xxxxxxxx/，不用管
+
+
+多级分类
+auto_category.depth 改大、multiple: true
+
+
+组成系列文章
+front-matter 加 series: 系列名
+
+
+指定系列内顺序
+front-matter 加 series_order: 数字（越小越靠前）
+
+
+
+一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置
+2.1 github新建仓库+token获取
+
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>图床</tag>
+        <tag>PicList</tag>
+        <tag>GitHub</tag>
       </tags>
   </entry>
   <entry>
