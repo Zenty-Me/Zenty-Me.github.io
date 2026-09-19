@@ -11,7 +11,7 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-09-19T11:38:47.438Z</updated>
+  <updated>2026-09-19T11:39:33.747Z</updated>
   <entry>
     <author>
       <name>Zenty</name>
@@ -22,7 +22,7 @@
     <published>2026-09-19T11:36:08.000Z</published>
     <summary>在切入业务代码前，需要先厘清 Kafka 的通信模型与基础组件。如果不理解这些设计动机，使用 、 与 时就容易陷入机械配置的误区。 假设一个电商系统在处理创建订单请求 时，采用传统的单体同步调用： 整个请求的链路耗时为各项之和（约 650ms）。但在多数业务…</summary>
     <title>kafka实践教程</title>
-    <updated>2026-09-19T11:38:47.438Z</updated>
+    <updated>2026-09-19T11:39:33.747Z</updated>
   </entry>
   <entry>
     <author>
