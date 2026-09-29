@@ -1,135 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>asyncio模块</title>
-    <url>/posts/6200c646/</url>
-    <content><![CDATA[Python asyncio 核心模块解析与实践。内容梳理了事件循环、async 与 await、asyncio.create_task、asyncio.gather、AsyncIterator 以及 asyncio.Queue 的用法，并提供一个整合上述模块的生产者消费者流水线示例。
-
-一、事件循环与非阻塞 I/O
-在同步代码中，等待网络请求或磁盘读写时 CPU 只能处于空闲等待状态。
-asyncio 依托单线程与事件循环（Event Loop）机制工作：
-
-事件循环负责在后台轮询和调度任务。
-协作式多任务：当任务遇到耗时 I/O 并通过 await 挂起时，会主动让出控制权，调度中心立即安排其他就绪的任务执行。
-适用场景：网络爬虫、Web API 服务、微服务通信等 I/O 密集型任务。若遇到纯计算密集型任务，应当使用 multiprocessing 多进程模块。
-
-
-二、async 与 await
-1. async def 定义协程函数
-使用 async def 定义的函数是协程函数。直接调用它不会执行函数体，而是返回一个协程对象（Coroutine Object）。启动异步程序的标准入口是 asyncio.run()。
-import asyncioasync def fetch_user():    print(&quot;开始拉取数据...&quot;)    # asyncio.sleep 模拟非阻塞 I/O，此处不能使用阻塞主线程的 time.sleep    await asyncio.sleep(1)     print(&quot;数据拉取完毕！&quot;)    return &#123;&quot;id&quot;: 101, &quot;name&quot;: &quot;Alice&quot;&#125;result = asyncio.run(fetch_user())print(&quot;返回结果:&quot;, result)
-2. await 的语义与限制
-await 的语义是挂起当前协程，让出 CPU 给其他协程运行，待等待的操作完成后再恢复执行。
-await 只能写在 async def 函数内部，其后只能接三类可等待对象（Awaitables）：
-
-协程对象（调用协程函数的返回值）
-Task（通过 asyncio.create_task 包装的对象）
-Future（表示异步操作最终状态的底层对象）
-
-import asyncioasync def step_a():    await asyncio.sleep(1)    return &quot;A 完成&quot;async def step_b():    await asyncio.sleep(1)    return &quot;B 完成&quot;async def main():    # 串行执行：总耗时约为 2 秒    res_a = await step_a()  # 必须等 step_a 完成才继续往下走    print(res_a)    res_b = await step_b()    print(res_b)asyncio.run(main())
-注意：在循环中直接依次 await 协程依然是串行运行的。实现并发需要借助 create_task 或 gather。
-
-三、并发任务管理：asyncio.create_task
-asyncio.create_task(coroutine) 用于将协程封装为 Task 对象，并排入事件循环调度。
-调用 create_task 后，任务便已经在后台并发运行，并不需要立刻 await 它。后续对 Task 执行 await，作用是获取其返回值或确认其执行完毕。
-import asyncioimport timeasync def download(file_name: str, delay: int):    print(f&quot;[&#123;file_name&#125;] 开始下载...&quot;)    await asyncio.sleep(delay)    print(f&quot;[&#123;file_name&#125;] 下载完成 (耗时 &#123;delay&#125;s)&quot;)    return f&quot;&#123;file_name&#125;_data&quot;async def main():    start = time.perf_counter()    # 提交任务到事件循环，后台开始并发    t1 = asyncio.create_task(download(&quot;File1&quot;, 2))    t2 = asyncio.create_task(download(&quot;File2&quot;, 3))    print(&quot;主流程继续执行其他逻辑...&quot;)    await asyncio.sleep(0.5)    # 等待具体任务的结果    res1 = await t1    res2 = await t2    print(f&quot;全部完成: &#123;res1&#125;, &#123;res2&#125;&quot;)    print(f&quot;总耗时: &#123;time.perf_counter() - start:.2f&#125; 秒&quot;)  # 约为 3 秒，而不是 5 秒asyncio.run(main())
-Task 对象的常用操作：
-
-取消任务：task.cancel()。被取消的任务在下次 await 时会抛出 asyncio.CancelledError。
-状态检查：task.done()、task.cancelled()。
-回调注册：task.add_done_callback(callback_func)。
-
-
-四、批量结果收集：asyncio.gather
-asyncio.gather(*aws, return_exceptions=False) 用于批量聚合多个并发任务。它会自动把传入的协程包装为 Task，并发起调度。返回值严格按照参数传入的先后顺序排列，不会因为某个任务先执行完而打乱顺序。
-import asyncioasync def fetch_api(endpoint: str):    await asyncio.sleep(1)    if endpoint == &quot;/error&quot;:        raise ConnectionError(&quot;网络波动&quot;)    return f&quot;Data from &#123;endpoint&#125;&quot;async def main():    endpoints = [&quot;/users&quot;, &quot;/error&quot;, &quot;/orders&quot;]    # 动态传参解包 *，设置 return_exceptions=True 开启容错    results = await asyncio.gather(        *(fetch_api(ep) for ep in endpoints),        return_exceptions=True    )    for ep, res in zip(endpoints, results):        if isinstance(res, Exception):            print(f&quot;接口 &#123;ep&#125; 异常: &#123;res&#125;&quot;)        else:            print(f&quot;接口 &#123;ep&#125; 成功: &#123;res&#125;&quot;)asyncio.run(main())
-参数 return_exceptions 的取值影响：
-
-False（默认）：只要有一个任务抛出异常，gather 会立刻将该异常向外抛出。
-True：异常会被捕获并作为对应位置的结果放入列表，其他任务继续执行不受阻断。
-
-
-五、create_task 与 gather 的差异
-
-
-
-维度
-asyncio.create_task
-asyncio.gather
-
-
-
-
-主要定位
-单个任务的生命周期控制
-多个任务的批量执行与结果汇总
-
-
-返回值
-单个 asyncio.Task 对象
-包含所有结果的 list
-
-
-调度时机
-调用时即排入事件循环
-调用时即排入事件循环，await 时等待全部完成
-
-
-控制粒度
-支持单独 cancel()、查状态或加回调
-作为整体统一等待或取消
-
-
-典型场景
-后台 Worker 协程、流式任务派发
-批量请求多个第三方接口并汇总数据
-
-
-
-
-六、流式数据处理：async for
-当数据按批次流式获取（如分页拉取、大模型逐字推流、日志采集）时，一次性全部载入内存容易造成内存占用过大，应当使用异步迭代器（AsyncIterator）。
-异步生成器（async def + yield）
-在协程函数中使用 yield，Python 会自动将其封装为异步生成器，省去手动编写迭代器类的工作。
-import asyncioasync def llm_token_stream():    tokens = [&quot;Deep&quot;, &quot;Seek&quot;, &quot; / &quot;, &quot;OpenAI&quot;, &quot; 正在&quot;, &quot;生成&quot;, &quot;回答...&quot;]    for t in tokens:        await asyncio.sleep(0.2)        yield tasync def main():    async for token in llm_token_stream():        print(token, end=&quot;&quot;, flush=True)    print()asyncio.run(main())
-
-七、缓冲区与解耦：asyncio.Queue
-在生产者消费者的架构中，数据生成和处理的速度往往不一致。asyncio.Queue 是专为单线程内协程设计的先进先出（FIFO）队列。因为运行在单线程事件循环中，它不需要加线程锁，但也不能跨进程传递数据（跨进程需使用 multiprocessing.Queue）。
-核心 API 说明：
-
-queue.put(item)：向队列投入元素。若指定了 maxsize 且队列已满，会挂起等待空位。
-queue.get()：从队列提取元素。若队列为空，会挂起等待数据。
-queue.task_done()：消费者处理完一个元素后调用，通知队列该任务处理完毕。
-queue.join()：挂起并等待，直到队列内所有元素都被 get() 且均调用了 task_done()。
-queue.qsize()、empty()、full()：非阻塞方式检查队列状态。
-
-import asyncioimport randomasync def producer(queue: asyncio.Queue, count: int):    for i in range(1, count + 1):        item = f&quot;Job-&#123;i&#125;&quot;        await asyncio.sleep(random.uniform(0.1, 0.3))        await queue.put(item)        print(f&quot;[生产者] 生产: &#123;item&#125; (当前队列长度: &#123;queue.qsize()&#125;)&quot;)async def consumer(name: str, queue: asyncio.Queue):    while True:        job = await queue.get()        print(f&quot;    [&#123;name&#125;] 开始处理: &#123;job&#125;&quot;)        await asyncio.sleep(random.uniform(0.3, 0.6))                # 必须标记完成，否则 queue.join() 会持续等待        queue.task_done()        print(f&quot;    [&#123;name&#125;] 处理完毕: &#123;job&#125;&quot;)async def main():    # 限制容量为 3，提供背压机制，满额时生产者会暂停    queue = asyncio.Queue(maxsize=3)    # 启动 2 个消费者作为后台任务    consumers = [        asyncio.create_task(consumer(f&quot;Worker-&#123;i&#125;&quot;, queue))        for i in range(1, 3)    ]    await producer(queue, count=6)    # 等待队列中所有已被消费的任务全部标记完成    await queue.join()    print(&quot;[主流程] 所有任务已完成&quot;)    # 取消后台消费者并回收    for c in consumers:        c.cancel()    await asyncio.gather(*consumers, return_exceptions=True)asyncio.run(main())
-
-八、完整流水线示例
-这个示例综合了前述模块：异步生成器提供流式数据源，asyncio.Queue 控制缓冲与背压，asyncio.create_task 维护工作池，最后用 asyncio.gather 完成收尾。
-import asyncioimport timeasync def url_stream_generator(total_pages: int):    for page in range(1, total_pages + 1):        await asyncio.sleep(0.2)  # 模拟从数据库或上游接口分页拉取        yield f&quot;https://api.example.com/data?page=&#123;page&#125;&quot;async def worker(worker_id: int, queue: asyncio.Queue, results: list):    while True:        url = await queue.get()        try:            print(f&quot;[Worker-&#123;worker_id&#125;] 开始爬取: &#123;url&#125;&quot;)            await asyncio.sleep(0.4)  # 模拟网络 I/O 耗时            results.append(&#123;&quot;url&quot;: url, &quot;status&quot;: 200, &quot;by&quot;: worker_id&#125;)        finally:            queue.task_done()  # 确保即便抛出异常也能正确递减计数async def main():    start_time = time.perf_counter()    queue = asyncio.Queue(maxsize=5)    results = []    # 启动 3 个并发 Worker    worker_tasks = [        asyncio.create_task(worker(i, queue, results))        for i in range(1, 4)    ]    # 通过 async for 流式投递任务    print(&quot;[调度器] 开始流式投递任务...&quot;)    async for url in url_stream_generator(total_pages=10):        await queue.put(url)        print(f&quot;[调度器] 投递成功: &#123;url&#125;&quot;)    # 等待队列数据全部消费完毕    await queue.join()    print(&quot;[调度器] 队列清空，任务全部完毕&quot;)    # 退出 Worker 并收集状态    for task in worker_tasks:        task.cancel()    await asyncio.gather(*worker_tasks, return_exceptions=True)    print(&quot;\n运行统计:&quot;)    print(f&quot;成功处理: &#123;len(results)&#125; 条&quot;)    print(f&quot;总耗时: &#123;time.perf_counter() - start_time:.2f&#125; 秒&quot;)asyncio.run(main())
-
-九、常见问题与注意事项
-1. 避免在协程中直接调用同步阻塞函数
-在 async def 中调用 time.sleep()、requests.get() 或执行耗时的纯 CPU 计算，会阻塞当前主线程，进而使整个事件循环无法调度其他协程。
-
-遇到网络 I/O，优先替换为 aiohttp、httpx 等异步库。
-若必须调用无法修改的同步阻塞函数，使用 asyncio.to_thread 放入内置线程池执行，避免挂起主事件循环：
-
-import timeimport asynciores = await asyncio.to_thread(time.sleep, 2)
-2. 遗漏 queue.task_done() 导致挂起
-每次执行 await queue.get()，队列内部的未完成任务计数器就会加 1；必须在处理完成后调用 queue.task_done() 将计数器减 1。一旦遗漏该调用，await queue.join() 的计数永远无法归零，主流程会一直挂起。建议在消费者中将 task_done() 放入 try…finally 块中。
-]]></content>
-      <categories>
-        <category>python</category>
-      </categories>
-      <tags>
-        <tag>Python</tag>
-        <tag>异步编程</tag>
-        <tag>并发</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>使用uv管理环境</title>
     <url>/posts/587dcf3b/</url>
     <content><![CDATA[uv 是 Astral 开发的 Python 项目与包管理工具，基于 Rust 构建。它将解释器下载、虚拟环境配置、依赖安装和锁文件管理整合到了单一二进制文件中，可以直接替代 pip、virtualenv、pyenv 和 Poetry。
@@ -281,6 +152,391 @@ uvx &lt;tool&gt; [args]
       </categories>
       <tags>
         <tag>uv</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>asyncio模块</title>
+    <url>/posts/6200c646/</url>
+    <content><![CDATA[Python asyncio 核心模块解析与实践。内容梳理了事件循环、async 与 await、asyncio.create_task、asyncio.gather、AsyncIterator 以及 asyncio.Queue 的用法，并提供一个整合上述模块的生产者消费者流水线示例。
+
+一、事件循环与非阻塞 I/O
+在同步代码中，等待网络请求或磁盘读写时 CPU 只能处于空闲等待状态。
+asyncio 依托单线程与事件循环（Event Loop）机制工作：
+
+事件循环负责在后台轮询和调度任务。
+协作式多任务：当任务遇到耗时 I/O 并通过 await 挂起时，会主动让出控制权，调度中心立即安排其他就绪的任务执行。
+适用场景：网络爬虫、Web API 服务、微服务通信等 I/O 密集型任务。若遇到纯计算密集型任务，应当使用 multiprocessing 多进程模块。
+
+
+二、async 与 await
+1. async def 定义协程函数
+使用 async def 定义的函数是协程函数。直接调用它不会执行函数体，而是返回一个协程对象（Coroutine Object）。启动异步程序的标准入口是 asyncio.run()。
+import asyncioasync def fetch_user():    print(&quot;开始拉取数据...&quot;)    # asyncio.sleep 模拟非阻塞 I/O，此处不能使用阻塞主线程的 time.sleep    await asyncio.sleep(1)     print(&quot;数据拉取完毕！&quot;)    return &#123;&quot;id&quot;: 101, &quot;name&quot;: &quot;Alice&quot;&#125;result = asyncio.run(fetch_user())print(&quot;返回结果:&quot;, result)
+2. await 的语义与限制
+await 的语义是挂起当前协程，让出 CPU 给其他协程运行，待等待的操作完成后再恢复执行。
+await 只能写在 async def 函数内部，其后只能接三类可等待对象（Awaitables）：
+
+协程对象（调用协程函数的返回值）
+Task（通过 asyncio.create_task 包装的对象）
+Future（表示异步操作最终状态的底层对象）
+
+import asyncioasync def step_a():    await asyncio.sleep(1)    return &quot;A 完成&quot;async def step_b():    await asyncio.sleep(1)    return &quot;B 完成&quot;async def main():    # 串行执行：总耗时约为 2 秒    res_a = await step_a()  # 必须等 step_a 完成才继续往下走    print(res_a)    res_b = await step_b()    print(res_b)asyncio.run(main())
+注意：在循环中直接依次 await 协程依然是串行运行的。实现并发需要借助 create_task 或 gather。
+
+三、并发任务管理：asyncio.create_task
+asyncio.create_task(coroutine) 用于将协程封装为 Task 对象，并排入事件循环调度。
+调用 create_task 后，任务便已经在后台并发运行，并不需要立刻 await 它。后续对 Task 执行 await，作用是获取其返回值或确认其执行完毕。
+import asyncioimport timeasync def download(file_name: str, delay: int):    print(f&quot;[&#123;file_name&#125;] 开始下载...&quot;)    await asyncio.sleep(delay)    print(f&quot;[&#123;file_name&#125;] 下载完成 (耗时 &#123;delay&#125;s)&quot;)    return f&quot;&#123;file_name&#125;_data&quot;async def main():    start = time.perf_counter()    # 提交任务到事件循环，后台开始并发    t1 = asyncio.create_task(download(&quot;File1&quot;, 2))    t2 = asyncio.create_task(download(&quot;File2&quot;, 3))    print(&quot;主流程继续执行其他逻辑...&quot;)    await asyncio.sleep(0.5)    # 等待具体任务的结果    res1 = await t1    res2 = await t2    print(f&quot;全部完成: &#123;res1&#125;, &#123;res2&#125;&quot;)    print(f&quot;总耗时: &#123;time.perf_counter() - start:.2f&#125; 秒&quot;)  # 约为 3 秒，而不是 5 秒asyncio.run(main())
+Task 对象的常用操作：
+
+取消任务：task.cancel()。被取消的任务在下次 await 时会抛出 asyncio.CancelledError。
+状态检查：task.done()、task.cancelled()。
+回调注册：task.add_done_callback(callback_func)。
+
+
+四、批量结果收集：asyncio.gather
+asyncio.gather(*aws, return_exceptions=False) 用于批量聚合多个并发任务。它会自动把传入的协程包装为 Task，并发起调度。返回值严格按照参数传入的先后顺序排列，不会因为某个任务先执行完而打乱顺序。
+import asyncioasync def fetch_api(endpoint: str):    await asyncio.sleep(1)    if endpoint == &quot;/error&quot;:        raise ConnectionError(&quot;网络波动&quot;)    return f&quot;Data from &#123;endpoint&#125;&quot;async def main():    endpoints = [&quot;/users&quot;, &quot;/error&quot;, &quot;/orders&quot;]    # 动态传参解包 *，设置 return_exceptions=True 开启容错    results = await asyncio.gather(        *(fetch_api(ep) for ep in endpoints),        return_exceptions=True    )    for ep, res in zip(endpoints, results):        if isinstance(res, Exception):            print(f&quot;接口 &#123;ep&#125; 异常: &#123;res&#125;&quot;)        else:            print(f&quot;接口 &#123;ep&#125; 成功: &#123;res&#125;&quot;)asyncio.run(main())
+参数 return_exceptions 的取值影响：
+
+False（默认）：只要有一个任务抛出异常，gather 会立刻将该异常向外抛出。
+True：异常会被捕获并作为对应位置的结果放入列表，其他任务继续执行不受阻断。
+
+
+五、create_task 与 gather 的差异
+
+
+
+维度
+asyncio.create_task
+asyncio.gather
+
+
+
+
+主要定位
+单个任务的生命周期控制
+多个任务的批量执行与结果汇总
+
+
+返回值
+单个 asyncio.Task 对象
+包含所有结果的 list
+
+
+调度时机
+调用时即排入事件循环
+调用时即排入事件循环，await 时等待全部完成
+
+
+控制粒度
+支持单独 cancel()、查状态或加回调
+作为整体统一等待或取消
+
+
+典型场景
+后台 Worker 协程、流式任务派发
+批量请求多个第三方接口并汇总数据
+
+
+
+
+六、流式数据处理：async for
+当数据按批次流式获取（如分页拉取、大模型逐字推流、日志采集）时，一次性全部载入内存容易造成内存占用过大，应当使用异步迭代器（AsyncIterator）。
+异步生成器（async def + yield）
+在协程函数中使用 yield，Python 会自动将其封装为异步生成器，省去手动编写迭代器类的工作。
+import asyncioasync def llm_token_stream():    tokens = [&quot;Deep&quot;, &quot;Seek&quot;, &quot; / &quot;, &quot;OpenAI&quot;, &quot; 正在&quot;, &quot;生成&quot;, &quot;回答...&quot;]    for t in tokens:        await asyncio.sleep(0.2)        yield tasync def main():    async for token in llm_token_stream():        print(token, end=&quot;&quot;, flush=True)    print()asyncio.run(main())
+
+七、缓冲区与解耦：asyncio.Queue
+在生产者消费者的架构中，数据生成和处理的速度往往不一致。asyncio.Queue 是专为单线程内协程设计的先进先出（FIFO）队列。因为运行在单线程事件循环中，它不需要加线程锁，但也不能跨进程传递数据（跨进程需使用 multiprocessing.Queue）。
+核心 API 说明：
+
+queue.put(item)：向队列投入元素。若指定了 maxsize 且队列已满，会挂起等待空位。
+queue.get()：从队列提取元素。若队列为空，会挂起等待数据。
+queue.task_done()：消费者处理完一个元素后调用，通知队列该任务处理完毕。
+queue.join()：挂起并等待，直到队列内所有元素都被 get() 且均调用了 task_done()。
+queue.qsize()、empty()、full()：非阻塞方式检查队列状态。
+
+import asyncioimport randomasync def producer(queue: asyncio.Queue, count: int):    for i in range(1, count + 1):        item = f&quot;Job-&#123;i&#125;&quot;        await asyncio.sleep(random.uniform(0.1, 0.3))        await queue.put(item)        print(f&quot;[生产者] 生产: &#123;item&#125; (当前队列长度: &#123;queue.qsize()&#125;)&quot;)async def consumer(name: str, queue: asyncio.Queue):    while True:        job = await queue.get()        print(f&quot;    [&#123;name&#125;] 开始处理: &#123;job&#125;&quot;)        await asyncio.sleep(random.uniform(0.3, 0.6))                # 必须标记完成，否则 queue.join() 会持续等待        queue.task_done()        print(f&quot;    [&#123;name&#125;] 处理完毕: &#123;job&#125;&quot;)async def main():    # 限制容量为 3，提供背压机制，满额时生产者会暂停    queue = asyncio.Queue(maxsize=3)    # 启动 2 个消费者作为后台任务    consumers = [        asyncio.create_task(consumer(f&quot;Worker-&#123;i&#125;&quot;, queue))        for i in range(1, 3)    ]    await producer(queue, count=6)    # 等待队列中所有已被消费的任务全部标记完成    await queue.join()    print(&quot;[主流程] 所有任务已完成&quot;)    # 取消后台消费者并回收    for c in consumers:        c.cancel()    await asyncio.gather(*consumers, return_exceptions=True)asyncio.run(main())
+
+八、完整流水线示例
+这个示例综合了前述模块：异步生成器提供流式数据源，asyncio.Queue 控制缓冲与背压，asyncio.create_task 维护工作池，最后用 asyncio.gather 完成收尾。
+import asyncioimport timeasync def url_stream_generator(total_pages: int):    for page in range(1, total_pages + 1):        await asyncio.sleep(0.2)  # 模拟从数据库或上游接口分页拉取        yield f&quot;https://api.example.com/data?page=&#123;page&#125;&quot;async def worker(worker_id: int, queue: asyncio.Queue, results: list):    while True:        url = await queue.get()        try:            print(f&quot;[Worker-&#123;worker_id&#125;] 开始爬取: &#123;url&#125;&quot;)            await asyncio.sleep(0.4)  # 模拟网络 I/O 耗时            results.append(&#123;&quot;url&quot;: url, &quot;status&quot;: 200, &quot;by&quot;: worker_id&#125;)        finally:            queue.task_done()  # 确保即便抛出异常也能正确递减计数async def main():    start_time = time.perf_counter()    queue = asyncio.Queue(maxsize=5)    results = []    # 启动 3 个并发 Worker    worker_tasks = [        asyncio.create_task(worker(i, queue, results))        for i in range(1, 4)    ]    # 通过 async for 流式投递任务    print(&quot;[调度器] 开始流式投递任务...&quot;)    async for url in url_stream_generator(total_pages=10):        await queue.put(url)        print(f&quot;[调度器] 投递成功: &#123;url&#125;&quot;)    # 等待队列数据全部消费完毕    await queue.join()    print(&quot;[调度器] 队列清空，任务全部完毕&quot;)    # 退出 Worker 并收集状态    for task in worker_tasks:        task.cancel()    await asyncio.gather(*worker_tasks, return_exceptions=True)    print(&quot;\n运行统计:&quot;)    print(f&quot;成功处理: &#123;len(results)&#125; 条&quot;)    print(f&quot;总耗时: &#123;time.perf_counter() - start_time:.2f&#125; 秒&quot;)asyncio.run(main())
+
+九、常见问题与注意事项
+1. 避免在协程中直接调用同步阻塞函数
+在 async def 中调用 time.sleep()、requests.get() 或执行耗时的纯 CPU 计算，会阻塞当前主线程，进而使整个事件循环无法调度其他协程。
+
+遇到网络 I/O，优先替换为 aiohttp、httpx 等异步库。
+若必须调用无法修改的同步阻塞函数，使用 asyncio.to_thread 放入内置线程池执行，避免挂起主事件循环：
+
+import timeimport asynciores = await asyncio.to_thread(time.sleep, 2)
+2. 遗漏 queue.task_done() 导致挂起
+每次执行 await queue.get()，队列内部的未完成任务计数器就会加 1；必须在处理完成后调用 queue.task_done() 将计数器减 1。一旦遗漏该调用，await queue.join() 的计数永远无法归零，主流程会一直挂起。建议在消费者中将 task_done() 放入 try…finally 块中。
+]]></content>
+      <categories>
+        <category>python</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>异步编程</tag>
+        <tag>并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>PCA降维</title>
+    <url>/posts/44cb4915/</url>
+    <content><![CDATA[前置知识
+向量内积
+数学公式：
+(a1,a2,⋯ ,an)⋅(b1,b2,⋯ ,bn)T=a1b1+a2b2+⋯+anbn(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} = a_1 b_1 + a_2 b_2 + \cdots + a_n b_n
+(a1​,a2​,⋯,an​)⋅(b1​,b2​,⋯,bn​)T=a1​b1​+a2​b2​+⋯+an​bn​
+
+A 与 B 的内积值等于 A 向 B 所在直线投影的标量大小。
+
+
+基变换
+
+基：类比于我们所知的X,Y坐标轴，如果我们需要描述向量，首先需要确定一组基，然后给出基所在直线上的投影值。
+
+假设我们在二维平面上有一个向量（数据点）x=(3,2)x = (3, 2)x=(3,2)。
+
+
+准备一组全新的单位正交基：u1=(12,12)u_1 = \left( \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u1​=(2​1​,2​1​) u2=(−12,12)u_2 = \left( -\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u2​=(−2​1​,2​1​)
+
+
+计算在新基上的坐标：
+
+
+
+新坐标的第一个数 y1y_1y1​（在 u1u_1u1​ 轴上的投影）：
+
+y1=u1⋅x=(12)×3+(12)×2=52y_1 = u_1 \cdot x = \left( \frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = \frac{5}{\sqrt{2}}
+y1​=u1​⋅x=(2​1​)×3+(2​1​)×2=2​5​
+
+新坐标的第二个数 y2y_2y2​（在 u2u_2u2​ 轴上的投影）：
+
+y2=u2⋅x=(−12)×3+(12)×2=−12y_2 = u_2 \cdot x = \left( -\frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = -\frac{1}{\sqrt{2}}
+y2​=u2​⋅x=(−2​1​)×3+(2​1​)×2=−2​1​
+
+所以，数据点 (3,2)(3, 2)(3,2) 在新坐标系下的新坐标就是：
+
+(52,−12)\left( \frac{5}{\sqrt{2}}, -\frac{1}{\sqrt{2}} \right)
+(2​5​,−2​1​)
+
+注意到上面的内积运算，正好可以打包写成矩阵乘以向量的形式：
+
+(1212−1212)(32)=(52−12)\begin{pmatrix}
+\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \\
+-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}
+\end{pmatrix}
+\begin{pmatrix}
+3 \\
+2
+\end{pmatrix}
+=
+\begin{pmatrix}
+\frac{5}{\sqrt{2}} \\
+-\frac{1}{\sqrt{2}}
+\end{pmatrix}
+(2​1​−2​1​​2​1​2​1​​)(32​)=(2​5​−2​1​​)
+我们可以把它写成通用的表示形式：
+(p1p2⋮pR)(a1a2⋯aM)=(p1a1p1a2⋯p1aMp2a1p2a2⋯p2aM⋮⋮⋱⋮pRa1pRa2⋯pRaM)\begin{pmatrix}
+p_1 \\
+p_2 \\
+\vdots \\
+p_R
+\end{pmatrix}
+\begin{pmatrix}
+a_1 &amp; a_2 &amp; \cdots &amp; a_M
+\end{pmatrix}
+=
+\begin{pmatrix}
+p_1 a_1 &amp; p_1 a_2 &amp; \cdots &amp; p_1 a_M \\
+p_2 a_1 &amp; p_2 a_2 &amp; \cdots &amp; p_2 a_M \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+p_R a_1 &amp; p_R a_2 &amp; \cdots &amp; p_R a_M
+\end{pmatrix}
+​p1​p2​⋮pR​​​(a1​​a2​​⋯​aM​​)=​p1​a1​p2​a1​⋮pR​a1​​p1​a2​p2​a2​⋮pR​a2​​⋯⋯⋱⋯​p1​aM​p2​aM​⋮pR​aM​​​
+其中 pip_ipi​ 是一个行向量，表示第 iii 个基，aja_jaj​ 是一个列向量，表示第 jjj 个原始数据记录。实际上也就是做了一个向量矩阵化的操作。
+
+上述分析给矩阵相乘找到了一种物理解释：两个矩阵相乘的意义是将右边矩阵中的每一列向量 aja_jaj​ 变换到左边矩阵中以每一行向量为所表示的空间中去。也就是说一个矩阵可以表示一种线性变换。
+
+特征值和特征向量
+
+简单来说，在线性代数中，矩阵代表一种空间变换（比如旋转、拉伸、剪切等）。当你用一个矩阵去乘以一个向量时，绝大多数向量的方向和长度都会发生改变。但是，对于某些“特殊”的向量，矩阵作用在它们身上时：
+它的方向完全保持不变（或反向），仅仅是长度被缩放了。
+
+
+特征向量（Eigenvector）：就是这个方向保持不变的特殊向量。它代表了矩阵变换中的“不变轴”或“主导方向”。
+特征值（Eigenvalue）：就是这个向量被缩放的倍数。它代表了矩阵在这个方向上的“作用强度”或“能量大小”
+
+方差
+我们知道数值的分散程度，可以用数学上的方差来表述。一个变量的方差可以看做是每个元素与变量均值的差的平方和的均值，即：
+Var(a)=1m∑i=1m(ai−μ)2Var(a) = \frac{1}{m} \sum_{i=1}^{m} (a_i - \mu)^2
+Var(a)=m1​i=1∑m​(ai​−μ)2
+协方差
+在⼀维空间中我们可⽤⽅差来表示数据的分散程度。而对於⾼维数据，我们⽤协⽅差进⾏约束，协⽅差可以表示两个变量的相关性。为了让两个变量尽可能表示更多的原始信息，我们希望它们之间不存在线性相关性，因为相关性意味着两个变量不是完全独立，必然存在重复表示的信息。
+协⽅差公式为：
+Cov(a,b)=1m−1∑i=1m(ai−μa)(bi−μb)Cov(a, b) = \frac{1}{m - 1} \sum_{i=1}^{m} (a_i - \mu_a)(b_i - \mu_b)
+Cov(a,b)=m−11​i=1∑m​(ai​−μa​)(bi​−μb​)
+PCA降维原理
+
+PCA（Principal Component Analysis） 是一种常见的数据分析方式，常用于高维数据的降维，可用于提取数据的主要特征分量。
+
+
+降维的本质是矩阵变换：两个矩阵相乘 Y=PXY = P XY=PX，可以让基的数量 KKK（PPP 的行数）小于原始特征维度 NNN（XXX 的行数），从而实现特征降维。
+选择最大方差的方向：数据在降维后的新基（新坐标轴）上必须尽可能分散（即方差最大化），这样才能保留最多的原始信息，避免数据混在一起无法区分。
+消除冗余（两两协方差为 0）：为了让新特征之间不包含重复的信息，任意两个新基上的数据必须线性无关（即协方差为 0）。在几何上，这意味着新选出的 KKK 个基必须是相互正交的。
+
+PCA降维推导
+一、 问题定义与预处理
+1. 数据表示
+假设有 MMM 个样本，每个样本包含 NNN 个特征。我们将第 iii 个样本表示为一个 NNN 维的列向量：
+xi=[xi1xi2⋮xiN]∈RN(i=1,2,…,M)x_i = \begin{bmatrix} x_{i1} \\ x_{i2} \\ \vdots \\ x_{iN} \end{bmatrix} \in \mathbb{R}^N \quad (i = 1, 2, \dots, M)
+xi​=​xi1​xi2​⋮xiN​​​∈RN(i=1,2,…,M)
+2. 去均值化（中心化）
+
+为什么 PCA 必须去均值？
+
+定位几何中心：平移数据使得数据的几何中心位于坐标原点，确保新坐标轴穿过数据中心，而不是被原点偏移“拉歪”。
+满足代数定义：只有在均值为 0 时，矩阵积1MXXT\frac{1}{M} X X^{\mathrm{T}}M1​XXT才严格等于数据的协方差矩阵，使得后续的特征值分解数学推导成立。
+过滤无关信息：剥离整体绝对偏移（均值），只关注样本之间的相对变化（方差）。
+
+
+为了简化后续计算，计算所有样本的均值向量 μ=1M∑i=1Mxi\mu = \frac{1}{M} \sum_{i=1}^M x_iμ=M1​∑i=1M​xi​，并将每个样本减去均值：
+xi←xi−μx_i \leftarrow x_i - \mu
+xi​←xi​−μ
+预处理后，数据的均值为零向量，即：
+1M∑i=1Mxi=0\frac{1}{M} \sum_{i=1}^M x_i = \mathbf{0}
+M1​i=1∑M​xi​=0
+3. 降维的目标
+寻找一个低维空间（维数为 KKK，且 K&lt;NK &lt; NK&lt;N），将 NNN 维向量 xix_ixi​ 映射为 KKK 维向量 yiy_iyi​，同时满足：
+
+信息损失最小（即数据投影后的方差最大）。
+降维后的 KKK 个特征之间互不相关（即协方差为 0）。
+
+
+二、 单维度投影推导（求解第一个方向）
+先不考虑降到 KKK 维，只考虑降到 1 维。即：寻找一个最佳的方向向量 w∈RNw \in \mathbb{R}^Nw∈RN。
+1. 计算投影值
+为了保证方向不因向量长度改变，限制 www 为单位向量：
+wTw=1w^T w = 1
+wTw=1
+
+上标 TTT 表示转置（Transpose）。
+
+
+在数学中，向量 w\mathbf{w}w 通常默认是列向量（比如 w=[w1w2]\mathbf{w} = \begin{bmatrix} w_1 \\ w_2 \end{bmatrix}w=[w1​w2​​]）。
+
+
+转置后，wT\mathbf{w}^TwT 就变成了行向量（比如 [w1w2][w_1 \quad w_2][w1​w2​]）。
+
+
+这样做是为了进行矩阵乘法（内积运算）。因为行向量乘以列向量，结果是一个标量（数值）。
+
+样本 xix_ixi​ 投影到方向 www 上的投影标量值为：
+yi=wTxiy_i = w^T x_i
+yi​=wTxi​
+2. 计算投影后的均值与方差
+由于数据已经去均值（∑xi=0\sum x_i = \mathbf{0}∑xi​=0），投影后数据 yiy_iyi​ 的均值也是 0：
+yˉ=1M∑i=1Myi=1M∑i=1MwTxi=wT(1M∑i=1Mxi)=0\bar{y} = \frac{1}{M} \sum_{i=1}^M y_i = \frac{1}{M} \sum_{i=1}^M w^T x_i = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i \right) = 0
+yˉ​=M1​i=1∑M​yi​=M1​i=1∑M​wTxi​=wT(M1​i=1∑M​xi​)=0
+投影后数据的方差（记为 Var\text{Var}Var）公式为：
+Var=1M∑i=1M(yi−yˉ)2=1M∑i=1M(wTxi)2\text{Var} = \frac{1}{M} \sum_{i=1}^M (y_i - \bar{y})^2 = \frac{1}{M} \sum_{i=1}^M (w^T x_i)^2
+Var=M1​i=1∑M​(yi​−yˉ​)2=M1​i=1∑M​(wTxi​)2
+3. 引入协方差矩阵
+展开方差公式中的平方项（利用标量的转置等于其本身，即 wTxi=xiTww^T x_i = x_i^T wwTxi​=xiT​w）：
+Var=1M∑i=1M(wTxi)(xiTw)=wT(1M∑i=1MxixiT)w\text{Var} = \frac{1}{M} \sum_{i=1}^M (w^T x_i)(x_i^T w) = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i x_i^T \right) w
+Var=M1​i=1∑M​(wTxi​)(xiT​w)=wT(M1​i=1∑M​xi​xiT​)w
+
+向量转置公式：(AB)T=BTAT(AB)^T=B^TA^T(AB)T=BTAT
+
+定义原始数据的协方差矩阵 C∈RN×NC \in \mathbb{R}^{N \times N}C∈RN×N 为：
+C=1M∑i=1MxixiTC = \frac{1}{M} \sum_{i=1}^M x_i x_i^T
+C=M1​i=1∑M​xi​xiT​
+
+为了直观，假设数据只有 2 个特征（比如 xi=[aibi]x_i = \begin{bmatrix} a_i \\ b_i \end{bmatrix}xi​=[ai​bi​​]，其中 aia_iai​ 是第 iii 个人的身高，bib_ibi​ 是体重，且已经去均值）：
+我们来看看 xixiTx_i x_i^Txi​xiT​ 算出来是什么：
+xixiT=[aibi][aibi]=[ai2aibibiaibi2]x_i x_i^T = \begin{bmatrix} a_i \\ b_i \end{bmatrix} \begin{bmatrix} a_i &amp; b_i \end{bmatrix} = \begin{bmatrix} a_i^2 &amp; a_i b_i \\ b_i a_i &amp; b_i^2 \end{bmatrix}
+xi​xiT​=[ai​bi​​][ai​​bi​​]=[ai2​bi​ai​​ai​bi​bi2​​]
+再把它乘以 1M∑i=1M\frac{1}{M} \sum_{i=1}^{M}M1​∑i=1M​（即对所有样本求平均）：
+C=1M∑i=1MxixiT=[1M∑ai21M∑aibi1M∑biai1M∑bi2]C = \frac{1}{M} \sum_{i=1}^{M} x_i x_i^T = \begin{bmatrix} \frac{1}{M} \sum a_i^2 &amp; \frac{1}{M} \sum a_i b_i \\ \frac{1}{M} \sum b_i a_i &amp; \frac{1}{M} \sum b_i^2 \end{bmatrix}
+C=M1​i=1∑M​xi​xiT​=[M1​∑ai2​M1​∑bi​ai​​M1​∑ai​bi​M1​∑bi2​​]
+因为数据均值为 0，根据统计学定义：
+
+1M∑ai2\frac{1}{M} \sum a_i^2M1​∑ai2​ 就是身高 aaa 的方差。
+1M∑bi2\frac{1}{M} \sum b_i^2M1​∑bi2​ 就是体重 bbb 的方差。
+1M∑aibi\frac{1}{M} \sum a_i b_iM1​∑ai​bi​ 就是身高 aaa 和体重 bbb 的协方差。
+
+
+由公式可知，CCC 是一个实对称矩阵（CT=CC^T = CCT=C）。
+代入后，投影方差简化为：
+Var=wTCw\text{Var} = w^T C w
+Var=wTCw
+
+三、 极值求解（使用拉格朗日乘子法）
+目标：寻找 www，使得方差 wTCww^T C wwTCw 最大，同时满足约束条件 wTw=1w^T w = 1wTw=1。
+1. 建立拉格朗日函数
+引入乘子 λ\lambdaλ，构造目标函数：
+f(w,λ)=wTCw−λ(wTw−1)f(w, \lambda) = w^T C w - \lambda (w^T w - 1)
+f(w,λ)=wTCw−λ(wTw−1)
+2. 对 www 求导并令其为零
+利用向量微分法则（因为 CCC 是实对称矩阵，∂(wTCw)∂w=2Cw\frac{\partial (w^T C w)}{\partial w} = 2Cw∂w∂(wTCw)​=2Cw）：
+∂f∂w=2Cw−2λw=0\frac{\partial f}{\partial w} = 2 C w - 2 \lambda w = 0
+∂w∂f​=2Cw−2λw=0
+化简得到：
+Cw=λwC w = \lambda w
+Cw=λw
+结论 1：使得方差取得极值的方向向量 www，必须是协方差矩阵 CCC 的特征向量，而 λ\lambdaλ 是对应的特征值。
+3. 特征值与方差的关系
+将 Cw=λwC w = \lambda wCw=λw 代回方差表达式：
+Var=wTCw=wT(λw)=λ(wTw)\text{Var} = w^T C w = w^T (\lambda w) = \lambda (w^T w)
+Var=wTCw=wT(λw)=λ(wTw)
+因为约束条件 wTw=1w^T w = 1wTw=1，所以：
+Var=λ\text{Var} = \lambda
+Var=λ
+结论 2：数据在方向 www 上的投影方差，严格等于协方差矩阵 CCC 的特征值 λ\lambdaλ。
+因此，为了使投影方差最大，我们应当选择最大的特征值 λ1\lambda_1λ1​，其对应的特征向量 w1w_1w1​ 就是最佳的投影方向。
+
+四、 推广到 KKK 维投影
+要求出降维后的 KKK 个维度，我们需要按顺序求解 KKK 个单位正交方向 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
+
+第一个方向 w1w_1w1​：取最大的特征值 λ1\lambda_1λ1​ 对应的特征向量，使得第一个维度方差最大。
+第二个方向 w2w_2w2​：在约束 w2Tw2=1w_2^T w_2 = 1w2T​w2​=1 以及与 w1w_1w1​ 正交的约束 w2Tw1=0w_2^T w_1 = 0w2T​w1​=0 下，最大化 w2TCw2w_2^T C w_2w2T​Cw2​。
+同样通过拉格朗日乘子法求解，可得 Cw2=λ2w2C w_2 = \lambda_2 w_2Cw2​=λ2​w2​。
+为了使方差尽可能大，取第二大特征值 λ2\lambda_2λ2​ 对应的特征向量 w2w_2w2​。
+第 KKK 个方向 wKw_KwK​：依次取前 KKK 个最大的特征值 λ1≥λ2≥⋯≥λK\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_Kλ1​≥λ2​≥⋯≥λK​ 对应的单位特征向量 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
+
+因为 CCC 是实对称矩阵，不同特征值对应的特征向量自动相互正交（wiTwj=0,∀i≠jw_i^T w_j = 0, \forall i \neq jwiT​wj​=0,∀i=j），这天然满足了“新变量之间协方差为 0”的要求。
+
+五、 最终降维计算
+将选出的前 KKK 个特征向量组合成变换矩阵 W∈RK×NW \in \mathbb{R}^{K \times N}W∈RK×N：
+W=[w1Tw2T⋮wKT]W = \begin{bmatrix} w_1^T \\ w_2^T \\ \vdots \\ w_K^T \end{bmatrix}
+W=​w1T​w2T​⋮wKT​​​
+对于任意一个 NNN 维数据点 xix_ixi​，其降维后的 KKK 维向量 yi∈RKy_i \in \mathbb{R}^Kyi​∈RK 计算如下：
+yi=Wxiy_i = W x_i
+yi​=Wxi​
+矩阵形式下，整个数据集矩阵 X∈RN×MX \in \mathbb{R}^{N \times M}X∈RN×M 的降维结果矩阵 Y∈RK×MY \in \mathbb{R}^{K \times M}Y∈RK×M 为：
+Y=WXY = W X
+Y=WX
+性质
+
+缓解维度灾难：PCA 算法通过舍去一部分信息之后能使得样本的采样密度增大（因为维数降低了），这是缓解维度灾难的重要手段；
+降噪：当数据受到噪声影响时，最小特征值对应的特征向量往往与噪声有关，将它们舍弃能在一定程度上起到降噪的效果；
+过拟合：PCA 保留了主要信息，但这个主要信息只是针对训练集的，而且这个主要信息未必是重要信息。有可能舍弃了一些看似无用的信息，但是这些看似无用的信息恰好是重要信息，只是在训练集上没有很大的表现，所以 PCA 也可能加剧了过拟合；
+特征独立：PCA 不仅将数据压缩到低维，它也使得降维之后的数据各特征相互独立；
+
+参考来源
+https://zhuanlan.zhihu.com/p/77151308
+]]></content>
+      <categories>
+        <category>AI飞升</category>
+      </categories>
+      <tags>
+        <tag>机器学习</tag>
+        <tag>数学</tag>
+        <tag>降维</tag>
       </tags>
   </entry>
   <entry>
@@ -625,6 +881,89 @@ uv run aerich upgrade
       </categories>
   </entry>
   <entry>
+    <title>如何添加书签</title>
+    <url>/posts/3ffe122/</url>
+    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
+一、书签数据文件
+所有书签数据存放在：
+source/_data/link.yml
+用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
+二、文件结构
+文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
+- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
+三、添加书签到已有分类
+在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
+- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
+注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
+四、新建分类
+在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
+- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
+新分类前面留一个空行和上个分类隔开。
+五、缩进规则（重要）
+YAML 对缩进敏感，必须用空格，不能用 Tab：
+
+
+
+层级
+内容
+缩进
+
+
+
+
+1
+class_name
+0 空格（顶格）
+
+
+2
+class_desc / link_list
+2 空格
+
+
+3
+name
+4 空格
+
+
+4
+link / avatar / descr
+6 空格
+
+
+
+六、图标自动获取
+avatar 字段填网站自己的 favicon，格式固定：
+https://网站域名/favicon.ico
+例如：
+
+GitHub → https://github.com/favicon.ico
+掘金 → https://juejin.cn/favicon.ico
+
+不用手动下载图标，浏览器会自动加载网站图标。
+七、删除书签
+找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
+八、部署上线
+改完 link.yml 后，执行：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+
+GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+九、完整示例
+下面是一个包含两个分类的完整 link.yml 示例：
+- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>书签</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>解决lmstudio下载模型卡顿问题</title>
     <url>/posts/17dd0035/</url>
     <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
@@ -738,262 +1077,6 @@ f16：接近原始精度，但又大又慢
         <tag>LM Studio</tag>
         <tag>大模型</tag>
         <tag>本地部署</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>PCA降维</title>
-    <url>/posts/44cb4915/</url>
-    <content><![CDATA[前置知识
-向量内积
-数学公式：
-(a1,a2,⋯ ,an)⋅(b1,b2,⋯ ,bn)T=a1b1+a2b2+⋯+anbn(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} = a_1 b_1 + a_2 b_2 + \cdots + a_n b_n
-(a1​,a2​,⋯,an​)⋅(b1​,b2​,⋯,bn​)T=a1​b1​+a2​b2​+⋯+an​bn​
-
-A 与 B 的内积值等于 A 向 B 所在直线投影的标量大小。
-
-
-基变换
-
-基：类比于我们所知的X,Y坐标轴，如果我们需要描述向量，首先需要确定一组基，然后给出基所在直线上的投影值。
-
-假设我们在二维平面上有一个向量（数据点）x=(3,2)x = (3, 2)x=(3,2)。
-
-
-准备一组全新的单位正交基：u1=(12,12)u_1 = \left( \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u1​=(2​1​,2​1​) u2=(−12,12)u_2 = \left( -\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u2​=(−2​1​,2​1​)
-
-
-计算在新基上的坐标：
-
-
-
-新坐标的第一个数 y1y_1y1​（在 u1u_1u1​ 轴上的投影）：
-
-y1=u1⋅x=(12)×3+(12)×2=52y_1 = u_1 \cdot x = \left( \frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = \frac{5}{\sqrt{2}}
-y1​=u1​⋅x=(2​1​)×3+(2​1​)×2=2​5​
-
-新坐标的第二个数 y2y_2y2​（在 u2u_2u2​ 轴上的投影）：
-
-y2=u2⋅x=(−12)×3+(12)×2=−12y_2 = u_2 \cdot x = \left( -\frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = -\frac{1}{\sqrt{2}}
-y2​=u2​⋅x=(−2​1​)×3+(2​1​)×2=−2​1​
-
-所以，数据点 (3,2)(3, 2)(3,2) 在新坐标系下的新坐标就是：
-
-(52,−12)\left( \frac{5}{\sqrt{2}}, -\frac{1}{\sqrt{2}} \right)
-(2​5​,−2​1​)
-
-注意到上面的内积运算，正好可以打包写成矩阵乘以向量的形式：
-
-(1212−1212)(32)=(52−12)\begin{pmatrix}
-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \\
--\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}
-\end{pmatrix}
-\begin{pmatrix}
-3 \\
-2
-\end{pmatrix}
-=
-\begin{pmatrix}
-\frac{5}{\sqrt{2}} \\
--\frac{1}{\sqrt{2}}
-\end{pmatrix}
-(2​1​−2​1​​2​1​2​1​​)(32​)=(2​5​−2​1​​)
-我们可以把它写成通用的表示形式：
-(p1p2⋮pR)(a1a2⋯aM)=(p1a1p1a2⋯p1aMp2a1p2a2⋯p2aM⋮⋮⋱⋮pRa1pRa2⋯pRaM)\begin{pmatrix}
-p_1 \\
-p_2 \\
-\vdots \\
-p_R
-\end{pmatrix}
-\begin{pmatrix}
-a_1 &amp; a_2 &amp; \cdots &amp; a_M
-\end{pmatrix}
-=
-\begin{pmatrix}
-p_1 a_1 &amp; p_1 a_2 &amp; \cdots &amp; p_1 a_M \\
-p_2 a_1 &amp; p_2 a_2 &amp; \cdots &amp; p_2 a_M \\
-\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
-p_R a_1 &amp; p_R a_2 &amp; \cdots &amp; p_R a_M
-\end{pmatrix}
-​p1​p2​⋮pR​​​(a1​​a2​​⋯​aM​​)=​p1​a1​p2​a1​⋮pR​a1​​p1​a2​p2​a2​⋮pR​a2​​⋯⋯⋱⋯​p1​aM​p2​aM​⋮pR​aM​​​
-其中 pip_ipi​ 是一个行向量，表示第 iii 个基，aja_jaj​ 是一个列向量，表示第 jjj 个原始数据记录。实际上也就是做了一个向量矩阵化的操作。
-
-上述分析给矩阵相乘找到了一种物理解释：两个矩阵相乘的意义是将右边矩阵中的每一列向量 aja_jaj​ 变换到左边矩阵中以每一行向量为所表示的空间中去。也就是说一个矩阵可以表示一种线性变换。
-
-特征值和特征向量
-
-简单来说，在线性代数中，矩阵代表一种空间变换（比如旋转、拉伸、剪切等）。当你用一个矩阵去乘以一个向量时，绝大多数向量的方向和长度都会发生改变。但是，对于某些“特殊”的向量，矩阵作用在它们身上时：
-它的方向完全保持不变（或反向），仅仅是长度被缩放了。
-
-
-特征向量（Eigenvector）：就是这个方向保持不变的特殊向量。它代表了矩阵变换中的“不变轴”或“主导方向”。
-特征值（Eigenvalue）：就是这个向量被缩放的倍数。它代表了矩阵在这个方向上的“作用强度”或“能量大小”
-
-方差
-我们知道数值的分散程度，可以用数学上的方差来表述。一个变量的方差可以看做是每个元素与变量均值的差的平方和的均值，即：
-Var(a)=1m∑i=1m(ai−μ)2Var(a) = \frac{1}{m} \sum_{i=1}^{m} (a_i - \mu)^2
-Var(a)=m1​i=1∑m​(ai​−μ)2
-协方差
-在⼀维空间中我们可⽤⽅差来表示数据的分散程度。而对於⾼维数据，我们⽤协⽅差进⾏约束，协⽅差可以表示两个变量的相关性。为了让两个变量尽可能表示更多的原始信息，我们希望它们之间不存在线性相关性，因为相关性意味着两个变量不是完全独立，必然存在重复表示的信息。
-协⽅差公式为：
-Cov(a,b)=1m−1∑i=1m(ai−μa)(bi−μb)Cov(a, b) = \frac{1}{m - 1} \sum_{i=1}^{m} (a_i - \mu_a)(b_i - \mu_b)
-Cov(a,b)=m−11​i=1∑m​(ai​−μa​)(bi​−μb​)
-PCA降维原理
-
-PCA（Principal Component Analysis） 是一种常见的数据分析方式，常用于高维数据的降维，可用于提取数据的主要特征分量。
-
-
-降维的本质是矩阵变换：两个矩阵相乘 Y=PXY = P XY=PX，可以让基的数量 KKK（PPP 的行数）小于原始特征维度 NNN（XXX 的行数），从而实现特征降维。
-选择最大方差的方向：数据在降维后的新基（新坐标轴）上必须尽可能分散（即方差最大化），这样才能保留最多的原始信息，避免数据混在一起无法区分。
-消除冗余（两两协方差为 0）：为了让新特征之间不包含重复的信息，任意两个新基上的数据必须线性无关（即协方差为 0）。在几何上，这意味着新选出的 KKK 个基必须是相互正交的。
-
-PCA降维推导
-一、 问题定义与预处理
-1. 数据表示
-假设有 MMM 个样本，每个样本包含 NNN 个特征。我们将第 iii 个样本表示为一个 NNN 维的列向量：
-xi=[xi1xi2⋮xiN]∈RN(i=1,2,…,M)x_i = \begin{bmatrix} x_{i1} \\ x_{i2} \\ \vdots \\ x_{iN} \end{bmatrix} \in \mathbb{R}^N \quad (i = 1, 2, \dots, M)
-xi​=​xi1​xi2​⋮xiN​​​∈RN(i=1,2,…,M)
-2. 去均值化（中心化）
-
-为什么 PCA 必须去均值？
-
-定位几何中心：平移数据使得数据的几何中心位于坐标原点，确保新坐标轴穿过数据中心，而不是被原点偏移“拉歪”。
-满足代数定义：只有在均值为 0 时，矩阵积1MXXT\frac{1}{M} X X^{\mathrm{T}}M1​XXT才严格等于数据的协方差矩阵，使得后续的特征值分解数学推导成立。
-过滤无关信息：剥离整体绝对偏移（均值），只关注样本之间的相对变化（方差）。
-
-
-为了简化后续计算，计算所有样本的均值向量 μ=1M∑i=1Mxi\mu = \frac{1}{M} \sum_{i=1}^M x_iμ=M1​∑i=1M​xi​，并将每个样本减去均值：
-xi←xi−μx_i \leftarrow x_i - \mu
-xi​←xi​−μ
-预处理后，数据的均值为零向量，即：
-1M∑i=1Mxi=0\frac{1}{M} \sum_{i=1}^M x_i = \mathbf{0}
-M1​i=1∑M​xi​=0
-3. 降维的目标
-寻找一个低维空间（维数为 KKK，且 K&lt;NK &lt; NK&lt;N），将 NNN 维向量 xix_ixi​ 映射为 KKK 维向量 yiy_iyi​，同时满足：
-
-信息损失最小（即数据投影后的方差最大）。
-降维后的 KKK 个特征之间互不相关（即协方差为 0）。
-
-
-二、 单维度投影推导（求解第一个方向）
-先不考虑降到 KKK 维，只考虑降到 1 维。即：寻找一个最佳的方向向量 w∈RNw \in \mathbb{R}^Nw∈RN。
-1. 计算投影值
-为了保证方向不因向量长度改变，限制 www 为单位向量：
-wTw=1w^T w = 1
-wTw=1
-
-上标 TTT 表示转置（Transpose）。
-
-
-在数学中，向量 w\mathbf{w}w 通常默认是列向量（比如 w=[w1w2]\mathbf{w} = \begin{bmatrix} w_1 \\ w_2 \end{bmatrix}w=[w1​w2​​]）。
-
-
-转置后，wT\mathbf{w}^TwT 就变成了行向量（比如 [w1w2][w_1 \quad w_2][w1​w2​]）。
-
-
-这样做是为了进行矩阵乘法（内积运算）。因为行向量乘以列向量，结果是一个标量（数值）。
-
-样本 xix_ixi​ 投影到方向 www 上的投影标量值为：
-yi=wTxiy_i = w^T x_i
-yi​=wTxi​
-2. 计算投影后的均值与方差
-由于数据已经去均值（∑xi=0\sum x_i = \mathbf{0}∑xi​=0），投影后数据 yiy_iyi​ 的均值也是 0：
-yˉ=1M∑i=1Myi=1M∑i=1MwTxi=wT(1M∑i=1Mxi)=0\bar{y} = \frac{1}{M} \sum_{i=1}^M y_i = \frac{1}{M} \sum_{i=1}^M w^T x_i = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i \right) = 0
-yˉ​=M1​i=1∑M​yi​=M1​i=1∑M​wTxi​=wT(M1​i=1∑M​xi​)=0
-投影后数据的方差（记为 Var\text{Var}Var）公式为：
-Var=1M∑i=1M(yi−yˉ)2=1M∑i=1M(wTxi)2\text{Var} = \frac{1}{M} \sum_{i=1}^M (y_i - \bar{y})^2 = \frac{1}{M} \sum_{i=1}^M (w^T x_i)^2
-Var=M1​i=1∑M​(yi​−yˉ​)2=M1​i=1∑M​(wTxi​)2
-3. 引入协方差矩阵
-展开方差公式中的平方项（利用标量的转置等于其本身，即 wTxi=xiTww^T x_i = x_i^T wwTxi​=xiT​w）：
-Var=1M∑i=1M(wTxi)(xiTw)=wT(1M∑i=1MxixiT)w\text{Var} = \frac{1}{M} \sum_{i=1}^M (w^T x_i)(x_i^T w) = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i x_i^T \right) w
-Var=M1​i=1∑M​(wTxi​)(xiT​w)=wT(M1​i=1∑M​xi​xiT​)w
-
-向量转置公式：(AB)T=BTAT(AB)^T=B^TA^T(AB)T=BTAT
-
-定义原始数据的协方差矩阵 C∈RN×NC \in \mathbb{R}^{N \times N}C∈RN×N 为：
-C=1M∑i=1MxixiTC = \frac{1}{M} \sum_{i=1}^M x_i x_i^T
-C=M1​i=1∑M​xi​xiT​
-
-为了直观，假设数据只有 2 个特征（比如 xi=[aibi]x_i = \begin{bmatrix} a_i \\ b_i \end{bmatrix}xi​=[ai​bi​​]，其中 aia_iai​ 是第 iii 个人的身高，bib_ibi​ 是体重，且已经去均值）：
-我们来看看 xixiTx_i x_i^Txi​xiT​ 算出来是什么：
-xixiT=[aibi][aibi]=[ai2aibibiaibi2]x_i x_i^T = \begin{bmatrix} a_i \\ b_i \end{bmatrix} \begin{bmatrix} a_i &amp; b_i \end{bmatrix} = \begin{bmatrix} a_i^2 &amp; a_i b_i \\ b_i a_i &amp; b_i^2 \end{bmatrix}
-xi​xiT​=[ai​bi​​][ai​​bi​​]=[ai2​bi​ai​​ai​bi​bi2​​]
-再把它乘以 1M∑i=1M\frac{1}{M} \sum_{i=1}^{M}M1​∑i=1M​（即对所有样本求平均）：
-C=1M∑i=1MxixiT=[1M∑ai21M∑aibi1M∑biai1M∑bi2]C = \frac{1}{M} \sum_{i=1}^{M} x_i x_i^T = \begin{bmatrix} \frac{1}{M} \sum a_i^2 &amp; \frac{1}{M} \sum a_i b_i \\ \frac{1}{M} \sum b_i a_i &amp; \frac{1}{M} \sum b_i^2 \end{bmatrix}
-C=M1​i=1∑M​xi​xiT​=[M1​∑ai2​M1​∑bi​ai​​M1​∑ai​bi​M1​∑bi2​​]
-因为数据均值为 0，根据统计学定义：
-
-1M∑ai2\frac{1}{M} \sum a_i^2M1​∑ai2​ 就是身高 aaa 的方差。
-1M∑bi2\frac{1}{M} \sum b_i^2M1​∑bi2​ 就是体重 bbb 的方差。
-1M∑aibi\frac{1}{M} \sum a_i b_iM1​∑ai​bi​ 就是身高 aaa 和体重 bbb 的协方差。
-
-
-由公式可知，CCC 是一个实对称矩阵（CT=CC^T = CCT=C）。
-代入后，投影方差简化为：
-Var=wTCw\text{Var} = w^T C w
-Var=wTCw
-
-三、 极值求解（使用拉格朗日乘子法）
-目标：寻找 www，使得方差 wTCww^T C wwTCw 最大，同时满足约束条件 wTw=1w^T w = 1wTw=1。
-1. 建立拉格朗日函数
-引入乘子 λ\lambdaλ，构造目标函数：
-f(w,λ)=wTCw−λ(wTw−1)f(w, \lambda) = w^T C w - \lambda (w^T w - 1)
-f(w,λ)=wTCw−λ(wTw−1)
-2. 对 www 求导并令其为零
-利用向量微分法则（因为 CCC 是实对称矩阵，∂(wTCw)∂w=2Cw\frac{\partial (w^T C w)}{\partial w} = 2Cw∂w∂(wTCw)​=2Cw）：
-∂f∂w=2Cw−2λw=0\frac{\partial f}{\partial w} = 2 C w - 2 \lambda w = 0
-∂w∂f​=2Cw−2λw=0
-化简得到：
-Cw=λwC w = \lambda w
-Cw=λw
-结论 1：使得方差取得极值的方向向量 www，必须是协方差矩阵 CCC 的特征向量，而 λ\lambdaλ 是对应的特征值。
-3. 特征值与方差的关系
-将 Cw=λwC w = \lambda wCw=λw 代回方差表达式：
-Var=wTCw=wT(λw)=λ(wTw)\text{Var} = w^T C w = w^T (\lambda w) = \lambda (w^T w)
-Var=wTCw=wT(λw)=λ(wTw)
-因为约束条件 wTw=1w^T w = 1wTw=1，所以：
-Var=λ\text{Var} = \lambda
-Var=λ
-结论 2：数据在方向 www 上的投影方差，严格等于协方差矩阵 CCC 的特征值 λ\lambdaλ。
-因此，为了使投影方差最大，我们应当选择最大的特征值 λ1\lambda_1λ1​，其对应的特征向量 w1w_1w1​ 就是最佳的投影方向。
-
-四、 推广到 KKK 维投影
-要求出降维后的 KKK 个维度，我们需要按顺序求解 KKK 个单位正交方向 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
-
-第一个方向 w1w_1w1​：取最大的特征值 λ1\lambda_1λ1​ 对应的特征向量，使得第一个维度方差最大。
-第二个方向 w2w_2w2​：在约束 w2Tw2=1w_2^T w_2 = 1w2T​w2​=1 以及与 w1w_1w1​ 正交的约束 w2Tw1=0w_2^T w_1 = 0w2T​w1​=0 下，最大化 w2TCw2w_2^T C w_2w2T​Cw2​。
-同样通过拉格朗日乘子法求解，可得 Cw2=λ2w2C w_2 = \lambda_2 w_2Cw2​=λ2​w2​。
-为了使方差尽可能大，取第二大特征值 λ2\lambda_2λ2​ 对应的特征向量 w2w_2w2​。
-第 KKK 个方向 wKw_KwK​：依次取前 KKK 个最大的特征值 λ1≥λ2≥⋯≥λK\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_Kλ1​≥λ2​≥⋯≥λK​ 对应的单位特征向量 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
-
-因为 CCC 是实对称矩阵，不同特征值对应的特征向量自动相互正交（wiTwj=0,∀i≠jw_i^T w_j = 0, \forall i \neq jwiT​wj​=0,∀i=j），这天然满足了“新变量之间协方差为 0”的要求。
-
-五、 最终降维计算
-将选出的前 KKK 个特征向量组合成变换矩阵 W∈RK×NW \in \mathbb{R}^{K \times N}W∈RK×N：
-W=[w1Tw2T⋮wKT]W = \begin{bmatrix} w_1^T \\ w_2^T \\ \vdots \\ w_K^T \end{bmatrix}
-W=​w1T​w2T​⋮wKT​​​
-对于任意一个 NNN 维数据点 xix_ixi​，其降维后的 KKK 维向量 yi∈RKy_i \in \mathbb{R}^Kyi​∈RK 计算如下：
-yi=Wxiy_i = W x_i
-yi​=Wxi​
-矩阵形式下，整个数据集矩阵 X∈RN×MX \in \mathbb{R}^{N \times M}X∈RN×M 的降维结果矩阵 Y∈RK×MY \in \mathbb{R}^{K \times M}Y∈RK×M 为：
-Y=WXY = W X
-Y=WX
-性质
-
-缓解维度灾难：PCA 算法通过舍去一部分信息之后能使得样本的采样密度增大（因为维数降低了），这是缓解维度灾难的重要手段；
-降噪：当数据受到噪声影响时，最小特征值对应的特征向量往往与噪声有关，将它们舍弃能在一定程度上起到降噪的效果；
-过拟合：PCA 保留了主要信息，但这个主要信息只是针对训练集的，而且这个主要信息未必是重要信息。有可能舍弃了一些看似无用的信息，但是这些看似无用的信息恰好是重要信息，只是在训练集上没有很大的表现，所以 PCA 也可能加剧了过拟合；
-特征独立：PCA 不仅将数据压缩到低维，它也使得降维之后的数据各特征相互独立；
-
-参考来源
-https://zhuanlan.zhihu.com/p/77151308
-]]></content>
-      <categories>
-        <category>AI飞升</category>
-      </categories>
-      <tags>
-        <tag>机器学习</tag>
-        <tag>数学</tag>
-        <tag>降维</tag>
       </tags>
   </entry>
   <entry>
@@ -1205,298 +1288,6 @@ Go 文档：go 命令
       <categories>
         <category>其他</category>
       </categories>
-  </entry>
-  <entry>
-    <title>Hexo 博客发布笔记完整教程</title>
-    <url>/posts/b9c5d664/</url>
-    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章
-hexo new &quot;文章标题&quot;
-执行后会在 source/_posts/ 下生成两个东西：
-
-文章标题.md：Markdown 文章文件
-文章标题/：同名文件夹，用于存放图片等资源
-
-二、文章结构（Front-matter）
-文章开头 --- 之间是 front-matter，用于配置文章元信息：
----title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-常用字段说明：
-
-
-
-字段
-作用
-必填
-
-
-
-
-title
-文章标题
-是
-
-
-date
-发布时间
-是
-
-
-tags
-标签（列表）
-否
-
-
-categories
-分类（列表）
-否
-
-
-cover
-封面图路径
-否
-
-
-description
-摘要（首页显示）
-否
-
-
-
-三、写作与图片处理
-用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则
-本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式
-文章里用裸文件名引用图片：
-![图片说明](图片名.png)
-
-⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
-
-Typora 配置建议
-如果用 Typora 写作，推荐这样配置：
-
-偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
-路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
-
-这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览
-hexo server
-访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
-预览草稿：
-hexo server --draft
-按 Ctrl+C 停止服务。
-
-修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
-
-五、部署到 GitHub Pages
-写完满意后，一键部署：
-hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-简写形式：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-各步骤作用：
-
-
-
-命令
-作用
-
-
-
-
-hexo clean
-清理缓存（删 db.json 和 public/）
-
-
-hexo generate
-生成静态文件到 public/
-
-
-hexo deploy
-把 public/ 推送到 GitHub 仓库
-
-
-
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客
-部署完成后访问主页：
-https://zenty-me.github.io/
-文章地址格式：
-https://zenty-me.github.io/年/月/日/文章标题/
-
-GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-七、草稿机制
-不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
-新建草稿：
-hexo new draft &quot;草稿标题&quot;
-把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
-hexo publish &quot;草稿标题&quot;
-发布后记得执行部署命令。
-八、常用命令速查
-
-
-
-命令
-作用
-
-
-
-
-hexo new &quot;标题&quot;
-新建文章
-
-
-hexo new draft &quot;标题&quot;
-新建草稿
-
-
-hexo publish &quot;标题&quot;
-草稿转正式
-
-
-hexo server
-本地预览
-
-
-hexo server --draft
-预览含草稿
-
-
-hexo clean
-清理缓存
-
-
-hexo generate
-生成静态文件
-
-
-hexo deploy
-部署到远程
-
-
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-一键发布
-
-
-hexo list
-列出所有文章
-
-
-hexo version
-查看版本
-
-
-
-简写：g = generate，s = server，d = deploy，c = clean
-九、常见问题
-1. 修改配置后预览没变化？
-改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？
-按顺序检查：
-
-确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
-确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
-确认 _config.yml 里 post_asset_folder: true 已开启
-确认 marked 配置了 postAsset: true
-
-3. 部署后看不到更新？
-GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？
-_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
-
-以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何添加书签</title>
-    <url>/posts/3ffe122/</url>
-    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
-一、书签数据文件
-所有书签数据存放在：
-source/_data/link.yml
-用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
-二、文件结构
-文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
-- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
-三、添加书签到已有分类
-在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
-- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
-注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
-四、新建分类
-在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
-- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
-新分类前面留一个空行和上个分类隔开。
-五、缩进规则（重要）
-YAML 对缩进敏感，必须用空格，不能用 Tab：
-
-
-
-层级
-内容
-缩进
-
-
-
-
-1
-class_name
-0 空格（顶格）
-
-
-2
-class_desc / link_list
-2 空格
-
-
-3
-name
-4 空格
-
-
-4
-link / avatar / descr
-6 空格
-
-
-
-六、图标自动获取
-avatar 字段填网站自己的 favicon，格式固定：
-https://网站域名/favicon.ico
-例如：
-
-GitHub → https://github.com/favicon.ico
-掘金 → https://juejin.cn/favicon.ico
-
-不用手动下载图标，浏览器会自动加载网站图标。
-七、删除书签
-找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
-八、部署上线
-改完 link.yml 后，执行：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
-
-GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-九、完整示例
-下面是一个包含两个分类的完整 link.yml 示例：
-- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
-照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>书签</tag>
-      </tags>
   </entry>
   <entry>
     <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
@@ -1724,8 +1515,628 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>教程</tag>
         <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySql</title>
+    <url>/posts/6cac71de/</url>
+    <content><![CDATA[基础
+DDL
+数据库操作
+查询所有数据库：
+show databases;
+选择当前数据库：
+select database();
+创建数据库：
+create database &#123;if not exists&#125; 数据库名;
+删除数据库：
+drop database &#123;if exists&#125; 数据库名;
+切换数据库：
+use 数据库名;
+
+表操作
+查询当前数据库所有表：
+show tables;
+查看指定表的结构：
+desc 表名;
+查询指定表的建表语句：
+show create table 表名;
+创建表结构：
+create table 表名&#123;	字段1 字段1类型 [comment 字段1注释],	字段2 字段2类型 [comment 字段2注释],	字段3 字段3类型 [comment 字段3注释],	字段4 字段4类型 [comment 字段4注释],	....	字段n 字段n类型 [comment 字段n注释]&#125;[comment 表注释];
+[]内为可选参数
+
+修改表：
+添加：
+alter table 表名 add 字段名 类型(长度) [comment 注释] [约束];
+修改数据类型：
+alter table 表名 modify 字段名 新数据类型(长度);
+修改字段名和字段类型：
+alter table 表名 change 旧字段名 新字段名 类型(长度) [comment 注释] [约束];
+删除字段：
+alter table 表名 drop 字段名;
+修改表名：
+alter table 表名 rename to 新表名;
+删除表：
+drop table [if exists] 表名;
+删除指定表并重新创建：
+truncate table 表名;删除的时候表中的所有数据都会被删除
+
+数据类型：
+数值类型：
+
+
+
+类型
+描述
+
+
+
+
+tinyint
+小整数值
+
+
+smallint
+大整数值
+
+
+mediumint
+大整数值
+
+
+int/integer
+大整数值
+
+
+bigint
+极大整数值
+
+
+float
+单精度浮点数值
+
+
+double
+双精度浮点数值
+
+
+decimal
+小数值
+
+
+
+字符串类型：
+
+
+
+类型
+描述
+
+
+
+
+char
+定长字符串
+
+
+varchar
+变长字符串
+
+
+tinyblob
+不超过255个字符的二进制数据
+
+
+tinytext
+短文本字符串
+
+
+blob
+二进制形式长文本数据
+
+
+text
+长文本数据
+
+
+mediumblob
+二进制形式中文本数据
+
+
+mediumtext
+中文本数据
+
+
+longblob
+极大文本数据
+
+
+longblob
+二进制形式极大文本数据
+
+
+longtext
+极大文本数据
+
+
+
+日期时间类型：
+
+
+
+类型
+格式
+描述
+
+
+
+
+date
+YYYY-MM-DD
+日期值
+
+
+time
+HH:MM:SS
+时间值或者持续时间
+
+
+year
+YYYY
+年份值
+
+
+datetime
+YYYY-MM-DD HH:MM:SS
+混合时间和日期
+
+
+timestamp
+YYYY-MM-DD HH:MM:SS
+混合日期和时间值
+
+
+
+
+DML
+添加数据
+给指定的字段添加数据：
+insert into 表名 (字段1，字段2，...) values(值1，值2，...);
+给全部的字段添加数据：
+insert into 表名 values (值1，值2，...);
+批量添加数据：
+insert into (字段名1，字段名2，...) values(值1，值2,..),(值1，值2,..),(值1，值2,..);
+修改数据：
+update 表名 set 字段名1=值1，字段名2=值2，... [where 条件];
+删除数据
+delete from 表名 [where 条件];
+DQL
+基础查询
+查询多个字段：
+select 字段1，字段2，字段3... from 表名;select * from 表名;
+字段设置别名：
+select 字段1 [as 别名1]，字段2 [as 别名2] ... from 表名;as可以省略select 字段1 [别名1]，字段2 [别名2]，... from 表名;
+去除重复记录：
+select distinct 字段列表 from 表名;
+条件查询
+语法：
+select 字段列表 from 表名 where 条件列表;
+条件：
+
+
+
+比较运算符
+功能
+
+
+
+
+&gt;
+
+
+
+&lt;
+
+
+
+&gt;=
+
+
+
+&lt;=
+
+
+
+=
+
+
+
+&lt;&gt;或者!=
+
+
+
+detween … and …
+在某个范围之内
+
+
+in(…)
+在in之后的列表中的值，多选一
+
+
+like(占位符)
+模糊匹配
+
+
+is NULL
+
+
+
+
+
+
+
+逻辑运算符
+功能
+
+
+
+
+and 或者 &amp;&amp;
+
+
+
+or 或者 ||
+
+
+
+not 或者 ！
+
+
+
+
+聚合函数：
+语法
+select 聚合函数(字段列表) from 表名;null值不参与聚合函数的运算
+常见的聚合函数:
+
+
+
+函数
+功能
+
+
+
+
+count
+统计数量
+
+
+max
+最大值
+
+
+min
+最小值
+
+
+avg
+平均值
+
+
+sum
+求和
+
+
+
+分组查询
+select 字段列表 from 表名 [where 条件] group by 分组字段名 [having 分组后的过滤条件];
+where和having的区别：
+
+执行时间不同：where是分组之前进行过滤,不满足where条件，不参与分组，而having是分组之后再对结果进行过滤
+判断时间不同：where不能对聚合函数进行判断，而having可以
+执行顺序：where&gt;聚合函数&gt;having
+
+排序查询
+select 字段列表 from 表名 order by 字段1 排序方式1,字段2 排序方式2;
+排序方式：
+
+ASC: 升序（默认值）
+DESC:降序
+
+分页查询
+select 字段列表 from 表名 limit 起始索引,查询记录数;
+
+DCL
+管理用户
+查询用户：
+select * from mysql.user;
+创建用户：
+create user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified by &#x27;密码&#x27;;
+修改用户密码：
+alter user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified with mysql_native_password by &#x27;新密码&#x27;;
+删除用户：
+drop user &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+主机名可以使用用%通配
+权限控制
+
+
+
+权限
+说明
+
+
+
+
+all，all privileges
+所有权限
+
+
+select
+查询数据
+
+
+insert
+插入数据
+
+
+update
+修改数据
+
+
+delete
+删除数据
+
+
+alter
+修改表
+
+
+drop
+删除数据库/表/视图
+
+
+create
+创建数据库/表
+
+
+
+查询权限：
+show grants for &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+授予权限
+grant 权限列表 on 数据库.表名 to &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+撤销权限
+revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+]]></content>
+      <categories>
+        <category>数据存储</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>数据库</tag>
+        <tag>SQL</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Redis</title>
+    <url>/posts/bae4ff13/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>数据存储</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+        <tag>缓存</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/posts/b9c5d664/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章
+hexo new &quot;文章标题&quot;
+执行后会在 source/_posts/ 下生成两个东西：
+
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
+
+二、文章结构（Front-matter）
+文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+常用字段说明：
+
+
+
+字段
+作用
+必填
+
+
+
+
+title
+文章标题
+是
+
+
+date
+发布时间
+是
+
+
+tags
+标签（列表）
+否
+
+
+categories
+分类（列表）
+否
+
+
+cover
+封面图路径
+否
+
+
+description
+摘要（首页显示）
+否
+
+
+
+三、写作与图片处理
+用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则
+本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式
+文章里用裸文件名引用图片：
+![图片说明](图片名.png)
+
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
+
+Typora 配置建议
+如果用 Typora 写作，推荐这样配置：
+
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
+
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览
+hexo server
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+按 Ctrl+C 停止服务。
+
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+
+五、部署到 GitHub Pages
+写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+简写形式：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+各步骤作用：
+
+
+
+命令
+作用
+
+
+
+
+hexo clean
+清理缓存（删 db.json 和 public/）
+
+
+hexo generate
+生成静态文件到 public/
+
+
+hexo deploy
+把 public/ 推送到 GitHub 仓库
+
+
+
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客
+部署完成后访问主页：
+https://zenty-me.github.io/
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
+
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+七、草稿机制
+不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+发布后记得执行部署命令。
+八、常用命令速查
+
+
+
+命令
+作用
+
+
+
+
+hexo new &quot;标题&quot;
+新建文章
+
+
+hexo new draft &quot;标题&quot;
+新建草稿
+
+
+hexo publish &quot;标题&quot;
+草稿转正式
+
+
+hexo server
+本地预览
+
+
+hexo server --draft
+预览含草稿
+
+
+hexo clean
+清理缓存
+
+
+hexo generate
+生成静态文件
+
+
+hexo deploy
+部署到远程
+
+
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
+
+
+hexo list
+列出所有文章
+
+
+hexo version
+查看版本
+
+
+
+简写：g = generate，s = server，d = deploy，c = clean
+九、常见问题
+1. 修改配置后预览没变化？
+改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？
+按顺序检查：
+
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
+
+3. 部署后看不到更新？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？
+_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
       </tags>
   </entry>
   <entry>
@@ -1875,6 +2286,47 @@ front-matter 加 series_order: 数字（越小越靠前）
       </tags>
   </entry>
   <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置
+2.1 github新建仓库+token获取
+
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>图床</tag>
+        <tag>PicList</tag>
+        <tag>GitHub</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>如何配置网站外观与个人信息</title>
     <url>/posts/9fa0ea99/</url>
     <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
@@ -2015,49 +2467,132 @@ _config.butterfly.yml 的 favicon
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>教程</tag>
         <tag>Butterfly</tag>
+        <tag>教程</tag>
       </tags>
   </entry>
   <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
+    <title>补环境</title>
+    <url>/posts/43a51ea6/</url>
+    <content><![CDATA[1. 介绍
 
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
+由于浏览器环境与node环境的差别，会导致浏览器的JavaScript代码没办法在node环境中正常执行，js代码会根据浏览器所提供的属性来判断你执行的环境是不是通过浏览器来执行的。如果不是则不会返回正确的响应信息
 
-2. 配置
-2.1 github新建仓库+token获取
+// node 中内置的关键字requireglobalglobalThis  // 浏览器环境也有globalThis, 与global没有任何区别(globalThis支持ES2020语法)process__filename__dirname// 浏览器支持的关键字(对象)/** window* document* navigator* location* ....* */
+2. 浏览器中常见对象
+1. window：窗口对象
 
-新建一个公开的仓库，eg：images-test
+window在浏览器中属于顶级变量，任何在全局作用域中声明的变量或函数都会成为window对象的属性。例如：如果你声明一个全局变量var name = 'admin';，你可以通过window.name获取。window仅在浏览器环境中存在，在node或者其他环境中，顶级对象为global。
 
+addEventListener: functionsetInterval: functionsetTimeout: functionnameselfdoucmentnavigatorlocationscreenhistorytoString: function
+2. document：文档对象
+bodydocumentElementcookiecreateElement: functiongetElementByIdgetElementByTagNamegetElementByClassNametoString
+3. navigator：导航对象
+userAgenttoString: function
+4. location：地址栏对象
+hreftoString: function
+5. screen：屏幕对象
+availHeightavailLeftavailTopavailWidthtoString: function
+6. history：历史对象
+back: functionforward: functiongo: functiontoString: function
+7. locationStorage和sessionStorage：本地存储对象
+getItem: functionsetItem: functionremovieItem: functiontoString: function
+8. element：标签对象
+/* 常用标签 */h1 - h6标签p标签input标签div与span标签img标签table标签form标签canvas标签（toDataURL: function）/* 标签对象常用的属性与方法 */ele.styleele.innerHtmlele.getAttribute()
+3. 检测环境的代码示例
+1. 检测代码执行环境是否存在navigator
+navigator = &#123;&#125;navigator.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36&#x27;function ps() &#123;    if (navigator[&#x27;userAgent&#x27;]) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
+2. 检测属性长度，根据长度判断数据是否正确
+location = &#123;&#125;location.href = &#x27;https://www.baidu.com&#x27;function ps() &#123;    if (location[&#x27;href&#x27;].length &gt; 3) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
+3. 异常日志输出
 
+在前端开发中为了代码的健壮性通常会对容易出错的代码进行异常捕获，但是生产环境中的代码一般不会直接输出错误日志到浏览器，需要我们爬虫开发者自行输
 
-在设置页面申请token
+// location = &#123;&#125;// location.host = &#x27;8888&#x27;// navigator = &#123;&#125;// navigator.userAgent = &#x27;abc&#x27;function pn() &#123;    try &#123;        console.log(verify_local());        if (navigator[&#x27;userAgent&#x27;]) &#123;            return &#x27;hello world&#x27;        &#125;    &#125; catch (e) &#123;        // console.log(e)  // 输出错误日志        return &#x27;错误的数据&#x27;    &#125;&#125;function verify_local() &#123;    if (location.host.length &gt; 2) &#123;        return &#x27;浏览器环境...&#x27;    &#125;    return &#x27;非浏览器环境...&#x27;&#125;console.log(pn());
+4. 判断浏览器执行环境与node执行环境来验证是否为爬虫程序
+// 浏览器和node差异/*&quot;undefined&quot; != typeof exports：检查 exports 变量的类型是否不是 &quot;undefined&quot;在 Node.js 环境中，exports 是一个预定义的对象，用于模块导出在浏览器环境中，exports 通常是未定义的（undefined）如果 exports 存在（即在 Node.js 环境中），则将 exports 赋给 browser_or_node（object）如果 exports 不存在（即在浏览器环境中），则将 void 0（等同于 undefined）赋给 browser_or_node*/// let browser_or_node = &quot;undefined&quot; != typeof exports ? exports : void 0// console.log(typeof browser_or_node);let glb = &quot;undefined&quot; == typeof window ? global : windowconsole.log(glb)
+5. 基于toString检测
+// window = global;// window.addEventListener = function () &#123;// &#125;//// navigator = &#123;//     toString() &#123;//         return &#x27;[object Navigator]&#x27;//     &#125;,//     userAgent: &quot;&#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36&#x27;&quot;// &#125;//// kw = &#123;//     getAttribute: function () &#123;//     &#125;// &#125;//// document = &#123;//     getElementById(ele) &#123;//         console.log(&quot;document getElementById&quot;, ele)//         if (ele === &quot;kw&quot;) &#123;//             return kw//         &#125;//     &#125;,//     createElement(ele) &#123;//         console.log(&quot;document createElement &quot;, ele)//         if (ele === &quot;canvas&quot;) &#123;//             return canvas//         &#125;//     &#125;// &#125;//// ctx = &#123;//     fillRect() &#123;//     &#125;// &#125;//// canvas = &#123;//     getContext() &#123;//         return ctx//     &#125;// &#125;function get_sign() &#123;    window.addEventListener(&quot;test&quot;)    let kw = document.getElementById(&quot;kw&quot;)    let _class = kw.getAttribute(&quot;class&quot;)    let canvas = document.createElement(&quot;canvas&quot;)    let ctx = canvas.getContext(&quot;2d&quot;);    ctx.fillRect(10, 10, 100, 100);    try &#123;        if (navigator.toString() === &#x27;[object Navigator]&#x27;) &#123;            return btoa(&quot;admin&quot;)  // 输出base64编码        &#125; else &#123;            return &#x27;假数据 - 1&#x27;        &#125;    &#125; catch (e) &#123;        return &#x27;假数据 - 2&#x27;    &#125;&#125;console.log(get_sign())
+4. Proxy代理脚本
+function getEnv(proxy_array) &#123;    for (let i = 0; i &lt; proxy_array.length; i++) &#123;        handler = `&#123;            get: function(target, property, receiver) &#123;                   console.log(&#x27;方法：get&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                   return target[property];            &#125;,            set: function(target, property, value, receiver)&#123;                    console.log(&#x27;方法：set&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                    return Reflect.set(...arguments);            &#125;        &#125;`;        eval(`            try &#123;                $&#123;proxy_array[i]&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125; catch (e) &#123;                $&#123;proxy_array[i]&#125; = &#123;&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125;        `);    &#125;&#125;proxy_array = [&#x27;window&#x27;, &#x27;document&#x27;, &#x27;location&#x27;, &#x27;navigator&#x27;, &#x27;history&#x27;, &#x27;screen&#x27;]getEnv(proxy_array);
 
+5. 原型和原型链
+1. 基础
 
+JavaScript 中，对象需要一个机制来共享属性和方法。如果每个对象都存储自己的方法副本，内存会严重浪费。原型系统正是为了解决这个问题而设计的。
 
-2.2 PicList配置
+// 每个实例都独立存储方法（浪费内存）function createUser(name) &#123;  return &#123;    name: name,    sayHi: function() &#123;  // 每次调用都创建新函数      console.log(&#x27;Hi, &#x27; + this.name);    &#125;  &#125;;&#125;// 使用原型共享方法（所有实例共享同一个函数）function User(name) &#123;  this.name = name;&#125;User.prototype.sayHi = function() &#123;  console.log(&#x27;Hi, &#x27; + this.name);&#125;;
+2. 属性
+prototype属性(函数独有)
 
-打开下载好的PicList，对图床进行配置
+每一个函数都有一个prototype属性，指向通过new创建的实例的原型
 
+function Person() &#123;&#125;console.log(Person.prototype); // &#123; constructor: Person &#125;
+__proto__属性(对象独有)
 
+每一个对象(除了null)都有一个__proto__属性，指向它的原型对象
 
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+const obj = &#123;&#125;;console.log(obj.__proto__); // Object.prototypeconst arr = [];console.log(arr.__proto__); // Array.prototype
+constructor属性
 
+原型对象上有一个constructor属性，指回构造函数本身
 
+function Dog() &#123;&#125;console.log(Dog.prototype.constructor === Dog); // trueconst dog = new Dog();console.log(dog.__proto__.constructor === Dog); // true
 3. 使用
+
+传统方法创建类，并将方法存储到公共空间
+
+function FuncStudent(name, score) &#123;    this.name = name;    this.score = score;&#125;// 在类中存在一个默认的prototype属性, 这个属性可以帮助我们创建一个独立公共空间/** 在类对象中的prototype被称之为原型, 通过这个类对象实例化出来的实例对象中也存在原型(__proto__)** prototype: 函数对象上的属性* __proto__: 对象上的属性** */FuncStudent.prototype.print_info = function () &#123;    console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);&#125;func_student_1 = new FuncStudent(&#x27;张三&#x27;, 100)func_student_2 = new FuncStudent(&#x27;李四&#x27;, 90)console.log(func_student_1)console.log(&#x27;-&#x27;.repeat(30))console.log(func_student_2)func_student_1.print_info()console.log(FuncStudent.prototype === func_student_1.__proto__) // true
+
+使用class关键字创建类并实例化对象(会将类中的方法放入公共空间)
+
+class ClsStudent &#123;    constructor(name, score) &#123;        this.name = name;        this.score = score;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);    &#125;&#125;cls_student_1 = new ClsStudent(&#x27;张三&#x27;, 100)console.log(cls_student_1)
+4. 原型链
+
+在继承多个类的时候，他的原型层数会比较多，会形成一个原型网络。那我们通过这个原型网上找的这个链路就称为原型链。
+
+class Person &#123;    constructor(name) &#123;        this.name = name;    &#125;    drink() &#123;        console.log(&#x27;正在喝水...&#x27;);    &#125;&#125;class Teacher extends Person &#123;    constructor(name, subject) &#123;        super(name);        this.subject = subject;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 教$&#123;this.subject&#125;科目...`);    &#125;&#125;let teacher = new Teacher(&#x27;张三&#x27;, &#x27;语文&#x27;);// teacher.print_info()// teacher.drink()//  查看原型链关系(通过实例对象的方式查看)console.log(teacher.hasOwnProperty(&#x27;print_info&#x27;)) // false// 查看方法是否在声明这个实例对象的类中console.log(teacher.__proto__.hasOwnProperty(&#x27;print_info&#x27;)) // true  console.log(teacher.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // false// 看方法是否在声明这个实例对象的类的父类中console.log(teacher.__proto__.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // trueconsole.log(&#x27;-&#x27;.repeat(30))// 查看原型链关系(通过类查询)console.log(Teacher.prototype.hasOwnProperty(&#x27;print_info&#x27;)) // trueconsole.log(Teacher.prototype.hasOwnProperty(&#x27;drink&#x27;)) //false// 通过prototype得到的结果是一个原型对象, 如果继续向下查询需要使用__proto__console.log(Teacher.prototype.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // true 
+5. 原型链检测
+
+Object.getOwnPropertyDescriptor() 静态方法返回一个对象，该对象描述给定对象上特定属性（即直接存在于对象上而不在对象的原型链中的属性）的配置。返回的对象是可变的，但对其进行更改不会影响原始属性的配置。
+
+认识
+
+node.js 环境中
+
+// 原型检测代码示例navigator = &#123;    userAgent: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;&#125;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))
+&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+
+浏览器环境中
+
+
+补原型(实例对象)
+navigator = &#123;&#125;navigator.__proto__.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
+undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+补原型(类对象)
+Navigator = function () &#123;&#125;Navigator.prototype.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;navigator = new Navigator()console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
+undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+补原型(方法)
+// 补原型(方法)Document = function () &#123;&#125;Document.prototype.createElement = function () &#123;&#125;HTMLDocument = function () &#123;&#125;Object.setPrototypeOf(HTMLDocument.prototype, Document.prototype)  // 第一个参数为子类， 第二个参数为父类document = new HTMLDocument()console.log(Object.getOwnPropertyDescriptor(document, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__.__proto__, &#x27;createElement&#x27;))
+undefinedundefined&#123;  value: [Function (anonymous)],  writable: true,  enumerable: true,  configurable: true&#125;
+代理脚本
+
+不是用于补环境，只是检测网站的代码是否有原型调用
+
+function watch(obj, name, visited = new WeakSet()) &#123;    // 防止循环引用导致无限递归    if (obj === null || typeof obj !== &#x27;object&#x27; || visited.has(obj)) &#123;        return obj;    &#125;    visited.add(obj);    // 检查原型链访问    const checkPrototypeChain = (target, property) =&gt; &#123;        let current = target;        while (current) &#123;            if (Object.prototype.hasOwnProperty.call(current, property)) &#123;                return false; // 属性直接存在于当前对象上            &#125;            current = Object.getPrototypeOf(current);            if (current &amp;&amp; current !== Object.prototype &amp;&amp; current !== null) &#123;                console.log(`原型链检测:true (对象: $&#123;name&#125;, 属性: $&#123;property&#125;)`);                return true;            &#125;        &#125;        return false;    &#125;;    return new Proxy(obj, &#123;        get: function (target, property, receiver) &#123;            try &#123;                // 排除一些不常见的或可能导致问题的属性                if (typeof property === &#x27;symbol&#x27; || property === &#x27;constructor&#x27; || property === &#x27;__proto__&#x27;) &#123;                    return Reflect.get(target, property, receiver);                &#125;                const value = Reflect.get(target, property, receiver);                // 深度监听嵌套对象                if (typeof value === &#x27;object&#x27; &amp;&amp; value !== null) &#123;                    // 为嵌套对象生成一个更具体的名称                    const nestedName = `$&#123;name&#125;.$&#123;String(property)&#125;`;                    return watch(value, nestedName, visited);                &#125;                // 打印属性访问信息                console.log(`对象 =&gt; $&#123;name&#125;, 读取属性: $&#123;String(property)&#125;, 值为: $&#123;typeof value === &#x27;function&#x27; ? &#x27;function&#x27; : value&#125;, 类型为: $&#123;typeof value&#125;`);                // 检测原型链访问                // 如果属性不在 target 上，但通过原型链访问到，则标记为 true                if (!Object.prototype.hasOwnProperty.call(target, property)) &#123;                    checkPrototypeChain(target, property);                &#125;                // 检测描述符                const descriptor = Object.getOwnPropertyDescriptor(target, property);                if (descriptor) &#123;                    if (descriptor.get || descriptor.set) &#123;                        console.log(`特殊检测: 存在Getter/Setter (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.writable &amp;&amp; !descriptor.get) &#123;                        console.log(`特殊检测: 只读属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.configurable) &#123;                        console.log(`特殊检测: 不可配置属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                &#125;            &#125; catch (e) &#123;                console.error(`Error in get trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.get(target, property, receiver);        &#125;,        set: (target, property, newValue, receiver) =&gt; &#123;            try &#123;                console.log(`对象 =&gt; $&#123;name&#125;, 设置属性: $&#123;String(property)&#125;, 值为: $&#123;typeof newValue === &#x27;function&#x27; ? &#x27;function&#x27; : newValue&#125;, 类型为: $&#123;typeof newValue&#125;`);            &#125; catch (e) &#123;                console.error(`Error in set trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.set(target, property, newValue, receiver);        &#125;,        // 捕获 in 操作符        has: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, in 操作符检测属性: $&#123;String(property)&#125;`);            return Reflect.has(target, property);        &#125;,        // 捕获 delete 操作符        deleteProperty: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 删除属性: $&#123;String(property)&#125;`);            return Reflect.deleteProperty(target, property);        &#125;,        // 捕获 Object.keys(), Object.values(), Object.entries() 等操作        ownKeys: function (target) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 获取自身所有键`);            return Reflect.ownKeys(target);        &#125;,        // 捕获 Object.defineProperty()        defineProperty: function (target, property, descriptor) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 定义属性: $&#123;String(property)&#125;`);            return Reflect.defineProperty(target, property, descriptor);        &#125;,        // 捕获 Object.setPrototypeOf()        setPrototypeOf: function (target, prototype) &#123;            console.log(`特殊检测: setPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.setPrototypeOf(target, prototype);        &#125;,        // 捕获 Object.getPrototypeOf()        getPrototypeOf: function (target) &#123;            console.log(`特殊检测: getPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.getPrototypeOf(target);        &#125;,        getOwnPropertyDescriptor: function (target, property) &#123;            console.log(`特殊检测: getOwnPropertyDescriptor 被调用 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);            return Reflect.getOwnPropertyDescriptor(target, property);        &#125;,        toString: function (target) &#123;            console.log(`特殊检测: toString 被调用 (对象: $&#123;name&#125;)`);            return Reflect.toString(target);        &#125;    &#125;);&#125;
+
+使用
+
 
 ]]></content>
       <categories>
-        <category>博客搭建</category>
+        <category>爬虫</category>
       </categories>
       <tags>
-        <tag>图床</tag>
-        <tag>PicList</tag>
-        <tag>GitHub</tag>
+        <tag>爬虫</tag>
+        <tag>JavaScript</tag>
+        <tag>逆向</tag>
+        <tag>补环境</tag>
       </tags>
   </entry>
   <entry>
@@ -3653,182 +4188,6 @@ isFullyAuthenticated()
       </tags>
   </entry>
   <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语
-接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
-
-
-
-VU (并发用户) 和 TPS 换算
-
-公式描述：TPS = VU/RT，（RT单位：秒）。
-
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比
-目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeter
-Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
-
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
-
-ApacheBench
-ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
-
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
-
-wrk
-wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
-
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-      <tags>
-        <tag>性能测试</tag>
-        <tag>压测</tag>
-        <tag>高并发</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>缓存技术常见问题及解决</title>
-    <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题
-缓存雪崩
-认识
-
-当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
-
-解决方案
-
-为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
-
-缓存穿透
-认识
-
-解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
-
-举个栗子:
-
-假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
-
-解决方案
-
-为了应对上述情况，可以选择如下两种策略：
-
-
-
-当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
-
-这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
-为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
-
-
-
-引入布隆过滤器；
-
-布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
-布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
-
-将数据库中的所有用户数据加入布隆过滤器中；
-当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
-若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
-若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
-
-
-
-
-缓存击穿
-认识
-
-解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
-
-解决方案
-为了应对上述情况，可以选择如下方案：
-
-
-缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
-
-
-加分布式锁；
-
-当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
-
-
-
-引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
-
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-      <tags>
-        <tag>高并发</tag>
-        <tag>缓存</tag>
-        <tag>Redis</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>kafka实践教程</title>
     <url>/posts/c2881daa/</url>
     <content><![CDATA[kafka实践教程
@@ -4127,538 +4486,179 @@ Consumer 幂等 (processed_event 约束)：解决消费端在接收到多次重�
       </categories>
   </entry>
   <entry>
-    <title>MySql</title>
-    <url>/posts/6cac71de/</url>
-    <content><![CDATA[基础
-DDL
-数据库操作
-查询所有数据库：
-show databases;
-选择当前数据库：
-select database();
-创建数据库：
-create database &#123;if not exists&#125; 数据库名;
-删除数据库：
-drop database &#123;if exists&#125; 数据库名;
-切换数据库：
-use 数据库名;
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
 
-表操作
-查询当前数据库所有表：
-show tables;
-查看指定表的结构：
-desc 表名;
-查询指定表的建表语句：
-show create table 表名;
-创建表结构：
-create table 表名&#123;	字段1 字段1类型 [comment 字段1注释],	字段2 字段2类型 [comment 字段2注释],	字段3 字段3类型 [comment 字段3注释],	字段4 字段4类型 [comment 字段4注释],	....	字段n 字段n类型 [comment 字段n注释]&#125;[comment 表注释];
-[]内为可选参数
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
 
-修改表：
-添加：
-alter table 表名 add 字段名 类型(长度) [comment 注释] [约束];
-修改数据类型：
-alter table 表名 modify 字段名 新数据类型(长度);
-修改字段名和字段类型：
-alter table 表名 change 旧字段名 新字段名 类型(长度) [comment 注释] [约束];
-删除字段：
-alter table 表名 drop 字段名;
-修改表名：
-alter table 表名 rename to 新表名;
-删除表：
-drop table [if exists] 表名;
-删除指定表并重新创建：
-truncate table 表名;删除的时候表中的所有数据都会被删除
 
-数据类型：
-数值类型：
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
 
 
 
-类型
-描述
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
 
 
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
 
 
-tinyint
-小整数值
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
 
 
-smallint
-大整数值
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
 
 
-mediumint
-大整数值
+易混淆的术语
+接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
 
+TPS vs. QPS
 
-int/integer
-大整数值
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
 
 
-bigint
-极大整数值
+QPS vs. RPS
 
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
 
-float
-单精度浮点数值
 
+TPS vs. RPS
 
-double
-双精度浮点数值
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
 
 
-decimal
-小数值
 
+VU (并发用户) 和 TPS 换算
 
+公式描述：TPS = VU/RT，（RT单位：秒）。
 
-字符串类型：
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比
+目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeter
+Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
 
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
 
+ApacheBench
+ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
 
-类型
-描述
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
 
+wrk
+wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
 
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
 
-
-char
-定长字符串
-
-
-varchar
-变长字符串
-
-
-tinyblob
-不超过255个字符的二进制数据
-
-
-tinytext
-短文本字符串
-
-
-blob
-二进制形式长文本数据
-
-
-text
-长文本数据
-
-
-mediumblob
-二进制形式中文本数据
-
-
-mediumtext
-中文本数据
-
-
-longblob
-极大文本数据
-
-
-longblob
-二进制形式极大文本数据
-
-
-longtext
-极大文本数据
-
-
-
-日期时间类型：
-
-
-
-类型
-格式
-描述
-
-
-
-
-date
-YYYY-MM-DD
-日期值
-
-
-time
-HH:MM:SS
-时间值或者持续时间
-
-
-year
-YYYY
-年份值
-
-
-datetime
-YYYY-MM-DD HH:MM:SS
-混合时间和日期
-
-
-timestamp
-YYYY-MM-DD HH:MM:SS
-混合日期和时间值
-
-
-
-
-DML
-添加数据
-给指定的字段添加数据：
-insert into 表名 (字段1，字段2，...) values(值1，值2，...);
-给全部的字段添加数据：
-insert into 表名 values (值1，值2，...);
-批量添加数据：
-insert into (字段名1，字段名2，...) values(值1，值2,..),(值1，值2,..),(值1，值2,..);
-修改数据：
-update 表名 set 字段名1=值1，字段名2=值2，... [where 条件];
-删除数据
-delete from 表名 [where 条件];
-DQL
-基础查询
-查询多个字段：
-select 字段1，字段2，字段3... from 表名;select * from 表名;
-字段设置别名：
-select 字段1 [as 别名1]，字段2 [as 别名2] ... from 表名;as可以省略select 字段1 [别名1]，字段2 [别名2]，... from 表名;
-去除重复记录：
-select distinct 字段列表 from 表名;
-条件查询
-语法：
-select 字段列表 from 表名 where 条件列表;
-条件：
-
-
-
-比较运算符
-功能
-
-
-
-
-&gt;
-
-
-
-&lt;
-
-
-
-&gt;=
-
-
-
-&lt;=
-
-
-
-=
-
-
-
-&lt;&gt;或者!=
-
-
-
-detween … and …
-在某个范围之内
-
-
-in(…)
-在in之后的列表中的值，多选一
-
-
-like(占位符)
-模糊匹配
-
-
-is NULL
-
-
-
-
-
-
-
-逻辑运算符
-功能
-
-
-
-
-and 或者 &amp;&amp;
-
-
-
-or 或者 ||
-
-
-
-not 或者 ！
-
-
-
-
-聚合函数：
-语法
-select 聚合函数(字段列表) from 表名;null值不参与聚合函数的运算
-常见的聚合函数:
-
-
-
-函数
-功能
-
-
-
-
-count
-统计数量
-
-
-max
-最大值
-
-
-min
-最小值
-
-
-avg
-平均值
-
-
-sum
-求和
-
-
-
-分组查询
-select 字段列表 from 表名 [where 条件] group by 分组字段名 [having 分组后的过滤条件];
-where和having的区别：
-
-执行时间不同：where是分组之前进行过滤,不满足where条件，不参与分组，而having是分组之后再对结果进行过滤
-判断时间不同：where不能对聚合函数进行判断，而having可以
-执行顺序：where&gt;聚合函数&gt;having
-
-排序查询
-select 字段列表 from 表名 order by 字段1 排序方式1,字段2 排序方式2;
-排序方式：
-
-ASC: 升序（默认值）
-DESC:降序
-
-分页查询
-select 字段列表 from 表名 limit 起始索引,查询记录数;
-
-DCL
-管理用户
-查询用户：
-select * from mysql.user;
-创建用户：
-create user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified by &#x27;密码&#x27;;
-修改用户密码：
-alter user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified with mysql_native_password by &#x27;新密码&#x27;;
-删除用户：
-drop user &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-主机名可以使用用%通配
-权限控制
-
-
-
-权限
-说明
-
-
-
-
-all，all privileges
-所有权限
-
-
-select
-查询数据
-
-
-insert
-插入数据
-
-
-update
-修改数据
-
-
-delete
-删除数据
-
-
-alter
-修改表
-
-
-drop
-删除数据库/表/视图
-
-
-create
-创建数据库/表
-
-
-
-查询权限：
-show grants for &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-授予权限
-grant 权限列表 on 数据库.表名 to &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-撤销权限
-revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机名&#x27;;
 ]]></content>
       <categories>
-        <category>数据存储</category>
+        <category>开发</category>
       </categories>
       <tags>
-        <tag>MySQL</tag>
-        <tag>数据库</tag>
-        <tag>SQL</tag>
+        <tag>性能测试</tag>
+        <tag>压测</tag>
+        <tag>高并发</tag>
       </tags>
   </entry>
   <entry>
-    <title>Redis</title>
-    <url>/posts/bae4ff13/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>数据存储</category>
-      </categories>
-      <tags>
-        <tag>缓存</tag>
-        <tag>Redis</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>补环境</title>
-    <url>/posts/43a51ea6/</url>
-    <content><![CDATA[1. 介绍
-
-由于浏览器环境与node环境的差别，会导致浏览器的JavaScript代码没办法在node环境中正常执行，js代码会根据浏览器所提供的属性来判断你执行的环境是不是通过浏览器来执行的。如果不是则不会返回正确的响应信息
-
-// node 中内置的关键字requireglobalglobalThis  // 浏览器环境也有globalThis, 与global没有任何区别(globalThis支持ES2020语法)process__filename__dirname// 浏览器支持的关键字(对象)/** window* document* navigator* location* ....* */
-2. 浏览器中常见对象
-1. window：窗口对象
-
-window在浏览器中属于顶级变量，任何在全局作用域中声明的变量或函数都会成为window对象的属性。例如：如果你声明一个全局变量var name = 'admin';，你可以通过window.name获取。window仅在浏览器环境中存在，在node或者其他环境中，顶级对象为global。
-
-addEventListener: functionsetInterval: functionsetTimeout: functionnameselfdoucmentnavigatorlocationscreenhistorytoString: function
-2. document：文档对象
-bodydocumentElementcookiecreateElement: functiongetElementByIdgetElementByTagNamegetElementByClassNametoString
-3. navigator：导航对象
-userAgenttoString: function
-4. location：地址栏对象
-hreftoString: function
-5. screen：屏幕对象
-availHeightavailLeftavailTopavailWidthtoString: function
-6. history：历史对象
-back: functionforward: functiongo: functiontoString: function
-7. locationStorage和sessionStorage：本地存储对象
-getItem: functionsetItem: functionremovieItem: functiontoString: function
-8. element：标签对象
-/* 常用标签 */h1 - h6标签p标签input标签div与span标签img标签table标签form标签canvas标签（toDataURL: function）/* 标签对象常用的属性与方法 */ele.styleele.innerHtmlele.getAttribute()
-3. 检测环境的代码示例
-1. 检测代码执行环境是否存在navigator
-navigator = &#123;&#125;navigator.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36&#x27;function ps() &#123;    if (navigator[&#x27;userAgent&#x27;]) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
-2. 检测属性长度，根据长度判断数据是否正确
-location = &#123;&#125;location.href = &#x27;https://www.baidu.com&#x27;function ps() &#123;    if (location[&#x27;href&#x27;].length &gt; 3) &#123;        return &#x27;hello world&#x27;    &#125; else &#123;        return &#x27;失败&#x27;    &#125;&#125;console.log(ps());
-3. 异常日志输出
-
-在前端开发中为了代码的健壮性通常会对容易出错的代码进行异常捕获，但是生产环境中的代码一般不会直接输出错误日志到浏览器，需要我们爬虫开发者自行输
-
-// location = &#123;&#125;// location.host = &#x27;8888&#x27;// navigator = &#123;&#125;// navigator.userAgent = &#x27;abc&#x27;function pn() &#123;    try &#123;        console.log(verify_local());        if (navigator[&#x27;userAgent&#x27;]) &#123;            return &#x27;hello world&#x27;        &#125;    &#125; catch (e) &#123;        // console.log(e)  // 输出错误日志        return &#x27;错误的数据&#x27;    &#125;&#125;function verify_local() &#123;    if (location.host.length &gt; 2) &#123;        return &#x27;浏览器环境...&#x27;    &#125;    return &#x27;非浏览器环境...&#x27;&#125;console.log(pn());
-4. 判断浏览器执行环境与node执行环境来验证是否为爬虫程序
-// 浏览器和node差异/*&quot;undefined&quot; != typeof exports：检查 exports 变量的类型是否不是 &quot;undefined&quot;在 Node.js 环境中，exports 是一个预定义的对象，用于模块导出在浏览器环境中，exports 通常是未定义的（undefined）如果 exports 存在（即在 Node.js 环境中），则将 exports 赋给 browser_or_node（object）如果 exports 不存在（即在浏览器环境中），则将 void 0（等同于 undefined）赋给 browser_or_node*/// let browser_or_node = &quot;undefined&quot; != typeof exports ? exports : void 0// console.log(typeof browser_or_node);let glb = &quot;undefined&quot; == typeof window ? global : windowconsole.log(glb)
-5. 基于toString检测
-// window = global;// window.addEventListener = function () &#123;// &#125;//// navigator = &#123;//     toString() &#123;//         return &#x27;[object Navigator]&#x27;//     &#125;,//     userAgent: &quot;&#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36&#x27;&quot;// &#125;//// kw = &#123;//     getAttribute: function () &#123;//     &#125;// &#125;//// document = &#123;//     getElementById(ele) &#123;//         console.log(&quot;document getElementById&quot;, ele)//         if (ele === &quot;kw&quot;) &#123;//             return kw//         &#125;//     &#125;,//     createElement(ele) &#123;//         console.log(&quot;document createElement &quot;, ele)//         if (ele === &quot;canvas&quot;) &#123;//             return canvas//         &#125;//     &#125;// &#125;//// ctx = &#123;//     fillRect() &#123;//     &#125;// &#125;//// canvas = &#123;//     getContext() &#123;//         return ctx//     &#125;// &#125;function get_sign() &#123;    window.addEventListener(&quot;test&quot;)    let kw = document.getElementById(&quot;kw&quot;)    let _class = kw.getAttribute(&quot;class&quot;)    let canvas = document.createElement(&quot;canvas&quot;)    let ctx = canvas.getContext(&quot;2d&quot;);    ctx.fillRect(10, 10, 100, 100);    try &#123;        if (navigator.toString() === &#x27;[object Navigator]&#x27;) &#123;            return btoa(&quot;admin&quot;)  // 输出base64编码        &#125; else &#123;            return &#x27;假数据 - 1&#x27;        &#125;    &#125; catch (e) &#123;        return &#x27;假数据 - 2&#x27;    &#125;&#125;console.log(get_sign())
-4. Proxy代理脚本
-function getEnv(proxy_array) &#123;    for (let i = 0; i &lt; proxy_array.length; i++) &#123;        handler = `&#123;            get: function(target, property, receiver) &#123;                   console.log(&#x27;方法：get&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                   return target[property];            &#125;,            set: function(target, property, value, receiver)&#123;                    console.log(&#x27;方法：set&#x27;,&#x27;    对象：$&#123;proxy_array[i]&#125;&#x27;,&#x27;    属性：&#x27;,property,&#x27;    属性类型：&#x27;,typeof property,&#x27;    属性值类型：&#x27;,typeof target[property]);                    return Reflect.set(...arguments);            &#125;        &#125;`;        eval(`            try &#123;                $&#123;proxy_array[i]&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125; catch (e) &#123;                $&#123;proxy_array[i]&#125; = &#123;&#125;;                $&#123;proxy_array[i]&#125; = new Proxy($&#123;proxy_array[i]&#125;, $&#123;handler&#125;);            &#125;        `);    &#125;&#125;proxy_array = [&#x27;window&#x27;, &#x27;document&#x27;, &#x27;location&#x27;, &#x27;navigator&#x27;, &#x27;history&#x27;, &#x27;screen&#x27;]getEnv(proxy_array);
-
-5. 原型和原型链
-1. 基础
-
-JavaScript 中，对象需要一个机制来共享属性和方法。如果每个对象都存储自己的方法副本，内存会严重浪费。原型系统正是为了解决这个问题而设计的。
-
-// 每个实例都独立存储方法（浪费内存）function createUser(name) &#123;  return &#123;    name: name,    sayHi: function() &#123;  // 每次调用都创建新函数      console.log(&#x27;Hi, &#x27; + this.name);    &#125;  &#125;;&#125;// 使用原型共享方法（所有实例共享同一个函数）function User(name) &#123;  this.name = name;&#125;User.prototype.sayHi = function() &#123;  console.log(&#x27;Hi, &#x27; + this.name);&#125;;
-2. 属性
-prototype属性(函数独有)
-
-每一个函数都有一个prototype属性，指向通过new创建的实例的原型
-
-function Person() &#123;&#125;console.log(Person.prototype); // &#123; constructor: Person &#125;
-__proto__属性(对象独有)
-
-每一个对象(除了null)都有一个__proto__属性，指向它的原型对象
-
-const obj = &#123;&#125;;console.log(obj.__proto__); // Object.prototypeconst arr = [];console.log(arr.__proto__); // Array.prototype
-constructor属性
-
-原型对象上有一个constructor属性，指回构造函数本身
-
-function Dog() &#123;&#125;console.log(Dog.prototype.constructor === Dog); // trueconst dog = new Dog();console.log(dog.__proto__.constructor === Dog); // true
-3. 使用
-
-传统方法创建类，并将方法存储到公共空间
-
-function FuncStudent(name, score) &#123;    this.name = name;    this.score = score;&#125;// 在类中存在一个默认的prototype属性, 这个属性可以帮助我们创建一个独立公共空间/** 在类对象中的prototype被称之为原型, 通过这个类对象实例化出来的实例对象中也存在原型(__proto__)** prototype: 函数对象上的属性* __proto__: 对象上的属性** */FuncStudent.prototype.print_info = function () &#123;    console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);&#125;func_student_1 = new FuncStudent(&#x27;张三&#x27;, 100)func_student_2 = new FuncStudent(&#x27;李四&#x27;, 90)console.log(func_student_1)console.log(&#x27;-&#x27;.repeat(30))console.log(func_student_2)func_student_1.print_info()console.log(FuncStudent.prototype === func_student_1.__proto__) // true
-
-使用class关键字创建类并实例化对象(会将类中的方法放入公共空间)
-
-class ClsStudent &#123;    constructor(name, score) &#123;        this.name = name;        this.score = score;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 考了$&#123;this.score&#125;分`);    &#125;&#125;cls_student_1 = new ClsStudent(&#x27;张三&#x27;, 100)console.log(cls_student_1)
-4. 原型链
-
-在继承多个类的时候，他的原型层数会比较多，会形成一个原型网络。那我们通过这个原型网上找的这个链路就称为原型链。
-
-class Person &#123;    constructor(name) &#123;        this.name = name;    &#125;    drink() &#123;        console.log(&#x27;正在喝水...&#x27;);    &#125;&#125;class Teacher extends Person &#123;    constructor(name, subject) &#123;        super(name);        this.subject = subject;    &#125;    print_info() &#123;        console.log(`我是$&#123;this.name&#125;, 教$&#123;this.subject&#125;科目...`);    &#125;&#125;let teacher = new Teacher(&#x27;张三&#x27;, &#x27;语文&#x27;);// teacher.print_info()// teacher.drink()//  查看原型链关系(通过实例对象的方式查看)console.log(teacher.hasOwnProperty(&#x27;print_info&#x27;)) // false// 查看方法是否在声明这个实例对象的类中console.log(teacher.__proto__.hasOwnProperty(&#x27;print_info&#x27;)) // true  console.log(teacher.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // false// 看方法是否在声明这个实例对象的类的父类中console.log(teacher.__proto__.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // trueconsole.log(&#x27;-&#x27;.repeat(30))// 查看原型链关系(通过类查询)console.log(Teacher.prototype.hasOwnProperty(&#x27;print_info&#x27;)) // trueconsole.log(Teacher.prototype.hasOwnProperty(&#x27;drink&#x27;)) //false// 通过prototype得到的结果是一个原型对象, 如果继续向下查询需要使用__proto__console.log(Teacher.prototype.__proto__.hasOwnProperty(&#x27;drink&#x27;)) // true 
-5. 原型链检测
-
-Object.getOwnPropertyDescriptor() 静态方法返回一个对象，该对象描述给定对象上特定属性（即直接存在于对象上而不在对象的原型链中的属性）的配置。返回的对象是可变的，但对其进行更改不会影响原始属性的配置。
-
+    <title>缓存技术常见问题及解决</title>
+    <url>/posts/aad9f202/</url>
+    <content><![CDATA[缓存技术常见的问题
+缓存雪崩
 认识
 
-node.js 环境中
+当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
 
-// 原型检测代码示例navigator = &#123;    userAgent: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;&#125;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))
-&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
+解决方案
 
-浏览器环境中
+为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
+
+缓存穿透
+认识
+
+解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
+
+举个栗子:
+
+假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
+
+解决方案
+
+为了应对上述情况，可以选择如下两种策略：
 
 
-补原型(实例对象)
-navigator = &#123;&#125;navigator.__proto__.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
-undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
-补原型(类对象)
-Navigator = function () &#123;&#125;Navigator.prototype.userAgent = &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;navigator = new Navigator()console.log(Object.getOwnPropertyDescriptor(navigator, &#x27;userAgent&#x27;))console.log(Object.getOwnPropertyDescriptor(navigator.__proto__, &#x27;userAgent&#x27;))
-undefined&#123;  value: &#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36&#x27;,  writable: true,  enumerable: true,  configurable: true&#125;
-补原型(方法)
-// 补原型(方法)Document = function () &#123;&#125;Document.prototype.createElement = function () &#123;&#125;HTMLDocument = function () &#123;&#125;Object.setPrototypeOf(HTMLDocument.prototype, Document.prototype)  // 第一个参数为子类， 第二个参数为父类document = new HTMLDocument()console.log(Object.getOwnPropertyDescriptor(document, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__, &#x27;createElement&#x27;))console.log(Object.getOwnPropertyDescriptor(document.__proto__.__proto__, &#x27;createElement&#x27;))
-undefinedundefined&#123;  value: [Function (anonymous)],  writable: true,  enumerable: true,  configurable: true&#125;
-代理脚本
 
-不是用于补环境，只是检测网站的代码是否有原型调用
+当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
 
-function watch(obj, name, visited = new WeakSet()) &#123;    // 防止循环引用导致无限递归    if (obj === null || typeof obj !== &#x27;object&#x27; || visited.has(obj)) &#123;        return obj;    &#125;    visited.add(obj);    // 检查原型链访问    const checkPrototypeChain = (target, property) =&gt; &#123;        let current = target;        while (current) &#123;            if (Object.prototype.hasOwnProperty.call(current, property)) &#123;                return false; // 属性直接存在于当前对象上            &#125;            current = Object.getPrototypeOf(current);            if (current &amp;&amp; current !== Object.prototype &amp;&amp; current !== null) &#123;                console.log(`原型链检测:true (对象: $&#123;name&#125;, 属性: $&#123;property&#125;)`);                return true;            &#125;        &#125;        return false;    &#125;;    return new Proxy(obj, &#123;        get: function (target, property, receiver) &#123;            try &#123;                // 排除一些不常见的或可能导致问题的属性                if (typeof property === &#x27;symbol&#x27; || property === &#x27;constructor&#x27; || property === &#x27;__proto__&#x27;) &#123;                    return Reflect.get(target, property, receiver);                &#125;                const value = Reflect.get(target, property, receiver);                // 深度监听嵌套对象                if (typeof value === &#x27;object&#x27; &amp;&amp; value !== null) &#123;                    // 为嵌套对象生成一个更具体的名称                    const nestedName = `$&#123;name&#125;.$&#123;String(property)&#125;`;                    return watch(value, nestedName, visited);                &#125;                // 打印属性访问信息                console.log(`对象 =&gt; $&#123;name&#125;, 读取属性: $&#123;String(property)&#125;, 值为: $&#123;typeof value === &#x27;function&#x27; ? &#x27;function&#x27; : value&#125;, 类型为: $&#123;typeof value&#125;`);                // 检测原型链访问                // 如果属性不在 target 上，但通过原型链访问到，则标记为 true                if (!Object.prototype.hasOwnProperty.call(target, property)) &#123;                    checkPrototypeChain(target, property);                &#125;                // 检测描述符                const descriptor = Object.getOwnPropertyDescriptor(target, property);                if (descriptor) &#123;                    if (descriptor.get || descriptor.set) &#123;                        console.log(`特殊检测: 存在Getter/Setter (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.writable &amp;&amp; !descriptor.get) &#123;                        console.log(`特殊检测: 只读属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                    if (!descriptor.configurable) &#123;                        console.log(`特殊检测: 不可配置属性 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);                    &#125;                &#125;            &#125; catch (e) &#123;                console.error(`Error in get trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.get(target, property, receiver);        &#125;,        set: (target, property, newValue, receiver) =&gt; &#123;            try &#123;                console.log(`对象 =&gt; $&#123;name&#125;, 设置属性: $&#123;String(property)&#125;, 值为: $&#123;typeof newValue === &#x27;function&#x27; ? &#x27;function&#x27; : newValue&#125;, 类型为: $&#123;typeof newValue&#125;`);            &#125; catch (e) &#123;                console.error(`Error in set trap for $&#123;name&#125;.$&#123;String(property)&#125;:`, e);            &#125;            return Reflect.set(target, property, newValue, receiver);        &#125;,        // 捕获 in 操作符        has: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, in 操作符检测属性: $&#123;String(property)&#125;`);            return Reflect.has(target, property);        &#125;,        // 捕获 delete 操作符        deleteProperty: function (target, property) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 删除属性: $&#123;String(property)&#125;`);            return Reflect.deleteProperty(target, property);        &#125;,        // 捕获 Object.keys(), Object.values(), Object.entries() 等操作        ownKeys: function (target) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 获取自身所有键`);            return Reflect.ownKeys(target);        &#125;,        // 捕获 Object.defineProperty()        defineProperty: function (target, property, descriptor) &#123;            console.log(`对象 =&gt; $&#123;name&#125;, 定义属性: $&#123;String(property)&#125;`);            return Reflect.defineProperty(target, property, descriptor);        &#125;,        // 捕获 Object.setPrototypeOf()        setPrototypeOf: function (target, prototype) &#123;            console.log(`特殊检测: setPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.setPrototypeOf(target, prototype);        &#125;,        // 捕获 Object.getPrototypeOf()        getPrototypeOf: function (target) &#123;            console.log(`特殊检测: getPrototypeOf 被调用 (对象: $&#123;name&#125;)`);            return Reflect.getPrototypeOf(target);        &#125;,        getOwnPropertyDescriptor: function (target, property) &#123;            console.log(`特殊检测: getOwnPropertyDescriptor 被调用 (对象: $&#123;name&#125;, 属性: $&#123;String(property)&#125;)`);            return Reflect.getOwnPropertyDescriptor(target, property);        &#125;,        toString: function (target) &#123;            console.log(`特殊检测: toString 被调用 (对象: $&#123;name&#125;)`);            return Reflect.toString(target);        &#125;    &#125;);&#125;
+这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
+为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
 
-使用
+
+
+引入布隆过滤器；
+
+布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
+布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
+
+将数据库中的所有用户数据加入布隆过滤器中；
+当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
+若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
+若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
+
+
+
+
+缓存击穿
+认识
+
+解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
+
+解决方案
+为了应对上述情况，可以选择如下方案：
+
+
+缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+
+
+加分布式锁；
+
+当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
+
+
+
+引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
 
 
 ]]></content>
       <categories>
-        <category>爬虫</category>
+        <category>开发</category>
       </categories>
       <tags>
-        <tag>爬虫</tag>
-        <tag>JavaScript</tag>
-        <tag>逆向</tag>
-        <tag>补环境</tag>
+        <tag>Redis</tag>
+        <tag>缓存</tag>
+        <tag>高并发</tag>
       </tags>
   </entry>
 </search>
