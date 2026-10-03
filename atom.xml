@@ -11,17 +11,18 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-10-03T14:44:21.776Z</updated>
+  <updated>2026-10-03T14:44:57.695Z</updated>
   <entry>
     <author>
       <name>Zenty</name>
     </author>
+    <category term="其他" scheme="https://zenty-me.github.io/categories/%E5%85%B6%E4%BB%96/"/>
     <id>https://zenty-me.github.io/posts/6b2eee5a/</id>
     <link href="https://zenty-me.github.io/posts/6b2eee5a/"/>
     <published>2026-10-03T14:33:34.000Z</published>
     <summary>Vim 是 Linux、服务器、Git、Docker 等开发环境中非常常见的文本编辑器。 很多人第一次打开 Vim 时都会遇到同一个问题： 为什么我不能直接输入？又该怎么退出？ 这并不是 Vim 难，而是因为 Vim 和普通编辑器的设计思路不一样。 普通编辑…</summary>
     <title>Vim教程</title>
-    <updated>2026-10-03T14:44:21.776Z</updated>
+    <updated>2026-10-03T14:44:57.695Z</updated>
   </entry>
   <entry>
     <author>
@@ -106,8 +107,8 @@
       <name>Zenty</name>
     </author>
     <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
-    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
+    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/</id>
     <link href="https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/"/>
