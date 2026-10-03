@@ -11,7 +11,18 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-10-03T14:44:57.695Z</updated>
+  <updated>2026-10-03T15:55:10.372Z</updated>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <id>https://zenty-me.github.io/posts/82962a93/</id>
+    <link href="https://zenty-me.github.io/posts/82962a93/"/>
+    <published>2026-10-03T15:51:28.000Z</published>
+    <summary>在前后端分离项目中，前端最常见的工作之一就是向后端发送 HTTP 请求。 例如： 浏览器本身提供了 ，但在实际 Vue、React 项目中，Axios 依然非常常见，因为它提供了比较完整的请求配置、拦截器、超时控制、请求实例、统一错误处理等能力。 本文从最基…</summary>
+    <title>Axios 从入门到实战</title>
+    <updated>2026-10-03T15:55:10.372Z</updated>
+  </entry>
   <entry>
     <author>
       <name>Zenty</name>
@@ -22,7 +33,7 @@
     <published>2026-10-03T14:33:34.000Z</published>
     <summary>Vim 是 Linux、服务器、Git、Docker 等开发环境中非常常见的文本编辑器。 很多人第一次打开 Vim 时都会遇到同一个问题： 为什么我不能直接输入？又该怎么退出？ 这并不是 Vim 难，而是因为 Vim 和普通编辑器的设计思路不一样。 普通编辑…</summary>
     <title>Vim教程</title>
-    <updated>2026-10-03T14:44:57.695Z</updated>
+    <updated>2026-10-03T14:46:17.916Z</updated>
   </entry>
   <entry>
     <author>
@@ -281,20 +292,5 @@
     <summary>用文件夹自动归类文章，用 sticky 字段置顶，用 abbrlink 生成永久短链。</summary>
     <title>文章分类、置顶与短链配置</title>
     <updated>2026-08-07T17:44:46.068Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Zenty</name>
-    </author>
-    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
-    <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
-    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
-    <id>https://zenty-me.github.io/posts/35a7b521/</id>
-    <link href="https://zenty-me.github.io/posts/35a7b521/"/>
-    <published>2026-08-06T06:30:00.000Z</published>
-    <summary>面向零基础用户的 Hexo + Butterfly 博客搭建全流程，从环境安装到部署上线，手把手教学。</summary>
-    <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
-    <updated>2026-08-07T17:40:18.481Z</updated>
   </entry>
 </feed>
