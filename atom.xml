@@ -11,7 +11,18 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-09-29T03:42:10.006Z</updated>
+  <updated>2026-10-03T14:44:21.776Z</updated>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <id>https://zenty-me.github.io/posts/6b2eee5a/</id>
+    <link href="https://zenty-me.github.io/posts/6b2eee5a/"/>
+    <published>2026-10-03T14:33:34.000Z</published>
+    <summary>Vim 是 Linux、服务器、Git、Docker 等开发环境中非常常见的文本编辑器。 很多人第一次打开 Vim 时都会遇到同一个问题： 为什么我不能直接输入？又该怎么退出？ 这并不是 Vim 难，而是因为 Vim 和普通编辑器的设计思路不一样。 普通编辑…</summary>
+    <title>Vim教程</title>
+    <updated>2026-10-03T14:44:21.776Z</updated>
+  </entry>
   <entry>
     <author>
       <name>Zenty</name>
@@ -284,20 +295,5 @@
     <summary>面向零基础用户的 Hexo + Butterfly 博客搭建全流程，从环境安装到部署上线，手把手教学。</summary>
     <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
     <updated>2026-08-07T17:40:18.481Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Zenty</name>
-    </author>
-    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
-    <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="Butterfly" scheme="https://zenty-me.github.io/tags/Butterfly/"/>
-    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
-    <id>https://zenty-me.github.io/posts/9fa0ea99/</id>
-    <link href="https://zenty-me.github.io/posts/9fa0ea99/"/>
-    <published>2026-08-06T05:00:00.000Z</published>
-    <summary>讲解 Butterfly 主题下站点信息、头像、背景、顶部图、导航菜单等常用配置的修改方法。</summary>
-    <title>如何配置网站外观与个人信息</title>
-    <updated>2026-08-07T17:47:09.658Z</updated>
   </entry>
 </feed>
