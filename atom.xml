@@ -11,17 +11,18 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-10-04T06:21:03.288Z</updated>
+  <updated>2026-10-04T06:21:36.253Z</updated>
   <entry>
     <author>
       <name>Zenty</name>
     </author>
+    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/67f9161d/</id>
     <link href="https://zenty-me.github.io/posts/67f9161d/"/>
     <published>2026-10-04T06:18:35.000Z</published>
     <summary>随着 Claude Code、Codex、Cursor 等 AI 编程工具越来越强，现在让 AI 完成一个完整功能已经不是什么难事。 真正麻烦的问题反而变成了： AI 写代码很快，但它不一定真正理解你想做什么。 比如我们直接告诉 AI： AI 很可能马上开始…</summary>
     <title>Open Spec使用教程</title>
-    <updated>2026-10-04T06:21:03.288Z</updated>
+    <updated>2026-10-04T06:21:36.253Z</updated>
   </entry>
   <entry>
     <author>
@@ -130,8 +131,8 @@
       <name>Zenty</name>
     </author>
     <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
-    <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
     <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
+    <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
     <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/</id>
     <link href="https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/"/>
@@ -145,10 +146,10 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
     <category term="Spring Security" scheme="https://zenty-me.github.io/tags/Spring-Security/"/>
     <category term="Spring Boot" scheme="https://zenty-me.github.io/tags/Spring-Boot/"/>
     <category term="认证授权" scheme="https://zenty-me.github.io/tags/%E8%AE%A4%E8%AF%81%E6%8E%88%E6%9D%83/"/>
-    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
     <id>https://zenty-me.github.io/posts/af322717/</id>
     <link href="https://zenty-me.github.io/posts/af322717/"/>
     <published>2026-08-23T07:52:15.000Z</published>
@@ -192,10 +193,10 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
-    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
     <category term="XXL-JOB" scheme="https://zenty-me.github.io/tags/XXL-JOB/"/>
     <category term="分布式" scheme="https://zenty-me.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
     <category term="任务调度" scheme="https://zenty-me.github.io/tags/%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6/"/>
+    <category term="Java" scheme="https://zenty-me.github.io/tags/Java/"/>
     <id>https://zenty-me.github.io/posts/9d7f76ba/</id>
     <link href="https://zenty-me.github.io/posts/9d7f76ba/"/>
     <published>2026-08-14T06:55:53.000Z</published>
