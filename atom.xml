@@ -11,7 +11,18 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-10-03T15:56:44.425Z</updated>
+  <updated>2026-10-04T06:21:03.288Z</updated>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <id>https://zenty-me.github.io/posts/67f9161d/</id>
+    <link href="https://zenty-me.github.io/posts/67f9161d/"/>
+    <published>2026-10-04T06:18:35.000Z</published>
+    <summary>随着 Claude Code、Codex、Cursor 等 AI 编程工具越来越强，现在让 AI 完成一个完整功能已经不是什么难事。 真正麻烦的问题反而变成了： AI 写代码很快，但它不一定真正理解你想做什么。 比如我们直接告诉 AI： AI 很可能马上开始…</summary>
+    <title>Open Spec使用教程</title>
+    <updated>2026-10-04T06:21:03.288Z</updated>
+  </entry>
   <entry>
     <author>
       <name>Zenty</name>
@@ -105,8 +116,8 @@
       <name>Zenty</name>
     </author>
     <category term="数据存储" scheme="https://zenty-me.github.io/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/"/>
-    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <id>https://zenty-me.github.io/posts/bae4ff13/</id>
     <link href="https://zenty-me.github.io/posts/bae4ff13/"/>
     <published>2026-09-05T01:54:41.000Z</published>
@@ -119,8 +130,8 @@
       <name>Zenty</name>
     </author>
     <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
-    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
+    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/</id>
     <link href="https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/"/>
@@ -270,28 +281,14 @@
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
-    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
-    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
+    <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
+    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/aad9f202/</id>
     <link href="https://zenty-me.github.io/posts/aad9f202/"/>
     <published>2026-08-06T08:33:20.000Z</published>
     <summary>缓存雪崩、缓存穿透、缓存击穿的定义、成因与解决方案，以及在 Redis 中的常见落地做法。</summary>
     <title>缓存技术常见问题及解决</title>
     <updated>2026-09-17T06:42:21.204Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Zenty</name>
-    </author>
-    <category term="博客搭建" scheme="https://zenty-me.github.io/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/"/>
-    <category term="Hexo" scheme="https://zenty-me.github.io/tags/Hexo/"/>
-    <category term="教程" scheme="https://zenty-me.github.io/tags/%E6%95%99%E7%A8%8B/"/>
-    <id>https://zenty-me.github.io/posts/1784a007/</id>
-    <link href="https://zenty-me.github.io/posts/1784a007/"/>
-    <published>2026-08-06T07:00:00.000Z</published>
-    <summary>用文件夹自动归类文章，用 sticky 字段置顶，用 abbrlink 生成永久短链。</summary>
-    <title>文章分类、置顶与短链配置</title>
-    <updated>2026-08-07T17:44:46.068Z</updated>
   </entry>
 </feed>

@@ -1,6 +1,391 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>PCA降维</title>
+    <url>/posts/44cb4915/</url>
+    <content><![CDATA[前置知识
+向量内积
+数学公式：
+(a1,a2,⋯ ,an)⋅(b1,b2,⋯ ,bn)T=a1b1+a2b2+⋯+anbn(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} = a_1 b_1 + a_2 b_2 + \cdots + a_n b_n
+(a1​,a2​,⋯,an​)⋅(b1​,b2​,⋯,bn​)T=a1​b1​+a2​b2​+⋯+an​bn​
+
+A 与 B 的内积值等于 A 向 B 所在直线投影的标量大小。
+
+
+基变换
+
+基：类比于我们所知的X,Y坐标轴，如果我们需要描述向量，首先需要确定一组基，然后给出基所在直线上的投影值。
+
+假设我们在二维平面上有一个向量（数据点）x=(3,2)x = (3, 2)x=(3,2)。
+
+
+准备一组全新的单位正交基：u1=(12,12)u_1 = \left( \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u1​=(2​1​,2​1​) u2=(−12,12)u_2 = \left( -\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u2​=(−2​1​,2​1​)
+
+
+计算在新基上的坐标：
+
+
+
+新坐标的第一个数 y1y_1y1​（在 u1u_1u1​ 轴上的投影）：
+
+y1=u1⋅x=(12)×3+(12)×2=52y_1 = u_1 \cdot x = \left( \frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = \frac{5}{\sqrt{2}}
+y1​=u1​⋅x=(2​1​)×3+(2​1​)×2=2​5​
+
+新坐标的第二个数 y2y_2y2​（在 u2u_2u2​ 轴上的投影）：
+
+y2=u2⋅x=(−12)×3+(12)×2=−12y_2 = u_2 \cdot x = \left( -\frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = -\frac{1}{\sqrt{2}}
+y2​=u2​⋅x=(−2​1​)×3+(2​1​)×2=−2​1​
+
+所以，数据点 (3,2)(3, 2)(3,2) 在新坐标系下的新坐标就是：
+
+(52,−12)\left( \frac{5}{\sqrt{2}}, -\frac{1}{\sqrt{2}} \right)
+(2​5​,−2​1​)
+
+注意到上面的内积运算，正好可以打包写成矩阵乘以向量的形式：
+
+(1212−1212)(32)=(52−12)\begin{pmatrix}
+\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \\
+-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}
+\end{pmatrix}
+\begin{pmatrix}
+3 \\
+2
+\end{pmatrix}
+=
+\begin{pmatrix}
+\frac{5}{\sqrt{2}} \\
+-\frac{1}{\sqrt{2}}
+\end{pmatrix}
+(2​1​−2​1​​2​1​2​1​​)(32​)=(2​5​−2​1​​)
+我们可以把它写成通用的表示形式：
+(p1p2⋮pR)(a1a2⋯aM)=(p1a1p1a2⋯p1aMp2a1p2a2⋯p2aM⋮⋮⋱⋮pRa1pRa2⋯pRaM)\begin{pmatrix}
+p_1 \\
+p_2 \\
+\vdots \\
+p_R
+\end{pmatrix}
+\begin{pmatrix}
+a_1 &amp; a_2 &amp; \cdots &amp; a_M
+\end{pmatrix}
+=
+\begin{pmatrix}
+p_1 a_1 &amp; p_1 a_2 &amp; \cdots &amp; p_1 a_M \\
+p_2 a_1 &amp; p_2 a_2 &amp; \cdots &amp; p_2 a_M \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+p_R a_1 &amp; p_R a_2 &amp; \cdots &amp; p_R a_M
+\end{pmatrix}
+​p1​p2​⋮pR​​​(a1​​a2​​⋯​aM​​)=​p1​a1​p2​a1​⋮pR​a1​​p1​a2​p2​a2​⋮pR​a2​​⋯⋯⋱⋯​p1​aM​p2​aM​⋮pR​aM​​​
+其中 pip_ipi​ 是一个行向量，表示第 iii 个基，aja_jaj​ 是一个列向量，表示第 jjj 个原始数据记录。实际上也就是做了一个向量矩阵化的操作。
+
+上述分析给矩阵相乘找到了一种物理解释：两个矩阵相乘的意义是将右边矩阵中的每一列向量 aja_jaj​ 变换到左边矩阵中以每一行向量为所表示的空间中去。也就是说一个矩阵可以表示一种线性变换。
+
+特征值和特征向量
+
+简单来说，在线性代数中，矩阵代表一种空间变换（比如旋转、拉伸、剪切等）。当你用一个矩阵去乘以一个向量时，绝大多数向量的方向和长度都会发生改变。但是，对于某些“特殊”的向量，矩阵作用在它们身上时：
+它的方向完全保持不变（或反向），仅仅是长度被缩放了。
+
+
+特征向量（Eigenvector）：就是这个方向保持不变的特殊向量。它代表了矩阵变换中的“不变轴”或“主导方向”。
+特征值（Eigenvalue）：就是这个向量被缩放的倍数。它代表了矩阵在这个方向上的“作用强度”或“能量大小”
+
+方差
+我们知道数值的分散程度，可以用数学上的方差来表述。一个变量的方差可以看做是每个元素与变量均值的差的平方和的均值，即：
+Var(a)=1m∑i=1m(ai−μ)2Var(a) = \frac{1}{m} \sum_{i=1}^{m} (a_i - \mu)^2
+Var(a)=m1​i=1∑m​(ai​−μ)2
+协方差
+在⼀维空间中我们可⽤⽅差来表示数据的分散程度。而对於⾼维数据，我们⽤协⽅差进⾏约束，协⽅差可以表示两个变量的相关性。为了让两个变量尽可能表示更多的原始信息，我们希望它们之间不存在线性相关性，因为相关性意味着两个变量不是完全独立，必然存在重复表示的信息。
+协⽅差公式为：
+Cov(a,b)=1m−1∑i=1m(ai−μa)(bi−μb)Cov(a, b) = \frac{1}{m - 1} \sum_{i=1}^{m} (a_i - \mu_a)(b_i - \mu_b)
+Cov(a,b)=m−11​i=1∑m​(ai​−μa​)(bi​−μb​)
+PCA降维原理
+
+PCA（Principal Component Analysis） 是一种常见的数据分析方式，常用于高维数据的降维，可用于提取数据的主要特征分量。
+
+
+降维的本质是矩阵变换：两个矩阵相乘 Y=PXY = P XY=PX，可以让基的数量 KKK（PPP 的行数）小于原始特征维度 NNN（XXX 的行数），从而实现特征降维。
+选择最大方差的方向：数据在降维后的新基（新坐标轴）上必须尽可能分散（即方差最大化），这样才能保留最多的原始信息，避免数据混在一起无法区分。
+消除冗余（两两协方差为 0）：为了让新特征之间不包含重复的信息，任意两个新基上的数据必须线性无关（即协方差为 0）。在几何上，这意味着新选出的 KKK 个基必须是相互正交的。
+
+PCA降维推导
+一、 问题定义与预处理
+1. 数据表示
+假设有 MMM 个样本，每个样本包含 NNN 个特征。我们将第 iii 个样本表示为一个 NNN 维的列向量：
+xi=[xi1xi2⋮xiN]∈RN(i=1,2,…,M)x_i = \begin{bmatrix} x_{i1} \\ x_{i2} \\ \vdots \\ x_{iN} \end{bmatrix} \in \mathbb{R}^N \quad (i = 1, 2, \dots, M)
+xi​=​xi1​xi2​⋮xiN​​​∈RN(i=1,2,…,M)
+2. 去均值化（中心化）
+
+为什么 PCA 必须去均值？
+
+定位几何中心：平移数据使得数据的几何中心位于坐标原点，确保新坐标轴穿过数据中心，而不是被原点偏移“拉歪”。
+满足代数定义：只有在均值为 0 时，矩阵积1MXXT\frac{1}{M} X X^{\mathrm{T}}M1​XXT才严格等于数据的协方差矩阵，使得后续的特征值分解数学推导成立。
+过滤无关信息：剥离整体绝对偏移（均值），只关注样本之间的相对变化（方差）。
+
+
+为了简化后续计算，计算所有样本的均值向量 μ=1M∑i=1Mxi\mu = \frac{1}{M} \sum_{i=1}^M x_iμ=M1​∑i=1M​xi​，并将每个样本减去均值：
+xi←xi−μx_i \leftarrow x_i - \mu
+xi​←xi​−μ
+预处理后，数据的均值为零向量，即：
+1M∑i=1Mxi=0\frac{1}{M} \sum_{i=1}^M x_i = \mathbf{0}
+M1​i=1∑M​xi​=0
+3. 降维的目标
+寻找一个低维空间（维数为 KKK，且 K&lt;NK &lt; NK&lt;N），将 NNN 维向量 xix_ixi​ 映射为 KKK 维向量 yiy_iyi​，同时满足：
+
+信息损失最小（即数据投影后的方差最大）。
+降维后的 KKK 个特征之间互不相关（即协方差为 0）。
+
+
+二、 单维度投影推导（求解第一个方向）
+先不考虑降到 KKK 维，只考虑降到 1 维。即：寻找一个最佳的方向向量 w∈RNw \in \mathbb{R}^Nw∈RN。
+1. 计算投影值
+为了保证方向不因向量长度改变，限制 www 为单位向量：
+wTw=1w^T w = 1
+wTw=1
+
+上标 TTT 表示转置（Transpose）。
+
+
+在数学中，向量 w\mathbf{w}w 通常默认是列向量（比如 w=[w1w2]\mathbf{w} = \begin{bmatrix} w_1 \\ w_2 \end{bmatrix}w=[w1​w2​​]）。
+
+
+转置后，wT\mathbf{w}^TwT 就变成了行向量（比如 [w1w2][w_1 \quad w_2][w1​w2​]）。
+
+
+这样做是为了进行矩阵乘法（内积运算）。因为行向量乘以列向量，结果是一个标量（数值）。
+
+样本 xix_ixi​ 投影到方向 www 上的投影标量值为：
+yi=wTxiy_i = w^T x_i
+yi​=wTxi​
+2. 计算投影后的均值与方差
+由于数据已经去均值（∑xi=0\sum x_i = \mathbf{0}∑xi​=0），投影后数据 yiy_iyi​ 的均值也是 0：
+yˉ=1M∑i=1Myi=1M∑i=1MwTxi=wT(1M∑i=1Mxi)=0\bar{y} = \frac{1}{M} \sum_{i=1}^M y_i = \frac{1}{M} \sum_{i=1}^M w^T x_i = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i \right) = 0
+yˉ​=M1​i=1∑M​yi​=M1​i=1∑M​wTxi​=wT(M1​i=1∑M​xi​)=0
+投影后数据的方差（记为 Var\text{Var}Var）公式为：
+Var=1M∑i=1M(yi−yˉ)2=1M∑i=1M(wTxi)2\text{Var} = \frac{1}{M} \sum_{i=1}^M (y_i - \bar{y})^2 = \frac{1}{M} \sum_{i=1}^M (w^T x_i)^2
+Var=M1​i=1∑M​(yi​−yˉ​)2=M1​i=1∑M​(wTxi​)2
+3. 引入协方差矩阵
+展开方差公式中的平方项（利用标量的转置等于其本身，即 wTxi=xiTww^T x_i = x_i^T wwTxi​=xiT​w）：
+Var=1M∑i=1M(wTxi)(xiTw)=wT(1M∑i=1MxixiT)w\text{Var} = \frac{1}{M} \sum_{i=1}^M (w^T x_i)(x_i^T w) = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i x_i^T \right) w
+Var=M1​i=1∑M​(wTxi​)(xiT​w)=wT(M1​i=1∑M​xi​xiT​)w
+
+向量转置公式：(AB)T=BTAT(AB)^T=B^TA^T(AB)T=BTAT
+
+定义原始数据的协方差矩阵 C∈RN×NC \in \mathbb{R}^{N \times N}C∈RN×N 为：
+C=1M∑i=1MxixiTC = \frac{1}{M} \sum_{i=1}^M x_i x_i^T
+C=M1​i=1∑M​xi​xiT​
+
+为了直观，假设数据只有 2 个特征（比如 xi=[aibi]x_i = \begin{bmatrix} a_i \\ b_i \end{bmatrix}xi​=[ai​bi​​]，其中 aia_iai​ 是第 iii 个人的身高，bib_ibi​ 是体重，且已经去均值）：
+我们来看看 xixiTx_i x_i^Txi​xiT​ 算出来是什么：
+xixiT=[aibi][aibi]=[ai2aibibiaibi2]x_i x_i^T = \begin{bmatrix} a_i \\ b_i \end{bmatrix} \begin{bmatrix} a_i &amp; b_i \end{bmatrix} = \begin{bmatrix} a_i^2 &amp; a_i b_i \\ b_i a_i &amp; b_i^2 \end{bmatrix}
+xi​xiT​=[ai​bi​​][ai​​bi​​]=[ai2​bi​ai​​ai​bi​bi2​​]
+再把它乘以 1M∑i=1M\frac{1}{M} \sum_{i=1}^{M}M1​∑i=1M​（即对所有样本求平均）：
+C=1M∑i=1MxixiT=[1M∑ai21M∑aibi1M∑biai1M∑bi2]C = \frac{1}{M} \sum_{i=1}^{M} x_i x_i^T = \begin{bmatrix} \frac{1}{M} \sum a_i^2 &amp; \frac{1}{M} \sum a_i b_i \\ \frac{1}{M} \sum b_i a_i &amp; \frac{1}{M} \sum b_i^2 \end{bmatrix}
+C=M1​i=1∑M​xi​xiT​=[M1​∑ai2​M1​∑bi​ai​​M1​∑ai​bi​M1​∑bi2​​]
+因为数据均值为 0，根据统计学定义：
+
+1M∑ai2\frac{1}{M} \sum a_i^2M1​∑ai2​ 就是身高 aaa 的方差。
+1M∑bi2\frac{1}{M} \sum b_i^2M1​∑bi2​ 就是体重 bbb 的方差。
+1M∑aibi\frac{1}{M} \sum a_i b_iM1​∑ai​bi​ 就是身高 aaa 和体重 bbb 的协方差。
+
+
+由公式可知，CCC 是一个实对称矩阵（CT=CC^T = CCT=C）。
+代入后，投影方差简化为：
+Var=wTCw\text{Var} = w^T C w
+Var=wTCw
+
+三、 极值求解（使用拉格朗日乘子法）
+目标：寻找 www，使得方差 wTCww^T C wwTCw 最大，同时满足约束条件 wTw=1w^T w = 1wTw=1。
+1. 建立拉格朗日函数
+引入乘子 λ\lambdaλ，构造目标函数：
+f(w,λ)=wTCw−λ(wTw−1)f(w, \lambda) = w^T C w - \lambda (w^T w - 1)
+f(w,λ)=wTCw−λ(wTw−1)
+2. 对 www 求导并令其为零
+利用向量微分法则（因为 CCC 是实对称矩阵，∂(wTCw)∂w=2Cw\frac{\partial (w^T C w)}{\partial w} = 2Cw∂w∂(wTCw)​=2Cw）：
+∂f∂w=2Cw−2λw=0\frac{\partial f}{\partial w} = 2 C w - 2 \lambda w = 0
+∂w∂f​=2Cw−2λw=0
+化简得到：
+Cw=λwC w = \lambda w
+Cw=λw
+结论 1：使得方差取得极值的方向向量 www，必须是协方差矩阵 CCC 的特征向量，而 λ\lambdaλ 是对应的特征值。
+3. 特征值与方差的关系
+将 Cw=λwC w = \lambda wCw=λw 代回方差表达式：
+Var=wTCw=wT(λw)=λ(wTw)\text{Var} = w^T C w = w^T (\lambda w) = \lambda (w^T w)
+Var=wTCw=wT(λw)=λ(wTw)
+因为约束条件 wTw=1w^T w = 1wTw=1，所以：
+Var=λ\text{Var} = \lambda
+Var=λ
+结论 2：数据在方向 www 上的投影方差，严格等于协方差矩阵 CCC 的特征值 λ\lambdaλ。
+因此，为了使投影方差最大，我们应当选择最大的特征值 λ1\lambda_1λ1​，其对应的特征向量 w1w_1w1​ 就是最佳的投影方向。
+
+四、 推广到 KKK 维投影
+要求出降维后的 KKK 个维度，我们需要按顺序求解 KKK 个单位正交方向 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
+
+第一个方向 w1w_1w1​：取最大的特征值 λ1\lambda_1λ1​ 对应的特征向量，使得第一个维度方差最大。
+第二个方向 w2w_2w2​：在约束 w2Tw2=1w_2^T w_2 = 1w2T​w2​=1 以及与 w1w_1w1​ 正交的约束 w2Tw1=0w_2^T w_1 = 0w2T​w1​=0 下，最大化 w2TCw2w_2^T C w_2w2T​Cw2​。
+同样通过拉格朗日乘子法求解，可得 Cw2=λ2w2C w_2 = \lambda_2 w_2Cw2​=λ2​w2​。
+为了使方差尽可能大，取第二大特征值 λ2\lambda_2λ2​ 对应的特征向量 w2w_2w2​。
+第 KKK 个方向 wKw_KwK​：依次取前 KKK 个最大的特征值 λ1≥λ2≥⋯≥λK\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_Kλ1​≥λ2​≥⋯≥λK​ 对应的单位特征向量 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
+
+因为 CCC 是实对称矩阵，不同特征值对应的特征向量自动相互正交（wiTwj=0,∀i≠jw_i^T w_j = 0, \forall i \neq jwiT​wj​=0,∀i=j），这天然满足了“新变量之间协方差为 0”的要求。
+
+五、 最终降维计算
+将选出的前 KKK 个特征向量组合成变换矩阵 W∈RK×NW \in \mathbb{R}^{K \times N}W∈RK×N：
+W=[w1Tw2T⋮wKT]W = \begin{bmatrix} w_1^T \\ w_2^T \\ \vdots \\ w_K^T \end{bmatrix}
+W=​w1T​w2T​⋮wKT​​​
+对于任意一个 NNN 维数据点 xix_ixi​，其降维后的 KKK 维向量 yi∈RKy_i \in \mathbb{R}^Kyi​∈RK 计算如下：
+yi=Wxiy_i = W x_i
+yi​=Wxi​
+矩阵形式下，整个数据集矩阵 X∈RN×MX \in \mathbb{R}^{N \times M}X∈RN×M 的降维结果矩阵 Y∈RK×MY \in \mathbb{R}^{K \times M}Y∈RK×M 为：
+Y=WXY = W X
+Y=WX
+性质
+
+缓解维度灾难：PCA 算法通过舍去一部分信息之后能使得样本的采样密度增大（因为维数降低了），这是缓解维度灾难的重要手段；
+降噪：当数据受到噪声影响时，最小特征值对应的特征向量往往与噪声有关，将它们舍弃能在一定程度上起到降噪的效果；
+过拟合：PCA 保留了主要信息，但这个主要信息只是针对训练集的，而且这个主要信息未必是重要信息。有可能舍弃了一些看似无用的信息，但是这些看似无用的信息恰好是重要信息，只是在训练集上没有很大的表现，所以 PCA 也可能加剧了过拟合；
+特征独立：PCA 不仅将数据压缩到低维，它也使得降维之后的数据各特征相互独立；
+
+参考来源
+https://zhuanlan.zhihu.com/p/77151308
+]]></content>
+      <categories>
+        <category>AI飞升</category>
+      </categories>
+      <tags>
+        <tag>机器学习</tag>
+        <tag>数学</tag>
+        <tag>降维</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>asyncio模块</title>
+    <url>/posts/6200c646/</url>
+    <content><![CDATA[Python asyncio 核心模块解析与实践。内容梳理了事件循环、async 与 await、asyncio.create_task、asyncio.gather、AsyncIterator 以及 asyncio.Queue 的用法，并提供一个整合上述模块的生产者消费者流水线示例。
+
+一、事件循环与非阻塞 I/O
+在同步代码中，等待网络请求或磁盘读写时 CPU 只能处于空闲等待状态。
+asyncio 依托单线程与事件循环（Event Loop）机制工作：
+
+事件循环负责在后台轮询和调度任务。
+协作式多任务：当任务遇到耗时 I/O 并通过 await 挂起时，会主动让出控制权，调度中心立即安排其他就绪的任务执行。
+适用场景：网络爬虫、Web API 服务、微服务通信等 I/O 密集型任务。若遇到纯计算密集型任务，应当使用 multiprocessing 多进程模块。
+
+
+二、async 与 await
+1. async def 定义协程函数
+使用 async def 定义的函数是协程函数。直接调用它不会执行函数体，而是返回一个协程对象（Coroutine Object）。启动异步程序的标准入口是 asyncio.run()。
+import asyncioasync def fetch_user():    print(&quot;开始拉取数据...&quot;)    # asyncio.sleep 模拟非阻塞 I/O，此处不能使用阻塞主线程的 time.sleep    await asyncio.sleep(1)     print(&quot;数据拉取完毕！&quot;)    return &#123;&quot;id&quot;: 101, &quot;name&quot;: &quot;Alice&quot;&#125;result = asyncio.run(fetch_user())print(&quot;返回结果:&quot;, result)
+2. await 的语义与限制
+await 的语义是挂起当前协程，让出 CPU 给其他协程运行，待等待的操作完成后再恢复执行。
+await 只能写在 async def 函数内部，其后只能接三类可等待对象（Awaitables）：
+
+协程对象（调用协程函数的返回值）
+Task（通过 asyncio.create_task 包装的对象）
+Future（表示异步操作最终状态的底层对象）
+
+import asyncioasync def step_a():    await asyncio.sleep(1)    return &quot;A 完成&quot;async def step_b():    await asyncio.sleep(1)    return &quot;B 完成&quot;async def main():    # 串行执行：总耗时约为 2 秒    res_a = await step_a()  # 必须等 step_a 完成才继续往下走    print(res_a)    res_b = await step_b()    print(res_b)asyncio.run(main())
+注意：在循环中直接依次 await 协程依然是串行运行的。实现并发需要借助 create_task 或 gather。
+
+三、并发任务管理：asyncio.create_task
+asyncio.create_task(coroutine) 用于将协程封装为 Task 对象，并排入事件循环调度。
+调用 create_task 后，任务便已经在后台并发运行，并不需要立刻 await 它。后续对 Task 执行 await，作用是获取其返回值或确认其执行完毕。
+import asyncioimport timeasync def download(file_name: str, delay: int):    print(f&quot;[&#123;file_name&#125;] 开始下载...&quot;)    await asyncio.sleep(delay)    print(f&quot;[&#123;file_name&#125;] 下载完成 (耗时 &#123;delay&#125;s)&quot;)    return f&quot;&#123;file_name&#125;_data&quot;async def main():    start = time.perf_counter()    # 提交任务到事件循环，后台开始并发    t1 = asyncio.create_task(download(&quot;File1&quot;, 2))    t2 = asyncio.create_task(download(&quot;File2&quot;, 3))    print(&quot;主流程继续执行其他逻辑...&quot;)    await asyncio.sleep(0.5)    # 等待具体任务的结果    res1 = await t1    res2 = await t2    print(f&quot;全部完成: &#123;res1&#125;, &#123;res2&#125;&quot;)    print(f&quot;总耗时: &#123;time.perf_counter() - start:.2f&#125; 秒&quot;)  # 约为 3 秒，而不是 5 秒asyncio.run(main())
+Task 对象的常用操作：
+
+取消任务：task.cancel()。被取消的任务在下次 await 时会抛出 asyncio.CancelledError。
+状态检查：task.done()、task.cancelled()。
+回调注册：task.add_done_callback(callback_func)。
+
+
+四、批量结果收集：asyncio.gather
+asyncio.gather(*aws, return_exceptions=False) 用于批量聚合多个并发任务。它会自动把传入的协程包装为 Task，并发起调度。返回值严格按照参数传入的先后顺序排列，不会因为某个任务先执行完而打乱顺序。
+import asyncioasync def fetch_api(endpoint: str):    await asyncio.sleep(1)    if endpoint == &quot;/error&quot;:        raise ConnectionError(&quot;网络波动&quot;)    return f&quot;Data from &#123;endpoint&#125;&quot;async def main():    endpoints = [&quot;/users&quot;, &quot;/error&quot;, &quot;/orders&quot;]    # 动态传参解包 *，设置 return_exceptions=True 开启容错    results = await asyncio.gather(        *(fetch_api(ep) for ep in endpoints),        return_exceptions=True    )    for ep, res in zip(endpoints, results):        if isinstance(res, Exception):            print(f&quot;接口 &#123;ep&#125; 异常: &#123;res&#125;&quot;)        else:            print(f&quot;接口 &#123;ep&#125; 成功: &#123;res&#125;&quot;)asyncio.run(main())
+参数 return_exceptions 的取值影响：
+
+False（默认）：只要有一个任务抛出异常，gather 会立刻将该异常向外抛出。
+True：异常会被捕获并作为对应位置的结果放入列表，其他任务继续执行不受阻断。
+
+
+五、create_task 与 gather 的差异
+
+
+
+维度
+asyncio.create_task
+asyncio.gather
+
+
+
+
+主要定位
+单个任务的生命周期控制
+多个任务的批量执行与结果汇总
+
+
+返回值
+单个 asyncio.Task 对象
+包含所有结果的 list
+
+
+调度时机
+调用时即排入事件循环
+调用时即排入事件循环，await 时等待全部完成
+
+
+控制粒度
+支持单独 cancel()、查状态或加回调
+作为整体统一等待或取消
+
+
+典型场景
+后台 Worker 协程、流式任务派发
+批量请求多个第三方接口并汇总数据
+
+
+
+
+六、流式数据处理：async for
+当数据按批次流式获取（如分页拉取、大模型逐字推流、日志采集）时，一次性全部载入内存容易造成内存占用过大，应当使用异步迭代器（AsyncIterator）。
+异步生成器（async def + yield）
+在协程函数中使用 yield，Python 会自动将其封装为异步生成器，省去手动编写迭代器类的工作。
+import asyncioasync def llm_token_stream():    tokens = [&quot;Deep&quot;, &quot;Seek&quot;, &quot; / &quot;, &quot;OpenAI&quot;, &quot; 正在&quot;, &quot;生成&quot;, &quot;回答...&quot;]    for t in tokens:        await asyncio.sleep(0.2)        yield tasync def main():    async for token in llm_token_stream():        print(token, end=&quot;&quot;, flush=True)    print()asyncio.run(main())
+
+七、缓冲区与解耦：asyncio.Queue
+在生产者消费者的架构中，数据生成和处理的速度往往不一致。asyncio.Queue 是专为单线程内协程设计的先进先出（FIFO）队列。因为运行在单线程事件循环中，它不需要加线程锁，但也不能跨进程传递数据（跨进程需使用 multiprocessing.Queue）。
+核心 API 说明：
+
+queue.put(item)：向队列投入元素。若指定了 maxsize 且队列已满，会挂起等待空位。
+queue.get()：从队列提取元素。若队列为空，会挂起等待数据。
+queue.task_done()：消费者处理完一个元素后调用，通知队列该任务处理完毕。
+queue.join()：挂起并等待，直到队列内所有元素都被 get() 且均调用了 task_done()。
+queue.qsize()、empty()、full()：非阻塞方式检查队列状态。
+
+import asyncioimport randomasync def producer(queue: asyncio.Queue, count: int):    for i in range(1, count + 1):        item = f&quot;Job-&#123;i&#125;&quot;        await asyncio.sleep(random.uniform(0.1, 0.3))        await queue.put(item)        print(f&quot;[生产者] 生产: &#123;item&#125; (当前队列长度: &#123;queue.qsize()&#125;)&quot;)async def consumer(name: str, queue: asyncio.Queue):    while True:        job = await queue.get()        print(f&quot;    [&#123;name&#125;] 开始处理: &#123;job&#125;&quot;)        await asyncio.sleep(random.uniform(0.3, 0.6))                # 必须标记完成，否则 queue.join() 会持续等待        queue.task_done()        print(f&quot;    [&#123;name&#125;] 处理完毕: &#123;job&#125;&quot;)async def main():    # 限制容量为 3，提供背压机制，满额时生产者会暂停    queue = asyncio.Queue(maxsize=3)    # 启动 2 个消费者作为后台任务    consumers = [        asyncio.create_task(consumer(f&quot;Worker-&#123;i&#125;&quot;, queue))        for i in range(1, 3)    ]    await producer(queue, count=6)    # 等待队列中所有已被消费的任务全部标记完成    await queue.join()    print(&quot;[主流程] 所有任务已完成&quot;)    # 取消后台消费者并回收    for c in consumers:        c.cancel()    await asyncio.gather(*consumers, return_exceptions=True)asyncio.run(main())
+
+八、完整流水线示例
+这个示例综合了前述模块：异步生成器提供流式数据源，asyncio.Queue 控制缓冲与背压，asyncio.create_task 维护工作池，最后用 asyncio.gather 完成收尾。
+import asyncioimport timeasync def url_stream_generator(total_pages: int):    for page in range(1, total_pages + 1):        await asyncio.sleep(0.2)  # 模拟从数据库或上游接口分页拉取        yield f&quot;https://api.example.com/data?page=&#123;page&#125;&quot;async def worker(worker_id: int, queue: asyncio.Queue, results: list):    while True:        url = await queue.get()        try:            print(f&quot;[Worker-&#123;worker_id&#125;] 开始爬取: &#123;url&#125;&quot;)            await asyncio.sleep(0.4)  # 模拟网络 I/O 耗时            results.append(&#123;&quot;url&quot;: url, &quot;status&quot;: 200, &quot;by&quot;: worker_id&#125;)        finally:            queue.task_done()  # 确保即便抛出异常也能正确递减计数async def main():    start_time = time.perf_counter()    queue = asyncio.Queue(maxsize=5)    results = []    # 启动 3 个并发 Worker    worker_tasks = [        asyncio.create_task(worker(i, queue, results))        for i in range(1, 4)    ]    # 通过 async for 流式投递任务    print(&quot;[调度器] 开始流式投递任务...&quot;)    async for url in url_stream_generator(total_pages=10):        await queue.put(url)        print(f&quot;[调度器] 投递成功: &#123;url&#125;&quot;)    # 等待队列数据全部消费完毕    await queue.join()    print(&quot;[调度器] 队列清空，任务全部完毕&quot;)    # 退出 Worker 并收集状态    for task in worker_tasks:        task.cancel()    await asyncio.gather(*worker_tasks, return_exceptions=True)    print(&quot;\n运行统计:&quot;)    print(f&quot;成功处理: &#123;len(results)&#125; 条&quot;)    print(f&quot;总耗时: &#123;time.perf_counter() - start_time:.2f&#125; 秒&quot;)asyncio.run(main())
+
+九、常见问题与注意事项
+1. 避免在协程中直接调用同步阻塞函数
+在 async def 中调用 time.sleep()、requests.get() 或执行耗时的纯 CPU 计算，会阻塞当前主线程，进而使整个事件循环无法调度其他协程。
+
+遇到网络 I/O，优先替换为 aiohttp、httpx 等异步库。
+若必须调用无法修改的同步阻塞函数，使用 asyncio.to_thread 放入内置线程池执行，避免挂起主事件循环：
+
+import timeimport asynciores = await asyncio.to_thread(time.sleep, 2)
+2. 遗漏 queue.task_done() 导致挂起
+每次执行 await queue.get()，队列内部的未完成任务计数器就会加 1；必须在处理完成后调用 queue.task_done() 将计数器减 1。一旦遗漏该调用，await queue.join() 的计数永远无法归零，主流程会一直挂起。建议在消费者中将 task_done() 放入 try…finally 块中。
+]]></content>
+      <categories>
+        <category>python</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>异步编程</tag>
+        <tag>并发</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>FastAPI教程</title>
     <url>/posts/FastAPI%E6%95%99%E7%A8%8B/</url>
     <content><![CDATA[
@@ -312,265 +697,163 @@ uv run aerich upgrade
         <category>python</category>
       </categories>
       <tags>
-        <tag>FastAPI</tag>
         <tag>Python</tag>
+        <tag>FastAPI</tag>
         <tag>Web开发</tag>
       </tags>
   </entry>
   <entry>
-    <title>PCA降维</title>
-    <url>/posts/44cb4915/</url>
-    <content><![CDATA[前置知识
-向量内积
-数学公式：
-(a1,a2,⋯ ,an)⋅(b1,b2,⋯ ,bn)T=a1b1+a2b2+⋯+anbn(a_1, a_2, \cdots, a_n) \cdot (b_1, b_2, \cdots, b_n)^\mathrm{T} = a_1 b_1 + a_2 b_2 + \cdots + a_n b_n
-(a1​,a2​,⋯,an​)⋅(b1​,b2​,⋯,bn​)T=a1​b1​+a2​b2​+⋯+an​bn​
+    <title>使用uv管理环境</title>
+    <url>/posts/587dcf3b/</url>
+    <content><![CDATA[uv 是 Astral 开发的 Python 项目与包管理工具，基于 Rust 构建。它将解释器下载、虚拟环境配置、依赖安装和锁文件管理整合到了单一二进制文件中，可以直接替代 pip、virtualenv、pyenv 和 Poetry。
 
-A 与 B 的内积值等于 A 向 B 所在直线投影的标量大小。
+一、安装 uv
+macOS 与 Linux：
+curl -LsSf https://astral.sh/uv/install.sh | sh# 或通过 Homebrew 安装brew install uv
+Windows (PowerShell)：
+powershell -ExecutionPolicy ByPass -c &quot;irm https://astral.sh/uv/install.ps1 | iex&quot;# 或通过 winget 安装winget install --id=astral-sh.uv
+安装后重新打开终端，验证安装情况：
+uv --version
 
+二、管理 Python 版本
+uv 内置跨平台的 Python 解释器下载功能，无需在操作系统中预先安装 Python。
+查看本地已安装及线上可选的版本：
+uv python list
+下载并安装指定版本：
+uv python install 3.10 3.11 3.12
+卸载特定版本：
+uv python uninstall 3.10
+直接调用指定版本执行命令：
+uv run --python 3.12 python -c &quot;import sys; print(sys.version)&quot;
 
-基变换
+三、虚拟环境与依赖管理
+uv 支持两种使用模式：
 
-基：类比于我们所知的X,Y坐标轴，如果我们需要描述向量，首先需要确定一组基，然后给出基所在直线上的投影值。
+项目工作流：使用 pyproject.toml 与 uv.lock 统一管理依赖与环境，免去手动激活虚拟环境的步骤。
+独立虚拟环境：沿用传统的 venv 与 pip 模式，适合轻量脚本或存量项目的平滑过渡。
 
-假设我们在二维平面上有一个向量（数据点）x=(3,2)x = (3, 2)x=(3,2)。
+1. 项目工作流
+初始化新项目：
+uv init my_projectcd my_project
+执行后会自动生成项目结构，包括 pyproject.toml（依赖配置）、.python-version（当前锁定版本）和 main.py（入口代码）。
+绑定当前项目的 Python 版本：
+uv python pin 3.11
+添加与移除依赖（uv 会自动同步到 .venv，无需手动激活）：
+# 添加运行依赖，自动写入 pyproject.toml 并刷新 uv.lockuv add requests fastapi# 添加开发期依赖uv add --dev pytest ruff# 移除依赖uv remove requests
+运行代码与测试：
+使用 uv run 可以在当前项目的隔离环境中执行脚本，系统会自动确认依赖完整性。
+uv run python main.pyuv run pytest
+在团队成员间同步环境：
+拉取代码后，根据锁文件还原一致的虚拟环境：
+uv sync
+2. 独立虚拟环境工作流
+如果只需要在任意目录手动建立一个虚拟环境：
+创建虚拟环境：
+# 使用系统默认 Python 创建 .venvuv venv# 指定 Python 版本uv venv --python 3.11# 自定义目录名称uv venv myenv
+激活虚拟环境：
 
+macOS / Linux: source .venv/bin/activate
+Windows: .venv\Scripts\activate
 
-准备一组全新的单位正交基：u1=(12,12)u_1 = \left( \frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u1​=(2​1​,2​1​) u2=(−12,12)u_2 = \left( -\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}} \right)u2​=(−2​1​,2​1​)
+安装与管理包：
+# 安装单个或多个包uv pip install numpy pandas# 通过 requirements.txt 安装uv pip install -r requirements.txt# 导出当前环境依赖清单uv pip freeze &gt; requirements.txt
 
+四、直接运行 Python CLI 工具
+通过 uvx（等同于 uv tool run），可以在隔离的临时环境中运行命令行工具，不需要全局安装到本地系统：
+# 临时运行 ruff 检查代码uvx ruff check .# 临时启动 httpieuvx httpie GET https://api.github.com# 运行测试脚本工具uvx pycowsay &quot;Hello uv&quot;
 
-计算在新基上的坐标：
+五、配置镜像源
+临时指定源：
+uv add requests --index-url https://mirrors.aliyun.com/pypi/simple/
+通过环境变量配置全局默认源：
 
+Linux / macOS（写入 ~/.bashrc 或 ~/.zshrc）：export UV_INDEX_URL=&quot;https://mirrors.aliyun.com/pypi/simple/&quot;
 
-
-新坐标的第一个数 y1y_1y1​（在 u1u_1u1​ 轴上的投影）：
-
-y1=u1⋅x=(12)×3+(12)×2=52y_1 = u_1 \cdot x = \left( \frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = \frac{5}{\sqrt{2}}
-y1​=u1​⋅x=(2​1​)×3+(2​1​)×2=2​5​
-
-新坐标的第二个数 y2y_2y2​（在 u2u_2u2​ 轴上的投影）：
-
-y2=u2⋅x=(−12)×3+(12)×2=−12y_2 = u_2 \cdot x = \left( -\frac{1}{\sqrt{2}} \right) \times 3 + \left( \frac{1}{\sqrt{2}} \right) \times 2 = -\frac{1}{\sqrt{2}}
-y2​=u2​⋅x=(−2​1​)×3+(2​1​)×2=−2​1​
-
-所以，数据点 (3,2)(3, 2)(3,2) 在新坐标系下的新坐标就是：
-
-(52,−12)\left( \frac{5}{\sqrt{2}}, -\frac{1}{\sqrt{2}} \right)
-(2​5​,−2​1​)
-
-注意到上面的内积运算，正好可以打包写成矩阵乘以向量的形式：
-
-(1212−1212)(32)=(52−12)\begin{pmatrix}
-\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \\
--\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}
-\end{pmatrix}
-\begin{pmatrix}
-3 \\
-2
-\end{pmatrix}
-=
-\begin{pmatrix}
-\frac{5}{\sqrt{2}} \\
--\frac{1}{\sqrt{2}}
-\end{pmatrix}
-(2​1​−2​1​​2​1​2​1​​)(32​)=(2​5​−2​1​​)
-我们可以把它写成通用的表示形式：
-(p1p2⋮pR)(a1a2⋯aM)=(p1a1p1a2⋯p1aMp2a1p2a2⋯p2aM⋮⋮⋱⋮pRa1pRa2⋯pRaM)\begin{pmatrix}
-p_1 \\
-p_2 \\
-\vdots \\
-p_R
-\end{pmatrix}
-\begin{pmatrix}
-a_1 &amp; a_2 &amp; \cdots &amp; a_M
-\end{pmatrix}
-=
-\begin{pmatrix}
-p_1 a_1 &amp; p_1 a_2 &amp; \cdots &amp; p_1 a_M \\
-p_2 a_1 &amp; p_2 a_2 &amp; \cdots &amp; p_2 a_M \\
-\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
-p_R a_1 &amp; p_R a_2 &amp; \cdots &amp; p_R a_M
-\end{pmatrix}
-​p1​p2​⋮pR​​​(a1​​a2​​⋯​aM​​)=​p1​a1​p2​a1​⋮pR​a1​​p1​a2​p2​a2​⋮pR​a2​​⋯⋯⋱⋯​p1​aM​p2​aM​⋮pR​aM​​​
-其中 pip_ipi​ 是一个行向量，表示第 iii 个基，aja_jaj​ 是一个列向量，表示第 jjj 个原始数据记录。实际上也就是做了一个向量矩阵化的操作。
-
-上述分析给矩阵相乘找到了一种物理解释：两个矩阵相乘的意义是将右边矩阵中的每一列向量 aja_jaj​ 变换到左边矩阵中以每一行向量为所表示的空间中去。也就是说一个矩阵可以表示一种线性变换。
-
-特征值和特征向量
-
-简单来说，在线性代数中，矩阵代表一种空间变换（比如旋转、拉伸、剪切等）。当你用一个矩阵去乘以一个向量时，绝大多数向量的方向和长度都会发生改变。但是，对于某些“特殊”的向量，矩阵作用在它们身上时：
-它的方向完全保持不变（或反向），仅仅是长度被缩放了。
+Windows PowerShell：[Environment]::SetEnvironmentVariable(&quot;UV_INDEX_URL&quot;, &quot;https://mirrors.aliyun.com/pypi/simple/&quot;, &quot;User&quot;)
 
 
-特征向量（Eigenvector）：就是这个方向保持不变的特殊向量。它代表了矩阵变换中的“不变轴”或“主导方向”。
-特征值（Eigenvalue）：就是这个向量被缩放的倍数。它代表了矩阵在这个方向上的“作用强度”或“能量大小”
+为单个项目配置独立源：
+在项目的 pyproject.toml 末尾补充：
+[[tool.uv.index]]url = &quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;default = true
 
-方差
-我们知道数值的分散程度，可以用数学上的方差来表述。一个变量的方差可以看做是每个元素与变量均值的差的平方和的均值，即：
-Var(a)=1m∑i=1m(ai−μ)2Var(a) = \frac{1}{m} \sum_{i=1}^{m} (a_i - \mu)^2
-Var(a)=m1​i=1∑m​(ai​−μ)2
-协方差
-在⼀维空间中我们可⽤⽅差来表示数据的分散程度。而对於⾼维数据，我们⽤协⽅差进⾏约束，协⽅差可以表示两个变量的相关性。为了让两个变量尽可能表示更多的原始信息，我们希望它们之间不存在线性相关性，因为相关性意味着两个变量不是完全独立，必然存在重复表示的信息。
-协⽅差公式为：
-Cov(a,b)=1m−1∑i=1m(ai−μa)(bi−μb)Cov(a, b) = \frac{1}{m - 1} \sum_{i=1}^{m} (a_i - \mu_a)(b_i - \mu_b)
-Cov(a,b)=m−11​i=1∑m​(ai​−μa​)(bi​−μb​)
-PCA降维原理
-
-PCA（Principal Component Analysis） 是一种常见的数据分析方式，常用于高维数据的降维，可用于提取数据的主要特征分量。
+六、常用命令速查
 
 
-降维的本质是矩阵变换：两个矩阵相乘 Y=PXY = P XY=PX，可以让基的数量 KKK（PPP 的行数）小于原始特征维度 NNN（XXX 的行数），从而实现特征降维。
-选择最大方差的方向：数据在降维后的新基（新坐标轴）上必须尽可能分散（即方差最大化），这样才能保留最多的原始信息，避免数据混在一起无法区分。
-消除冗余（两两协方差为 0）：为了让新特征之间不包含重复的信息，任意两个新基上的数据必须线性无关（即协方差为 0）。在几何上，这意味着新选出的 KKK 个基必须是相互正交的。
 
-PCA降维推导
-一、 问题定义与预处理
-1. 数据表示
-假设有 MMM 个样本，每个样本包含 NNN 个特征。我们将第 iii 个样本表示为一个 NNN 维的列向量：
-xi=[xi1xi2⋮xiN]∈RN(i=1,2,…,M)x_i = \begin{bmatrix} x_{i1} \\ x_{i2} \\ \vdots \\ x_{iN} \end{bmatrix} \in \mathbb{R}^N \quad (i = 1, 2, \dots, M)
-xi​=​xi1​xi2​⋮xiN​​​∈RN(i=1,2,…,M)
-2. 去均值化（中心化）
-
-为什么 PCA 必须去均值？
-
-定位几何中心：平移数据使得数据的几何中心位于坐标原点，确保新坐标轴穿过数据中心，而不是被原点偏移“拉歪”。
-满足代数定义：只有在均值为 0 时，矩阵积1MXXT\frac{1}{M} X X^{\mathrm{T}}M1​XXT才严格等于数据的协方差矩阵，使得后续的特征值分解数学推导成立。
-过滤无关信息：剥离整体绝对偏移（均值），只关注样本之间的相对变化（方差）。
+类别
+命令
+说明
 
 
-为了简化后续计算，计算所有样本的均值向量 μ=1M∑i=1Mxi\mu = \frac{1}{M} \sum_{i=1}^M x_iμ=M1​∑i=1M​xi​，并将每个样本减去均值：
-xi←xi−μx_i \leftarrow x_i - \mu
-xi​←xi​−μ
-预处理后，数据的均值为零向量，即：
-1M∑i=1Mxi=0\frac{1}{M} \sum_{i=1}^M x_i = \mathbf{0}
-M1​i=1∑M​xi​=0
-3. 降维的目标
-寻找一个低维空间（维数为 KKK，且 K&lt;NK &lt; NK&lt;N），将 NNN 维向量 xix_ixi​ 映射为 KKK 维向量 yiy_iyi​，同时满足：
-
-信息损失最小（即数据投影后的方差最大）。
-降维后的 KKK 个特征之间互不相关（即协方差为 0）。
 
 
-二、 单维度投影推导（求解第一个方向）
-先不考虑降到 KKK 维，只考虑降到 1 维。即：寻找一个最佳的方向向量 w∈RNw \in \mathbb{R}^Nw∈RN。
-1. 计算投影值
-为了保证方向不因向量长度改变，限制 www 为单位向量：
-wTw=1w^T w = 1
-wTw=1
-
-上标 TTT 表示转置（Transpose）。
+Python 版本
+uv python install &lt;version&gt;
+下载并安装指定 Python 版本
 
 
-在数学中，向量 w\mathbf{w}w 通常默认是列向量（比如 w=[w1w2]\mathbf{w} = \begin{bmatrix} w_1 \\ w_2 \end{bmatrix}w=[w1​w2​​]）。
+
+uv python list
+查看本地及远程可用 Python 版本
 
 
-转置后，wT\mathbf{w}^TwT 就变成了行向量（比如 [w1w2][w_1 \quad w_2][w1​w2​]）。
+
+uv python pin &lt;version&gt;
+将当前项目绑定至指定版本
 
 
-这样做是为了进行矩阵乘法（内积运算）。因为行向量乘以列向量，结果是一个标量（数值）。
-
-样本 xix_ixi​ 投影到方向 www 上的投影标量值为：
-yi=wTxiy_i = w^T x_i
-yi​=wTxi​
-2. 计算投影后的均值与方差
-由于数据已经去均值（∑xi=0\sum x_i = \mathbf{0}∑xi​=0），投影后数据 yiy_iyi​ 的均值也是 0：
-yˉ=1M∑i=1Myi=1M∑i=1MwTxi=wT(1M∑i=1Mxi)=0\bar{y} = \frac{1}{M} \sum_{i=1}^M y_i = \frac{1}{M} \sum_{i=1}^M w^T x_i = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i \right) = 0
-yˉ​=M1​i=1∑M​yi​=M1​i=1∑M​wTxi​=wT(M1​i=1∑M​xi​)=0
-投影后数据的方差（记为 Var\text{Var}Var）公式为：
-Var=1M∑i=1M(yi−yˉ)2=1M∑i=1M(wTxi)2\text{Var} = \frac{1}{M} \sum_{i=1}^M (y_i - \bar{y})^2 = \frac{1}{M} \sum_{i=1}^M (w^T x_i)^2
-Var=M1​i=1∑M​(yi​−yˉ​)2=M1​i=1∑M​(wTxi​)2
-3. 引入协方差矩阵
-展开方差公式中的平方项（利用标量的转置等于其本身，即 wTxi=xiTww^T x_i = x_i^T wwTxi​=xiT​w）：
-Var=1M∑i=1M(wTxi)(xiTw)=wT(1M∑i=1MxixiT)w\text{Var} = \frac{1}{M} \sum_{i=1}^M (w^T x_i)(x_i^T w) = w^T \left( \frac{1}{M} \sum_{i=1}^M x_i x_i^T \right) w
-Var=M1​i=1∑M​(wTxi​)(xiT​w)=wT(M1​i=1∑M​xi​xiT​)w
-
-向量转置公式：(AB)T=BTAT(AB)^T=B^TA^T(AB)T=BTAT
-
-定义原始数据的协方差矩阵 C∈RN×NC \in \mathbb{R}^{N \times N}C∈RN×N 为：
-C=1M∑i=1MxixiTC = \frac{1}{M} \sum_{i=1}^M x_i x_i^T
-C=M1​i=1∑M​xi​xiT​
-
-为了直观，假设数据只有 2 个特征（比如 xi=[aibi]x_i = \begin{bmatrix} a_i \\ b_i \end{bmatrix}xi​=[ai​bi​​]，其中 aia_iai​ 是第 iii 个人的身高，bib_ibi​ 是体重，且已经去均值）：
-我们来看看 xixiTx_i x_i^Txi​xiT​ 算出来是什么：
-xixiT=[aibi][aibi]=[ai2aibibiaibi2]x_i x_i^T = \begin{bmatrix} a_i \\ b_i \end{bmatrix} \begin{bmatrix} a_i &amp; b_i \end{bmatrix} = \begin{bmatrix} a_i^2 &amp; a_i b_i \\ b_i a_i &amp; b_i^2 \end{bmatrix}
-xi​xiT​=[ai​bi​​][ai​​bi​​]=[ai2​bi​ai​​ai​bi​bi2​​]
-再把它乘以 1M∑i=1M\frac{1}{M} \sum_{i=1}^{M}M1​∑i=1M​（即对所有样本求平均）：
-C=1M∑i=1MxixiT=[1M∑ai21M∑aibi1M∑biai1M∑bi2]C = \frac{1}{M} \sum_{i=1}^{M} x_i x_i^T = \begin{bmatrix} \frac{1}{M} \sum a_i^2 &amp; \frac{1}{M} \sum a_i b_i \\ \frac{1}{M} \sum b_i a_i &amp; \frac{1}{M} \sum b_i^2 \end{bmatrix}
-C=M1​i=1∑M​xi​xiT​=[M1​∑ai2​M1​∑bi​ai​​M1​∑ai​bi​M1​∑bi2​​]
-因为数据均值为 0，根据统计学定义：
-
-1M∑ai2\frac{1}{M} \sum a_i^2M1​∑ai2​ 就是身高 aaa 的方差。
-1M∑bi2\frac{1}{M} \sum b_i^2M1​∑bi2​ 就是体重 bbb 的方差。
-1M∑aibi\frac{1}{M} \sum a_i b_iM1​∑ai​bi​ 就是身高 aaa 和体重 bbb 的协方差。
+项目依赖
+uv init &lt;name&gt;
+初始化 Python 项目
 
 
-由公式可知，CCC 是一个实对称矩阵（CT=CC^T = CCT=C）。
-代入后，投影方差简化为：
-Var=wTCw\text{Var} = w^T C w
-Var=wTCw
 
-三、 极值求解（使用拉格朗日乘子法）
-目标：寻找 www，使得方差 wTCww^T C wwTCw 最大，同时满足约束条件 wTw=1w^T w = 1wTw=1。
-1. 建立拉格朗日函数
-引入乘子 λ\lambdaλ，构造目标函数：
-f(w,λ)=wTCw−λ(wTw−1)f(w, \lambda) = w^T C w - \lambda (w^T w - 1)
-f(w,λ)=wTCw−λ(wTw−1)
-2. 对 www 求导并令其为零
-利用向量微分法则（因为 CCC 是实对称矩阵，∂(wTCw)∂w=2Cw\frac{\partial (w^T C w)}{\partial w} = 2Cw∂w∂(wTCw)​=2Cw）：
-∂f∂w=2Cw−2λw=0\frac{\partial f}{\partial w} = 2 C w - 2 \lambda w = 0
-∂w∂f​=2Cw−2λw=0
-化简得到：
-Cw=λwC w = \lambda w
-Cw=λw
-结论 1：使得方差取得极值的方向向量 www，必须是协方差矩阵 CCC 的特征向量，而 λ\lambdaλ 是对应的特征值。
-3. 特征值与方差的关系
-将 Cw=λwC w = \lambda wCw=λw 代回方差表达式：
-Var=wTCw=wT(λw)=λ(wTw)\text{Var} = w^T C w = w^T (\lambda w) = \lambda (w^T w)
-Var=wTCw=wT(λw)=λ(wTw)
-因为约束条件 wTw=1w^T w = 1wTw=1，所以：
-Var=λ\text{Var} = \lambda
-Var=λ
-结论 2：数据在方向 www 上的投影方差，严格等于协方差矩阵 CCC 的特征值 λ\lambdaλ。
-因此，为了使投影方差最大，我们应当选择最大的特征值 λ1\lambda_1λ1​，其对应的特征向量 w1w_1w1​ 就是最佳的投影方向。
+uv add &lt;package&gt;
+添加依赖并写入 lock 文件
 
-四、 推广到 KKK 维投影
-要求出降维后的 KKK 个维度，我们需要按顺序求解 KKK 个单位正交方向 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
 
-第一个方向 w1w_1w1​：取最大的特征值 λ1\lambda_1λ1​ 对应的特征向量，使得第一个维度方差最大。
-第二个方向 w2w_2w2​：在约束 w2Tw2=1w_2^T w_2 = 1w2T​w2​=1 以及与 w1w_1w1​ 正交的约束 w2Tw1=0w_2^T w_1 = 0w2T​w1​=0 下，最大化 w2TCw2w_2^T C w_2w2T​Cw2​。
-同样通过拉格朗日乘子法求解，可得 Cw2=λ2w2C w_2 = \lambda_2 w_2Cw2​=λ2​w2​。
-为了使方差尽可能大，取第二大特征值 λ2\lambda_2λ2​ 对应的特征向量 w2w_2w2​。
-第 KKK 个方向 wKw_KwK​：依次取前 KKK 个最大的特征值 λ1≥λ2≥⋯≥λK\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_Kλ1​≥λ2​≥⋯≥λK​ 对应的单位特征向量 w1,w2,…,wKw_1, w_2, \dots, w_Kw1​,w2​,…,wK​。
 
-因为 CCC 是实对称矩阵，不同特征值对应的特征向量自动相互正交（wiTwj=0,∀i≠jw_i^T w_j = 0, \forall i \neq jwiT​wj​=0,∀i=j），这天然满足了“新变量之间协方差为 0”的要求。
+uv add --dev &lt;package&gt;
+添加开发依赖
 
-五、 最终降维计算
-将选出的前 KKK 个特征向量组合成变换矩阵 W∈RK×NW \in \mathbb{R}^{K \times N}W∈RK×N：
-W=[w1Tw2T⋮wKT]W = \begin{bmatrix} w_1^T \\ w_2^T \\ \vdots \\ w_K^T \end{bmatrix}
-W=​w1T​w2T​⋮wKT​​​
-对于任意一个 NNN 维数据点 xix_ixi​，其降维后的 KKK 维向量 yi∈RKy_i \in \mathbb{R}^Kyi​∈RK 计算如下：
-yi=Wxiy_i = W x_i
-yi​=Wxi​
-矩阵形式下，整个数据集矩阵 X∈RN×MX \in \mathbb{R}^{N \times M}X∈RN×M 的降维结果矩阵 Y∈RK×MY \in \mathbb{R}^{K \times M}Y∈RK×M 为：
-Y=WXY = W X
-Y=WX
-性质
 
-缓解维度灾难：PCA 算法通过舍去一部分信息之后能使得样本的采样密度增大（因为维数降低了），这是缓解维度灾难的重要手段；
-降噪：当数据受到噪声影响时，最小特征值对应的特征向量往往与噪声有关，将它们舍弃能在一定程度上起到降噪的效果；
-过拟合：PCA 保留了主要信息，但这个主要信息只是针对训练集的，而且这个主要信息未必是重要信息。有可能舍弃了一些看似无用的信息，但是这些看似无用的信息恰好是重要信息，只是在训练集上没有很大的表现，所以 PCA 也可能加剧了过拟合；
-特征独立：PCA 不仅将数据压缩到低维，它也使得降维之后的数据各特征相互独立；
 
-参考来源
-https://zhuanlan.zhihu.com/p/77151308
+uv remove &lt;package&gt;
+移除依赖项
+
+
+
+uv sync
+按照 uv.lock 同步当前环境
+
+
+
+uv run &lt;command&gt;
+在项目环境中执行脚本或命令
+
+
+基础虚拟环境
+uv venv
+创建轻量虚拟环境
+
+
+
+uv pip install &lt;package&gt;
+安装指定 Python 包
+
+
+独立工具
+uvx &lt;tool&gt; [args]
+在临时环境中执行 CLI 工具
+
+
+
 ]]></content>
       <categories>
-        <category>AI飞升</category>
+        <category>python</category>
       </categories>
       <tags>
-        <tag>机器学习</tag>
-        <tag>数学</tag>
-        <tag>降维</tag>
+        <tag>uv</tag>
       </tags>
   </entry>
   <entry>
@@ -596,135 +879,6 @@ https://zhuanlan.zhihu.com/p/77151308
       <categories>
         <category>其他</category>
       </categories>
-  </entry>
-  <entry>
-    <title>asyncio模块</title>
-    <url>/posts/6200c646/</url>
-    <content><![CDATA[Python asyncio 核心模块解析与实践。内容梳理了事件循环、async 与 await、asyncio.create_task、asyncio.gather、AsyncIterator 以及 asyncio.Queue 的用法，并提供一个整合上述模块的生产者消费者流水线示例。
-
-一、事件循环与非阻塞 I/O
-在同步代码中，等待网络请求或磁盘读写时 CPU 只能处于空闲等待状态。
-asyncio 依托单线程与事件循环（Event Loop）机制工作：
-
-事件循环负责在后台轮询和调度任务。
-协作式多任务：当任务遇到耗时 I/O 并通过 await 挂起时，会主动让出控制权，调度中心立即安排其他就绪的任务执行。
-适用场景：网络爬虫、Web API 服务、微服务通信等 I/O 密集型任务。若遇到纯计算密集型任务，应当使用 multiprocessing 多进程模块。
-
-
-二、async 与 await
-1. async def 定义协程函数
-使用 async def 定义的函数是协程函数。直接调用它不会执行函数体，而是返回一个协程对象（Coroutine Object）。启动异步程序的标准入口是 asyncio.run()。
-import asyncioasync def fetch_user():    print(&quot;开始拉取数据...&quot;)    # asyncio.sleep 模拟非阻塞 I/O，此处不能使用阻塞主线程的 time.sleep    await asyncio.sleep(1)     print(&quot;数据拉取完毕！&quot;)    return &#123;&quot;id&quot;: 101, &quot;name&quot;: &quot;Alice&quot;&#125;result = asyncio.run(fetch_user())print(&quot;返回结果:&quot;, result)
-2. await 的语义与限制
-await 的语义是挂起当前协程，让出 CPU 给其他协程运行，待等待的操作完成后再恢复执行。
-await 只能写在 async def 函数内部，其后只能接三类可等待对象（Awaitables）：
-
-协程对象（调用协程函数的返回值）
-Task（通过 asyncio.create_task 包装的对象）
-Future（表示异步操作最终状态的底层对象）
-
-import asyncioasync def step_a():    await asyncio.sleep(1)    return &quot;A 完成&quot;async def step_b():    await asyncio.sleep(1)    return &quot;B 完成&quot;async def main():    # 串行执行：总耗时约为 2 秒    res_a = await step_a()  # 必须等 step_a 完成才继续往下走    print(res_a)    res_b = await step_b()    print(res_b)asyncio.run(main())
-注意：在循环中直接依次 await 协程依然是串行运行的。实现并发需要借助 create_task 或 gather。
-
-三、并发任务管理：asyncio.create_task
-asyncio.create_task(coroutine) 用于将协程封装为 Task 对象，并排入事件循环调度。
-调用 create_task 后，任务便已经在后台并发运行，并不需要立刻 await 它。后续对 Task 执行 await，作用是获取其返回值或确认其执行完毕。
-import asyncioimport timeasync def download(file_name: str, delay: int):    print(f&quot;[&#123;file_name&#125;] 开始下载...&quot;)    await asyncio.sleep(delay)    print(f&quot;[&#123;file_name&#125;] 下载完成 (耗时 &#123;delay&#125;s)&quot;)    return f&quot;&#123;file_name&#125;_data&quot;async def main():    start = time.perf_counter()    # 提交任务到事件循环，后台开始并发    t1 = asyncio.create_task(download(&quot;File1&quot;, 2))    t2 = asyncio.create_task(download(&quot;File2&quot;, 3))    print(&quot;主流程继续执行其他逻辑...&quot;)    await asyncio.sleep(0.5)    # 等待具体任务的结果    res1 = await t1    res2 = await t2    print(f&quot;全部完成: &#123;res1&#125;, &#123;res2&#125;&quot;)    print(f&quot;总耗时: &#123;time.perf_counter() - start:.2f&#125; 秒&quot;)  # 约为 3 秒，而不是 5 秒asyncio.run(main())
-Task 对象的常用操作：
-
-取消任务：task.cancel()。被取消的任务在下次 await 时会抛出 asyncio.CancelledError。
-状态检查：task.done()、task.cancelled()。
-回调注册：task.add_done_callback(callback_func)。
-
-
-四、批量结果收集：asyncio.gather
-asyncio.gather(*aws, return_exceptions=False) 用于批量聚合多个并发任务。它会自动把传入的协程包装为 Task，并发起调度。返回值严格按照参数传入的先后顺序排列，不会因为某个任务先执行完而打乱顺序。
-import asyncioasync def fetch_api(endpoint: str):    await asyncio.sleep(1)    if endpoint == &quot;/error&quot;:        raise ConnectionError(&quot;网络波动&quot;)    return f&quot;Data from &#123;endpoint&#125;&quot;async def main():    endpoints = [&quot;/users&quot;, &quot;/error&quot;, &quot;/orders&quot;]    # 动态传参解包 *，设置 return_exceptions=True 开启容错    results = await asyncio.gather(        *(fetch_api(ep) for ep in endpoints),        return_exceptions=True    )    for ep, res in zip(endpoints, results):        if isinstance(res, Exception):            print(f&quot;接口 &#123;ep&#125; 异常: &#123;res&#125;&quot;)        else:            print(f&quot;接口 &#123;ep&#125; 成功: &#123;res&#125;&quot;)asyncio.run(main())
-参数 return_exceptions 的取值影响：
-
-False（默认）：只要有一个任务抛出异常，gather 会立刻将该异常向外抛出。
-True：异常会被捕获并作为对应位置的结果放入列表，其他任务继续执行不受阻断。
-
-
-五、create_task 与 gather 的差异
-
-
-
-维度
-asyncio.create_task
-asyncio.gather
-
-
-
-
-主要定位
-单个任务的生命周期控制
-多个任务的批量执行与结果汇总
-
-
-返回值
-单个 asyncio.Task 对象
-包含所有结果的 list
-
-
-调度时机
-调用时即排入事件循环
-调用时即排入事件循环，await 时等待全部完成
-
-
-控制粒度
-支持单独 cancel()、查状态或加回调
-作为整体统一等待或取消
-
-
-典型场景
-后台 Worker 协程、流式任务派发
-批量请求多个第三方接口并汇总数据
-
-
-
-
-六、流式数据处理：async for
-当数据按批次流式获取（如分页拉取、大模型逐字推流、日志采集）时，一次性全部载入内存容易造成内存占用过大，应当使用异步迭代器（AsyncIterator）。
-异步生成器（async def + yield）
-在协程函数中使用 yield，Python 会自动将其封装为异步生成器，省去手动编写迭代器类的工作。
-import asyncioasync def llm_token_stream():    tokens = [&quot;Deep&quot;, &quot;Seek&quot;, &quot; / &quot;, &quot;OpenAI&quot;, &quot; 正在&quot;, &quot;生成&quot;, &quot;回答...&quot;]    for t in tokens:        await asyncio.sleep(0.2)        yield tasync def main():    async for token in llm_token_stream():        print(token, end=&quot;&quot;, flush=True)    print()asyncio.run(main())
-
-七、缓冲区与解耦：asyncio.Queue
-在生产者消费者的架构中，数据生成和处理的速度往往不一致。asyncio.Queue 是专为单线程内协程设计的先进先出（FIFO）队列。因为运行在单线程事件循环中，它不需要加线程锁，但也不能跨进程传递数据（跨进程需使用 multiprocessing.Queue）。
-核心 API 说明：
-
-queue.put(item)：向队列投入元素。若指定了 maxsize 且队列已满，会挂起等待空位。
-queue.get()：从队列提取元素。若队列为空，会挂起等待数据。
-queue.task_done()：消费者处理完一个元素后调用，通知队列该任务处理完毕。
-queue.join()：挂起并等待，直到队列内所有元素都被 get() 且均调用了 task_done()。
-queue.qsize()、empty()、full()：非阻塞方式检查队列状态。
-
-import asyncioimport randomasync def producer(queue: asyncio.Queue, count: int):    for i in range(1, count + 1):        item = f&quot;Job-&#123;i&#125;&quot;        await asyncio.sleep(random.uniform(0.1, 0.3))        await queue.put(item)        print(f&quot;[生产者] 生产: &#123;item&#125; (当前队列长度: &#123;queue.qsize()&#125;)&quot;)async def consumer(name: str, queue: asyncio.Queue):    while True:        job = await queue.get()        print(f&quot;    [&#123;name&#125;] 开始处理: &#123;job&#125;&quot;)        await asyncio.sleep(random.uniform(0.3, 0.6))                # 必须标记完成，否则 queue.join() 会持续等待        queue.task_done()        print(f&quot;    [&#123;name&#125;] 处理完毕: &#123;job&#125;&quot;)async def main():    # 限制容量为 3，提供背压机制，满额时生产者会暂停    queue = asyncio.Queue(maxsize=3)    # 启动 2 个消费者作为后台任务    consumers = [        asyncio.create_task(consumer(f&quot;Worker-&#123;i&#125;&quot;, queue))        for i in range(1, 3)    ]    await producer(queue, count=6)    # 等待队列中所有已被消费的任务全部标记完成    await queue.join()    print(&quot;[主流程] 所有任务已完成&quot;)    # 取消后台消费者并回收    for c in consumers:        c.cancel()    await asyncio.gather(*consumers, return_exceptions=True)asyncio.run(main())
-
-八、完整流水线示例
-这个示例综合了前述模块：异步生成器提供流式数据源，asyncio.Queue 控制缓冲与背压，asyncio.create_task 维护工作池，最后用 asyncio.gather 完成收尾。
-import asyncioimport timeasync def url_stream_generator(total_pages: int):    for page in range(1, total_pages + 1):        await asyncio.sleep(0.2)  # 模拟从数据库或上游接口分页拉取        yield f&quot;https://api.example.com/data?page=&#123;page&#125;&quot;async def worker(worker_id: int, queue: asyncio.Queue, results: list):    while True:        url = await queue.get()        try:            print(f&quot;[Worker-&#123;worker_id&#125;] 开始爬取: &#123;url&#125;&quot;)            await asyncio.sleep(0.4)  # 模拟网络 I/O 耗时            results.append(&#123;&quot;url&quot;: url, &quot;status&quot;: 200, &quot;by&quot;: worker_id&#125;)        finally:            queue.task_done()  # 确保即便抛出异常也能正确递减计数async def main():    start_time = time.perf_counter()    queue = asyncio.Queue(maxsize=5)    results = []    # 启动 3 个并发 Worker    worker_tasks = [        asyncio.create_task(worker(i, queue, results))        for i in range(1, 4)    ]    # 通过 async for 流式投递任务    print(&quot;[调度器] 开始流式投递任务...&quot;)    async for url in url_stream_generator(total_pages=10):        await queue.put(url)        print(f&quot;[调度器] 投递成功: &#123;url&#125;&quot;)    # 等待队列数据全部消费完毕    await queue.join()    print(&quot;[调度器] 队列清空，任务全部完毕&quot;)    # 退出 Worker 并收集状态    for task in worker_tasks:        task.cancel()    await asyncio.gather(*worker_tasks, return_exceptions=True)    print(&quot;\n运行统计:&quot;)    print(f&quot;成功处理: &#123;len(results)&#125; 条&quot;)    print(f&quot;总耗时: &#123;time.perf_counter() - start_time:.2f&#125; 秒&quot;)asyncio.run(main())
-
-九、常见问题与注意事项
-1. 避免在协程中直接调用同步阻塞函数
-在 async def 中调用 time.sleep()、requests.get() 或执行耗时的纯 CPU 计算，会阻塞当前主线程，进而使整个事件循环无法调度其他协程。
-
-遇到网络 I/O，优先替换为 aiohttp、httpx 等异步库。
-若必须调用无法修改的同步阻塞函数，使用 asyncio.to_thread 放入内置线程池执行，避免挂起主事件循环：
-
-import timeimport asynciores = await asyncio.to_thread(time.sleep, 2)
-2. 遗漏 queue.task_done() 导致挂起
-每次执行 await queue.get()，队列内部的未完成任务计数器就会加 1；必须在处理完成后调用 queue.task_done() 将计数器减 1。一旦遗漏该调用，await queue.join() 的计数永远无法归零，主流程会一直挂起。建议在消费者中将 task_done() 放入 try…finally 块中。
-]]></content>
-      <categories>
-        <category>python</category>
-      </categories>
-      <tags>
-        <tag>Python</tag>
-        <tag>异步编程</tag>
-        <tag>并发</tag>
-      </tags>
   </entry>
   <entry>
     <title>Vim教程</title>
@@ -1348,160 +1502,6 @@ Vim 的核心思路并不是“记很多快捷键”，而是：
       </categories>
   </entry>
   <entry>
-    <title>使用uv管理环境</title>
-    <url>/posts/587dcf3b/</url>
-    <content><![CDATA[uv 是 Astral 开发的 Python 项目与包管理工具，基于 Rust 构建。它将解释器下载、虚拟环境配置、依赖安装和锁文件管理整合到了单一二进制文件中，可以直接替代 pip、virtualenv、pyenv 和 Poetry。
-
-一、安装 uv
-macOS 与 Linux：
-curl -LsSf https://astral.sh/uv/install.sh | sh# 或通过 Homebrew 安装brew install uv
-Windows (PowerShell)：
-powershell -ExecutionPolicy ByPass -c &quot;irm https://astral.sh/uv/install.ps1 | iex&quot;# 或通过 winget 安装winget install --id=astral-sh.uv
-安装后重新打开终端，验证安装情况：
-uv --version
-
-二、管理 Python 版本
-uv 内置跨平台的 Python 解释器下载功能，无需在操作系统中预先安装 Python。
-查看本地已安装及线上可选的版本：
-uv python list
-下载并安装指定版本：
-uv python install 3.10 3.11 3.12
-卸载特定版本：
-uv python uninstall 3.10
-直接调用指定版本执行命令：
-uv run --python 3.12 python -c &quot;import sys; print(sys.version)&quot;
-
-三、虚拟环境与依赖管理
-uv 支持两种使用模式：
-
-项目工作流：使用 pyproject.toml 与 uv.lock 统一管理依赖与环境，免去手动激活虚拟环境的步骤。
-独立虚拟环境：沿用传统的 venv 与 pip 模式，适合轻量脚本或存量项目的平滑过渡。
-
-1. 项目工作流
-初始化新项目：
-uv init my_projectcd my_project
-执行后会自动生成项目结构，包括 pyproject.toml（依赖配置）、.python-version（当前锁定版本）和 main.py（入口代码）。
-绑定当前项目的 Python 版本：
-uv python pin 3.11
-添加与移除依赖（uv 会自动同步到 .venv，无需手动激活）：
-# 添加运行依赖，自动写入 pyproject.toml 并刷新 uv.lockuv add requests fastapi# 添加开发期依赖uv add --dev pytest ruff# 移除依赖uv remove requests
-运行代码与测试：
-使用 uv run 可以在当前项目的隔离环境中执行脚本，系统会自动确认依赖完整性。
-uv run python main.pyuv run pytest
-在团队成员间同步环境：
-拉取代码后，根据锁文件还原一致的虚拟环境：
-uv sync
-2. 独立虚拟环境工作流
-如果只需要在任意目录手动建立一个虚拟环境：
-创建虚拟环境：
-# 使用系统默认 Python 创建 .venvuv venv# 指定 Python 版本uv venv --python 3.11# 自定义目录名称uv venv myenv
-激活虚拟环境：
-
-macOS / Linux: source .venv/bin/activate
-Windows: .venv\Scripts\activate
-
-安装与管理包：
-# 安装单个或多个包uv pip install numpy pandas# 通过 requirements.txt 安装uv pip install -r requirements.txt# 导出当前环境依赖清单uv pip freeze &gt; requirements.txt
-
-四、直接运行 Python CLI 工具
-通过 uvx（等同于 uv tool run），可以在隔离的临时环境中运行命令行工具，不需要全局安装到本地系统：
-# 临时运行 ruff 检查代码uvx ruff check .# 临时启动 httpieuvx httpie GET https://api.github.com# 运行测试脚本工具uvx pycowsay &quot;Hello uv&quot;
-
-五、配置镜像源
-临时指定源：
-uv add requests --index-url https://mirrors.aliyun.com/pypi/simple/
-通过环境变量配置全局默认源：
-
-Linux / macOS（写入 ~/.bashrc 或 ~/.zshrc）：export UV_INDEX_URL=&quot;https://mirrors.aliyun.com/pypi/simple/&quot;
-
-Windows PowerShell：[Environment]::SetEnvironmentVariable(&quot;UV_INDEX_URL&quot;, &quot;https://mirrors.aliyun.com/pypi/simple/&quot;, &quot;User&quot;)
-
-
-为单个项目配置独立源：
-在项目的 pyproject.toml 末尾补充：
-[[tool.uv.index]]url = &quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;default = true
-
-六、常用命令速查
-
-
-
-类别
-命令
-说明
-
-
-
-
-Python 版本
-uv python install &lt;version&gt;
-下载并安装指定 Python 版本
-
-
-
-uv python list
-查看本地及远程可用 Python 版本
-
-
-
-uv python pin &lt;version&gt;
-将当前项目绑定至指定版本
-
-
-项目依赖
-uv init &lt;name&gt;
-初始化 Python 项目
-
-
-
-uv add &lt;package&gt;
-添加依赖并写入 lock 文件
-
-
-
-uv add --dev &lt;package&gt;
-添加开发依赖
-
-
-
-uv remove &lt;package&gt;
-移除依赖项
-
-
-
-uv sync
-按照 uv.lock 同步当前环境
-
-
-
-uv run &lt;command&gt;
-在项目环境中执行脚本或命令
-
-
-基础虚拟环境
-uv venv
-创建轻量虚拟环境
-
-
-
-uv pip install &lt;package&gt;
-安装指定 Python 包
-
-
-独立工具
-uvx &lt;tool&gt; [args]
-在临时环境中执行 CLI 工具
-
-
-
-]]></content>
-      <categories>
-        <category>python</category>
-      </categories>
-      <tags>
-        <tag>uv</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>github提交pr</title>
     <url>/posts/d83a5595/</url>
     <content><![CDATA[GitHub Pull Request 完全指南：从创建分支到代码合并
@@ -1710,122 +1710,6 @@ Go 文档：go 命令
       <categories>
         <category>其他</category>
       </categories>
-  </entry>
-  <entry>
-    <title>解决lmstudio下载模型卡顿问题</title>
-    <url>/posts/17dd0035/</url>
-    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
-引言
-在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
-本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
-一、准备工作
-在开始之前，请确保：
-
-安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
-注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
-了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
-
-二、从魔搭社区下载模型
-魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
-方式一：网页直接下载（最直观）
-
-进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
-搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
-进入模型详情页：点击目标模型，进入其详情页面。
-进入文件列表：点击页面中的“模型文件”标签。
-选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
-
-
-提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
-
-方式二：命令行CLI下载（推荐）
-魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
-首先安装modelscope库：
-pip install modelscope
-然后使用以下命令下载：
-modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
-示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
-modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
-方式三：Python SDK下载
-如果你更习惯使用Python，也可以使用SDK进行下载：
-from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
-三、导入LM Studio
-下载好模型文件后，有两种方式将其导入LM Studio。
-方式一：使用 lms import 命令（最推荐）
-LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
-
-
-打开终端（Windows用户可使用PowerShell或CMD）。
-
-
-执行导入命令：
-基本导入（默认会移动文件）：
-lms import /path/to/your/model.gguf
-保留原文件（复制一份）：
-lms import /path/to/your/model.gguf --copy
-创建符号链接（不复制也不移动，在原位置创建引用）：
-lms import /path/to/your/model.gguf --symbolic-link
-这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
-
-
-根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
-
-
-方式二：手动放置文件（备选）
-如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
-
-
-找到LM Studio的模型目录：
-
-Windows: C:\Users\你的用户名\.lmstudio\models\
-macOS/Linux: ~/.lmstudio/models/
-
-你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
-
-
-创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
-.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
-如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
-
-
-刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
-
-
-
-注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
-
-四、验证与使用
-导入成功后，在LM Studio中：
-
-点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
-点击模型进行加载。
-切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
-
-提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
-五、常见问题与技巧
-Q：下载的模型在LM Studio中无法识别？
-A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
-Q：LM Studio内置下载速度太慢怎么办？
-A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
-Q：如何选择合适量化版本的模型？
-A：一般来说：
-
-q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
-q8_0：质量更好，体积也更大
-f16：接近原始精度，但又大又慢
-
-如果显存有限（如8GB），推荐使用Q4量化版本。
-结语
-通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
-]]></content>
-      <categories>
-        <category>其他</category>
-      </categories>
-      <tags>
-        <tag>LM Studio</tag>
-        <tag>大模型</tag>
-        <tag>本地部署</tag>
-      </tags>
   </entry>
   <entry>
     <title>Axios 从入门到实战</title>
@@ -2659,212 +2543,119 @@ request.ts+api/user.ts+Token 拦截器+统一错误处理
       </categories>
   </entry>
   <entry>
-    <title>Hexo 博客发布笔记完整教程</title>
-    <url>/posts/b9c5d664/</url>
-    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章
-hexo new &quot;文章标题&quot;
-执行后会在 source/_posts/ 下生成两个东西：
+    <title>解决lmstudio下载模型卡顿问题</title>
+    <url>/posts/17dd0035/</url>
+    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
+引言
+在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
+本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
+一、准备工作
+在开始之前，请确保：
 
-文章标题.md：Markdown 文章文件
-文章标题/：同名文件夹，用于存放图片等资源
+安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
+注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
+了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
 
-二、文章结构（Front-matter）
-文章开头 --- 之间是 front-matter，用于配置文章元信息：
----title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-常用字段说明：
+二、从魔搭社区下载模型
+魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
+方式一：网页直接下载（最直观）
 
+进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
+搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
+进入模型详情页：点击目标模型，进入其详情页面。
+进入文件列表：点击页面中的“模型文件”标签。
+选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
 
 
-字段
-作用
-必填
+提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
 
+方式二：命令行CLI下载（推荐）
+魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
+首先安装modelscope库：
+pip install modelscope
+然后使用以下命令下载：
+modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
+示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
+modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
+方式三：Python SDK下载
+如果你更习惯使用Python，也可以使用SDK进行下载：
+from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
+三、导入LM Studio
+下载好模型文件后，有两种方式将其导入LM Studio。
+方式一：使用 lms import 命令（最推荐）
+LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
 
 
+打开终端（Windows用户可使用PowerShell或CMD）。
 
-title
-文章标题
-是
 
+执行导入命令：
+基本导入（默认会移动文件）：
+lms import /path/to/your/model.gguf
+保留原文件（复制一份）：
+lms import /path/to/your/model.gguf --copy
+创建符号链接（不复制也不移动，在原位置创建引用）：
+lms import /path/to/your/model.gguf --symbolic-link
+这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
 
-date
-发布时间
-是
 
+根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
 
-tags
-标签（列表）
-否
 
+方式二：手动放置文件（备选）
+如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
 
-categories
-分类（列表）
-否
 
+找到LM Studio的模型目录：
 
-cover
-封面图路径
-否
+Windows: C:\Users\你的用户名\.lmstudio\models\
+macOS/Linux: ~/.lmstudio/models/
 
+你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
 
-description
-摘要（首页显示）
-否
 
+创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
+.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
+如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
 
 
-三、写作与图片处理
-用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则
-本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式
-文章里用裸文件名引用图片：
-![图片说明](图片名.png)
+刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
 
-⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
 
-Typora 配置建议
-如果用 Typora 写作，推荐这样配置：
 
-偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
-路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
+注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
 
-这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览
-hexo server
-访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
-预览草稿：
-hexo server --draft
-按 Ctrl+C 停止服务。
+四、验证与使用
+导入成功后，在LM Studio中：
 
-修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
+点击模型进行加载。
+切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
 
-五、部署到 GitHub Pages
-写完满意后，一键部署：
-hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-简写形式：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-各步骤作用：
+提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
+五、常见问题与技巧
+Q：下载的模型在LM Studio中无法识别？
+A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
+Q：LM Studio内置下载速度太慢怎么办？
+A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
+Q：如何选择合适量化版本的模型？
+A：一般来说：
 
-
-
-命令
-作用
-
-
-
-
-hexo clean
-清理缓存（删 db.json 和 public/）
-
-
-hexo generate
-生成静态文件到 public/
-
-
-hexo deploy
-把 public/ 推送到 GitHub 仓库
-
-
-
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客
-部署完成后访问主页：
-https://zenty-me.github.io/
-文章地址格式：
-https://zenty-me.github.io/年/月/日/文章标题/
-
-GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-七、草稿机制
-不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
-新建草稿：
-hexo new draft &quot;草稿标题&quot;
-把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
-hexo publish &quot;草稿标题&quot;
-发布后记得执行部署命令。
-八、常用命令速查
-
-
-
-命令
-作用
-
-
-
-
-hexo new &quot;标题&quot;
-新建文章
-
-
-hexo new draft &quot;标题&quot;
-新建草稿
-
-
-hexo publish &quot;标题&quot;
-草稿转正式
-
-
-hexo server
-本地预览
-
-
-hexo server --draft
-预览含草稿
-
-
-hexo clean
-清理缓存
-
-
-hexo generate
-生成静态文件
-
-
-hexo deploy
-部署到远程
-
-
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-一键发布
-
-
-hexo list
-列出所有文章
-
-
-hexo version
-查看版本
-
-
-
-简写：g = generate，s = server，d = deploy，c = clean
-九、常见问题
-1. 修改配置后预览没变化？
-改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？
-按顺序检查：
-
-确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
-确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
-确认 _config.yml 里 post_asset_folder: true 已开启
-确认 marked 配置了 postAsset: true
-
-3. 部署后看不到更新？
-GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？
-_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
-
-以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
+q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
+q8_0：质量更好，体积也更大
+f16：接近原始精度，但又大又慢
+
+如果显存有限（如8GB），推荐使用Q4量化版本。
+结语
+通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
 ]]></content>
       <categories>
-        <category>博客搭建</category>
+        <category>其他</category>
       </categories>
       <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
+        <tag>LM Studio</tag>
+        <tag>大模型</tag>
+        <tag>本地部署</tag>
       </tags>
   </entry>
   <entry>
@@ -3093,91 +2884,217 @@ hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>教程</tag>
         <tag>Butterfly</tag>
+        <tag>教程</tag>
       </tags>
   </entry>
   <entry>
-    <title>如何添加书签</title>
-    <url>/posts/3ffe122/</url>
-    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
-一、书签数据文件
-所有书签数据存放在：
-source/_data/link.yml
-用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
-二、文件结构
-文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
-- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
-三、添加书签到已有分类
-在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
-- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
-注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
-四、新建分类
-在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
-- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
-新分类前面留一个空行和上个分类隔开。
-五、缩进规则（重要）
-YAML 对缩进敏感，必须用空格，不能用 Tab：
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/posts/b9c5d664/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章
+hexo new &quot;文章标题&quot;
+执行后会在 source/_posts/ 下生成两个东西：
+
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
+
+二、文章结构（Front-matter）
+文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+常用字段说明：
 
 
 
-层级
-内容
-缩进
+字段
+作用
+必填
 
 
 
 
-1
-class_name
-0 空格（顶格）
+title
+文章标题
+是
 
 
-2
-class_desc / link_list
-2 空格
+date
+发布时间
+是
 
 
-3
-name
-4 空格
+tags
+标签（列表）
+否
 
 
-4
-link / avatar / descr
-6 空格
+categories
+分类（列表）
+否
+
+
+cover
+封面图路径
+否
+
+
+description
+摘要（首页显示）
+否
 
 
 
-六、图标自动获取
-avatar 字段填网站自己的 favicon，格式固定：
-https://网站域名/favicon.ico
-例如：
+三、写作与图片处理
+用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则
+本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式
+文章里用裸文件名引用图片：
+![图片说明](图片名.png)
 
-GitHub → https://github.com/favicon.ico
-掘金 → https://juejin.cn/favicon.ico
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
 
-不用手动下载图标，浏览器会自动加载网站图标。
-七、删除书签
-找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
-八、部署上线
-改完 link.yml 后，执行：
+Typora 配置建议
+如果用 Typora 写作，推荐这样配置：
+
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
+
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览
+hexo server
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+按 Ctrl+C 停止服务。
+
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+
+五、部署到 GitHub Pages
+写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+简写形式：
 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+各步骤作用：
 
-GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
 
-九、完整示例
-下面是一个包含两个分类的完整 link.yml 示例：
-- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
-照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+
+命令
+作用
+
+
+
+
+hexo clean
+清理缓存（删 db.json 和 public/）
+
+
+hexo generate
+生成静态文件到 public/
+
+
+hexo deploy
+把 public/ 推送到 GitHub 仓库
+
+
+
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客
+部署完成后访问主页：
+https://zenty-me.github.io/
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
+
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+七、草稿机制
+不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+发布后记得执行部署命令。
+八、常用命令速查
+
+
+
+命令
+作用
+
+
+
+
+hexo new &quot;标题&quot;
+新建文章
+
+
+hexo new draft &quot;标题&quot;
+新建草稿
+
+
+hexo publish &quot;标题&quot;
+草稿转正式
+
+
+hexo server
+本地预览
+
+
+hexo server --draft
+预览含草稿
+
+
+hexo clean
+清理缓存
+
+
+hexo generate
+生成静态文件
+
+
+hexo deploy
+部署到远程
+
+
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
+
+
+hexo list
+列出所有文章
+
+
+hexo version
+查看版本
+
+
+
+简写：g = generate，s = server，d = deploy，c = clean
+九、常见问题
+1. 修改配置后预览没变化？
+改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？
+按顺序检查：
+
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
+
+3. 部署后看不到更新？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？
+_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
 ]]></content>
       <categories>
         <category>博客搭建</category>
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>书签</tag>
+        <tag>教程</tag>
       </tags>
   </entry>
   <entry>
@@ -3327,44 +3244,86 @@ front-matter 加 series_order: 数字（越小越靠前）
       </tags>
   </entry>
   <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置
-2.1 github新建仓库+token获取
-
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-
-打开下载好的PicList，对图床进行配置
-
+    <title>如何添加书签</title>
+    <url>/posts/3ffe122/</url>
+    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
+一、书签数据文件
+所有书签数据存放在：
+source/_data/link.yml
+用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
+二、文件结构
+文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
+- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
+三、添加书签到已有分类
+在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
+- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
+注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
+四、新建分类
+在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
+- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
+新分类前面留一个空行和上个分类隔开。
+五、缩进规则（重要）
+YAML 对缩进敏感，必须用空格，不能用 Tab：
 
 
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+层级
+内容
+缩进
 
 
-3. 使用
 
+
+1
+class_name
+0 空格（顶格）
+
+
+2
+class_desc / link_list
+2 空格
+
+
+3
+name
+4 空格
+
+
+4
+link / avatar / descr
+6 空格
+
+
+
+六、图标自动获取
+avatar 字段填网站自己的 favicon，格式固定：
+https://网站域名/favicon.ico
+例如：
+
+GitHub → https://github.com/favicon.ico
+掘金 → https://juejin.cn/favicon.ico
+
+不用手动下载图标，浏览器会自动加载网站图标。
+七、删除书签
+找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
+八、部署上线
+改完 link.yml 后，执行：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+
+GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+九、完整示例
+下面是一个包含两个分类的完整 link.yml 示例：
+- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
 ]]></content>
       <categories>
         <category>博客搭建</category>
       </categories>
       <tags>
-        <tag>图床</tag>
-        <tag>PicList</tag>
-        <tag>GitHub</tag>
+        <tag>Hexo</tag>
+        <tag>书签</tag>
       </tags>
   </entry>
   <entry>
@@ -3508,8 +3467,8 @@ _config.butterfly.yml 的 favicon
       </categories>
       <tags>
         <tag>Hexo</tag>
-        <tag>教程</tag>
         <tag>Butterfly</tag>
+        <tag>教程</tag>
       </tags>
   </entry>
   <entry>
@@ -4191,6 +4150,47 @@ filter 里多用 term：对于精确匹配（如 ID、状态、标签），请�
         <tag>Elasticsearch</tag>
         <tag>Kibana</tag>
         <tag>全文检索</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置
+2.1 github新建仓库+token获取
+
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>图床</tag>
+        <tag>PicList</tag>
+        <tag>GitHub</tag>
       </tags>
   </entry>
   <entry>
@@ -4918,6 +4918,1172 @@ isFullyAuthenticated()
         <tag>Spring Boot</tag>
         <tag>认证授权</tag>
         <tag>Java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Open Spec使用教程</title>
+    <url>/posts/67f9161d/</url>
+    <content><![CDATA[随着 Claude Code、Codex、Cursor 等 AI 编程工具越来越强，现在让 AI 完成一个完整功能已经不是什么难事。
+真正麻烦的问题反而变成了：
+
+AI 写代码很快，但它不一定真正理解你想做什么。
+
+比如我们直接告诉 AI：
+给这个项目增加用户登录功能。
+AI 很可能马上开始创建接口、修改数据库、增加依赖、设计 Token 机制。
+等它全部写完以后，你才发现：
+登录方式不是你想要的数据库字段设计不合理Token 生命周期不符合需求接口路径和现有项目风格不一致甚至修改了本来不应该修改的代码
+这就是目前 AI Coding 中非常典型的问题。
+而 OpenSpec 想解决的，就是让：
+需求 → 代码
+变成：
+需求 ↓分析 ↓规范 ↓设计 ↓任务 ↓实现 ↓验证
+也就是所谓的：
+Spec-Driven Development规范驱动开发
+OpenSpec 并不是一个新的 Web 框架，也不会替代 Claude Code、Codex 或 Cursor。
+它更像是开发者和 AI 编码助手之间的一层“协议”。
+开发之前，先把：
+为什么做做什么系统最终应该是什么样准备怎么实现具体需要完成哪些任务
+全部明确下来。
+然后再允许 AI 开始修改代码。
+这样，AI Coding 就不再是：
+给一句 Prompt↓AI 自由发挥
+而变成：
+先定义正确答案↓再让 AI 实现
+这篇文章会从零开始完整介绍 OpenSpec 的安装、初始化、目录结构、工作流、Spec 写法、Claude Code / Codex 配合方式，以及实际项目中的推荐使用方式。
+一、OpenSpec 是什么，以及为什么需要它
+传统 AI Coding 的基本流程通常是：
+开发者   ↓Prompt   ↓AI   ↓代码
+比如：
+给系统增加 API 限流。
+听起来很简单，但实际上里面包含大量没有明确的信息：
+对谁限流？IP？用户？API Key？限流多少？100 次 / 分钟？1000 次 / 小时？哪些接口限流？全部接口？公开 API？登录接口？超过限制怎么办？HTTP 429？排队？直接丢弃？限流状态放在哪里？Redis？数据库？内存？
+如果这些问题没有提前说明，AI 就必须自己猜。
+而 OpenSpec 的思路是：
+不要直接 Coding
+先建立一个 Change：
+我要修改什么？
+然后逐步生成：
+ProposalSpecDesignTasks
+最终再开始实现。
+整个流程大致如下：
+开发者提出需求       ↓AI Explore       ↓分析现有代码       ↓Proposal       ↓Specification       ↓Design       ↓Tasks       ↓人工 Review       ↓AI Apply       ↓Test / Verify       ↓Archive
+所以 OpenSpec 真正解决的问题不是：
+AI 不会写代码
+而是：
+AI 写代码之前缺少明确约束。
+对于简单 Demo，这种约束可能不重要。
+但项目一旦变成：
+长期维护多人协作几十个模块大量 AI Coding复杂业务逻辑Agent 一次修改十几个甚至几十个文件
+需求规范就会越来越重要。
+OpenSpec 中最重要的两个概念
+理解 OpenSpec，其实只需要先搞懂两个东西：
+SpecChange
+Spec：系统现在应该是什么样
+OpenSpec 中：
+openspec/specs/
+保存的是当前系统已经确认的正式规范。
+例如：
+openspec/specs/├── user-auth/│   └── spec.md│├── document-upload/│   └── spec.md│└── api-rate-limit/    └── spec.md
+分别可能描述：
+用户认证如何工作文档上传如何工作API 限流如何工作
+因此可以把：
+openspec/specs/
+理解成：
+
+当前项目行为的长期知识库。
+
+半年以后即使换了开发人员，甚至换了 AI Agent，只要读取 Specs，就应该能够知道：
+这个系统目前应该怎么运行。
+Change：系统准备发生什么变化
+假设当前系统已经支持：
+用户登录
+现在准备增加：
+用户退出登录
+OpenSpec 不会立刻修改主 Spec。
+而是先创建：
+openspec/changes/add-user-logout/
+例如：
+openspec/│├── specs/│   └── user-auth/│       └── spec.md│└── changes/    └── add-user-logout/        ├── proposal.md        ├── design.md        ├── tasks.md        │        └── specs/            └── user-auth/                └── spec.md
+其中：
+openspec/specs/user-auth/spec.md
+表示：
+当前系统正式规范
+而：
+openspec/changes/add-user-logout/specs/user-auth/spec.md
+表示：
+这次修改准备让 user-auth 发生什么变化
+这部分也叫：
+Delta Spec
+Delta 就是：
+变化量
+所以可以简单理解：
+Specs=系统现在是什么Changes=系统准备变成什么
+这两个概念理解以后，OpenSpec 的整个工作流就很好理解了。
+二、安装 OpenSpec 并初始化项目
+OpenSpec 本身是一个 CLI 工具，因此首先需要 Node.js。
+可以检查当前版本：
+node --version
+如果得到类似：
+v22.23.0
+就可以正常使用。
+然后安装 OpenSpec：
+npm install -g @fission-ai/openspec@latest
+如果使用 pnpm：
+pnpm add -g @fission-ai/openspec@latest
+安装完成以后：
+openspec --version
+能够正常显示版本号，就说明安装成功。
+初始化现有项目
+假设项目结构：
+my-project/
+进入：
+cd my-project
+执行：
+openspec init
+OpenSpec 会让你选择使用的 AI Coding 工具。
+比如：
+Claude CodeCodexCursor
+选择以后，OpenSpec 会自动生成对应 Agent 所需要的：
+CommandsSkillsWorkflow
+例如 Claude Code 项目中可能出现：
+.claude/├── commands/└── skills/
+同时项目会增加：
+openspec/
+目录。
+基础结构一般类似：
+my-project/│├── src/├── tests/│├── openspec/│   ├── config.yaml│   ├── specs/│   └── changes/│└── ...
+如果希望指定 Agent，也可以：
+openspec init --tools claude,cursor
+如果暂时不需要绑定任何 Agent：
+openspec init --tools none
+后续 OpenSpec 更新以后，可以在项目中运行：
+openspec update
+更新项目中的 Agent Skill 和 Command。
+一定要区分两种命令
+第一次使用 OpenSpec 最容易踩的坑，就是混淆：
+openspec xxx
+和：
+/opsx:xxx
+前者属于：
+终端命令
+比如：
+openspec initopenspec listopenspec validate --allopenspec showopenspec archive
+这些应该输入：
+PowerShellCMDTerminalWarpLinux Shell
+而：
+/opsx:explore/opsx:propose/opsx:apply
+属于：
+AI Coding Agent
+应该输入：
+Claude CodeCursorCodex
+等 AI 工具。
+可以这样记：
+openspec xxx      ↓Terminal/opsx:xxx      ↓AI Chat
+另外，不同 AI 工具对 OpenSpec Workflow 的展示方式可能不完全相同。
+有的使用：
+/opsx:propose
+有的可能展示成：
+/opsx-propose
+还有一些 Agent 会直接通过 Skill 调用。
+因此初始化完成以后，最好以：
+openspec init
+生成的实际提示为准。
+三、OpenSpec 的完整开发工作流
+OpenSpec 最核心的流程可以概括为：
+Explore   ↓Propose   ↓Review   ↓Apply   ↓Verify   ↓Archive
+其中真正日常使用最多的是：
+ExploreProposeApplyArchive
+如果是比较重要的功能，则推荐完整使用：
+Explore↓Propose↓人工检查规范↓Validate↓Apply↓Test↓Verify↓Archive
+下面用：
+增加 API 限流
+作为例子完整走一遍。
+Explore：先分析，不要急着写代码
+首先进入 Claude Code、Codex 或 Cursor。
+执行：
+/opsx:explore
+然后描述需求：
+我准备给项目增加 API 限流功能。公开 API 需要限流。普通客户端限制为每分钟 100 次请求。超过限制返回 HTTP 429。希望使用 Redis 保存限流状态。请先分析当前项目结构、API 组织方式、Redis 使用情况以及适合的实现方案。暂时不要修改代码。
+Explore 最重要的特点就是：
+只分析不实施
+AI 可以先研究：
+项目结构路由层认证逻辑Redis 是否已经存在中间件体系公共 API 如何识别错误处理方式测试框架
+然后告诉你：
+应该在哪一层实现会影响哪些文件有什么技术风险有没有更合适的方案
+这一步看起来会多花几分钟，但经常能够避免后面大量返工。
+因为 AI Coding 最大的浪费并不是：
+代码写得慢
+而是：
+方向写错了。
+Propose：把需求正式变成 Change
+需求分析完成后执行：
+/opsx:propose add-api-rate-limit
+也可以直接描述：
+/opsx:propose 为公开 API 增加基于 Redis 的限流机制，每个客户端每分钟最多请求 100 次，超过以后返回 HTTP 429
+然后 OpenSpec 会生成：
+openspec/changes/add-api-rate-limit/
+一般包含：
+add-api-rate-limit/│├── proposal.md├── design.md├── tasks.md│└── specs/    └── api-rate-limit/        └── spec.md
+这几个文件分别负责不同内容：
+
+
+
+文件
+作用
+
+
+
+
+proposal.md
+为什么做、准备改变什么
+
+
+specs/*/spec.md
+最终系统应该有什么行为
+
+
+design.md
+技术上如何实现
+
+
+tasks.md
+AI 接下来要完成哪些任务
+
+
+
+它们之间可以理解成：
+proposal   │   ├──── specs   │   └──── design            │            ▼          tasks            │            ▼          apply
+Proposal 负责：
+WhyWhat
+Spec 负责：
+Behavior
+Design 负责：
+How
+Tasks 负责：
+Execution
+这是 OpenSpec 整个体系最核心的一层关系。
+四、Proposal、Spec、Design 和 Tasks 应该怎么写
+这四个文件看起来都在描述需求，但它们实际上分工非常明确。
+如果混在一起写，OpenSpec 的价值就会大幅下降。
+Proposal：说明为什么做，以及准备改变什么
+例如：
+openspec/changes/add-api-rate-limit/proposal.md
+可以类似：
+# Add API Rate Limiting## WhyPublic APIs currently have no request rate limits.A single client can consume excessive server resources.## What Changes- Add rate limiting for public API endpoints- Limit clients to 100 requests per minute- Return HTTP 429 when the limit is exceeded- Store rate limit state in Redis## Impact- API middleware- Redis- Public API endpoints
+Proposal 最重要的是回答：
+为什么要做？准备改变什么？影响哪些模块？
+不要在这里写大量：
+Redis Lua 脚本具体类名函数设计数据库字段Middleware 实现
+这些属于 Design。
+所以可以记成：
+Proposal = Why + What
+Spec：定义什么叫“正确”
+Spec 是 OpenSpec 最重要的部分。
+例如：
+openspec/changes/add-api-rate-limit/specs/api-rate-limit/spec.md
+可以写：
+# Spec Delta## ADDED Requirements### Requirement: Public API rate limitingThe system SHALL limit each public API client to 100 requests per minute.#### Scenario: Request within limit- **WHEN** a client sends fewer than 100 requests within one minute- **THEN** the system SHALL process the request normally#### Scenario: Request exceeds limit- **WHEN** a client exceeds 100 requests within one minute- **THEN** the system SHALL reject the request- **THEN** the system SHALL return HTTP status 429
+这里完全没有规定：
+必须使用 Redis SETEX必须使用某个 Middleware必须使用某个类
+它只规定：
+系统最终必须表现成什么样。
+这就是最关键的区别。
+Spec 实际上很接近：
+验收标准
+甚至可以直接对应测试。
+例如：
+WHEN第 101 个请求到达THEN返回 HTTP 429
+以后完全可以转成 Integration Test。
+所以 OpenSpec 的思路并不是：
+AI 写完以后我再判断它写得对不对
+而是：
+先定义什么叫做对↓再让 AI 去实现这个正确结果
+Spec 中的 ADDED、MODIFIED、REMOVED
+OpenSpec 的 Delta Spec 中常见：
+## ADDED Requirements
+表示新增。
+## MODIFIED Requirements
+表示修改。
+## REMOVED Requirements
+表示删除。
+例如已有：
+### Requirement: User LoginThe system SHALL authenticate users using email and password.
+现在增加 Google 登录。
+如果原来的邮箱登录没有改变：
+## ADDED Requirements### Requirement: Google LoginThe system SHALL allow users to authenticate using Google OAuth.
+而如果原来：
+Session 7 天过期
+现在修改成：
+Session 30 天过期
+这才属于：
+## MODIFIED Requirements
+还有一个非常重要的规则：
+
+MODIFIED 应该写修改后的完整 Requirement，而不是只写变化的那一句。
+
+否则归档时容易造成原有规范信息缺失。
+Requirement 和 Scenario 的结构
+OpenSpec Spec 中一般使用：
+### Requirement: Name
+Requirement 下至少应该存在一个：
+#### Scenario: Name
+例如：
+### Requirement: PDF UploadThe system SHALL allow users to upload PDF documents.#### Scenario: Upload valid PDF- **WHEN** the user uploads a valid PDF file- **THEN** the system SHALL save the document
+这里要特别注意标题层级：
+Requirement=###Scenario=####
+Scenario 不是三级标题。
+另外规范最好使用：
+SHALLMUST
+这类明确表达。
+少写：
+最好可能应该尽量maybeusually
+因为 Spec 必须：
+可以判断可以测试可以验证
+例如：
+系统应该拥有良好的性能。
+就不是很好的规范。
+因为：
+什么叫良好？
+没法测试。
+更好的写法：
+The search API SHALL return within 500 ms for 95% of requests under the defined test workload.
+至少它可以被验证。
+Design：描述技术实现方式
+如果 Proposal 解决：
+为什么做什么
+Spec 解决：
+系统最终应该怎么表现
+那么 Design 解决：
+怎么实现
+例如：
+# Design## ContextThe backend uses FastAPI and Redis is already available.## Goals- Support distributed API rate limiting- Work across multiple backend instances- Avoid database writes## DecisionsUse Redis fixed-window counters.Each client uses a Redis key in the following format:rate-limit:&#123;client_id&#125;:&#123;minute&#125;The counter expires after 60 seconds.## RisksIf Redis becomes unavailable, rate limiting temporarily fails open and the failure is logged.## MigrationNo database migration is required.
+如果涉及以下内容，Design 通常非常重要：
+数据库改动系统架构跨多个模块新依赖性能安全迁移方案兼容性缓存策略消息队列
+而如果只是：
+修改按钮文字简单 CSS修一个小 Bug
+Design 就可以相对简单。
+Tasks：把规范拆成 AI 能执行的工作
+最后生成：
+tasks.md
+例如：
+# Tasks## 1. Rate Limiter- [ ] 1.1 Create rate limiter service- [ ] 1.2 Implement Redis counter- [ ] 1.3 Add TTL handling## 2. Middleware- [ ] 2.1 Add API rate limit middleware- [ ] 2.2 Resolve client identifier- [ ] 2.3 Return HTTP 429## 3. Tests- [ ] 3.1 Test requests within limit- [ ] 3.2 Test requests exceeding limit- [ ] 3.3 Test Redis unavailable scenario
+Tasks 最好使用：
+- [ ]
+而不是：
+-
+因为 OpenSpec 可以通过 Checkbox 判断任务完成情况。
+完成后：
+- [x]
+这样以后运行：
+openspec list
+就能看到类似：
+add-api-rate-limit    8/10 tasks
+五、Apply、Validate、Verify 和 Archive
+Proposal、Spec、Design、Tasks 全部确认以后，才真正进入编码阶段。
+这一步叫：
+Apply
+执行：
+/opsx:apply
+AI 会读取：
+proposal.mdspec.mddesign.mdtasks.md
+然后开始按照 Tasks 修改项目。
+此时 AI 的任务不再是：
+自己想该怎么做
+而是：
+按照已经确认的规范完成实现。
+这就是 OpenSpec 和普通 Prompt Coding 最大的区别。
+不要 Propose 完就直接 Apply
+一个很常见的错误是：
+Propose↓完全不看↓Apply
+这样其实会让 OpenSpec 退化成：
+AI 写代码之前顺便多生成几份 Markdown
+真正推荐的是：
+Propose↓检查 proposal.md↓检查 spec.md↓检查 design.md↓检查 tasks.md↓发现问题就修改↓Apply
+OpenSpec 的核心价值恰恰就在：
+
+代码还没写之前，你就可以发现 AI 理解错了。
+
+修改已经生成的 Change
+如果原来 Spec 写的是：
+100 requests/minute
+后来决定改成：
+300 requests/minute
+最好不要直接修改代码。
+应该先更新 OpenSpec。
+例如让 AI：
+把当前 API Rate Limit Change 修改为每分钟 300 次。同步更新 Proposal、Spec、Design 和 Tasks 中受影响的内容。
+也可以使用：
+/opsx:update
+这样可以尽量保证几个 Artifact 之间保持一致。
+Validate：检查规范有没有问题
+日常非常推荐执行：
+openspec validate --all
+它可以检查：
+Spec 格式RequirementScenarioDelta SpecTasksArchive 冲突
+例如某个 Requirement 没有 Scenario：
+ADDED &quot;Rate limiting&quot; must include at least one scenario
+或者 Scenario 标题层级写错，也可能被发现。
+如果希望更严格：
+openspec validate --all --strict
+我的推荐是至少在两个阶段执行：
+Apply 之前Archive 之前
+也就是：
+Propose↓Review↓Validate↓Apply
+然后：
+Apply↓Test↓Verify↓Validate↓Archive
+Verify：检查实现是否真的符合规范
+代码写完只是：
+Implementation Complete
+不代表：
+Requirement Complete
+例如 Spec 写：
+超过限制返回 HTTP 429
+结果 AI 实现成：
+HTTP 403
+代码可能：
+没有报错测试甚至能跑
+但是：
+实现 != Spec
+Verify 就是用来检查这种问题。
+如果当前 OpenSpec Profile 安装了 Verify Workflow，可以使用：
+/opsx:verify
+让 Agent 对照：
+ProposalSpecDesignTasks
+检查代码是否满足要求。
+如果没有 Verify，可以查看 OpenSpec Workflow 配置：
+openspec config profile
+调整以后：
+openspec update
+重新生成 Agent 工作流。
+对于复杂项目，我非常建议保留 Verify。
+Sync 和 Archive 的区别
+OpenSpec 还有：
+/opsx:sync
+它主要用于：
+把当前 Change 中的 Delta Spec同步到 openspec/specs/
+但 Change 本身仍然保持 Active。
+也就是说：
+Sync=更新主 Spec但不结束 Change
+而：
+Archive=完成 Change并归档
+绝大多数普通功能开发可以直接：
+Archive
+只有 Change 生命周期很长，而中间已经有一部分稳定规范需要同步时，Sync 才更加有价值。
+Archive：完成一次 OpenSpec 生命周期
+功能完成以后：
+/opsx:archive
+或者终端：
+openspec archive add-api-rate-limit
+自动确认：
+openspec archive add-api-rate-limit -y
+Archive 通常会：
+合并 Delta Spec        ↓更新 openspec/specs/        ↓移动 Change        ↓openspec/changes/archive/
+例如：
+openspec/changes/add-api-rate-limit/
+最终变成：
+openspec/changes/archive/2026-10-04-add-api-rate-limit/
+此时：
+Change
+已经变成：
+历史开发记录
+而最终规范：
+api-rate-limit
+进入：
+openspec/specs/
+成为：
+当前系统事实
+所以 OpenSpec 的整个生命周期其实可以总结成：
+Change↓Implement↓Verify↓Archive↓Spec
+六、Claude Code、Codex 和 Cursor 中如何实际使用
+OpenSpec 最适合和 AI Coding Agent 一起使用。
+假设使用 Claude Code。
+首先：
+cd my-project
+启动：
+claude
+然后：
+/opsx:explore
+告诉 Claude：
+我准备增加文档搜索功能。用户提交关键词以后，需要在已有文档中搜索相关内容。先分析当前项目的数据库结构、文档模型、搜索接口和现有技术栈。不要修改代码。
+讨论完成以后：
+/opsx:propose add-document-search
+然后人工检查：
+openspec/changes/add-document-search/
+重点查看：
+proposal.mdspecs/design.mdtasks.md
+终端运行：
+openspec validate add-document-search
+确认没有问题：
+/opsx:apply
+实现完成以后运行项目测试：
+pytest
+或者：
+npm test
+然后：
+/opsx:verify
+最后：
+/opsx:archive
+完整流程就是：
+需求   ↓Explore   ↓分析项目   ↓Propose   ↓人工审核   ↓Validate   ↓Apply   ↓Test   ↓Verify   ↓Archive
+Codex 和 Cursor 的整体逻辑完全一样。
+区别主要只是：
+OpenSpec Workflow 如何暴露给 Agent
+某些工具会使用：
+Slash Commands
+有的则会通过：
+Skills
+调用。
+因此最稳妥的方法是：
+运行 openspec init↓选择当前 AI Agent↓按照生成的提示使用
+而不是死记某一种固定 Command。
+七、项目中的推荐实践
+真正把 OpenSpec 用好，并不是会敲几条命令，而是需要建立一套比较稳定的开发习惯。
+一个 Change 尽量只解决一个问题
+例如：
+重构系统架构增加权限增加支付增加消息通知优化 UI提高性能
+如果全部写进：
+one-big-change
+后面一定很难维护。
+更合理：
+add-rbacadd-paymentadd-notificationrefactor-auth-serviceoptimize-document-query
+也就是尽量保持：
+One Change=One Clear Goal
+这样：
+Proposal 更清晰Spec 更容易验证Task 更容易执行Archive 历史也更好读
+Spec 写行为，Design 写实现
+这是最值得记住的一条。
+错误的 Spec：
+系统 SHALL 使用 Redis SETEX 存储限流 Key。
+这实际上是在规定技术实现。
+更好的 Spec：
+系统 SHALL limit each public client to 100 requests per minute.
+然后 Design 再写：
+Use Redis fixed-window counters.
+因此：
+Spec=What the system doesDesign=How the system does it
+以后即使从 Redis 换成其他存储：
+Spec 可能完全不用改Design 才需要调整
+这才是好的系统规范。
+已经开发一半的大项目，不要一次性补全部 Specs
+很多人第一次给已有项目接 OpenSpec，会想：
+让 AI 扫描整个项目然后生成全部 Specs
+如果项目有几十万行代码，结果往往是：
+文档很多但质量不高没人愿意维护
+更推荐渐进式建立。
+比如当前准备改：
+Authentication
+那就先完善：
+user-auth
+下一次修改：
+Document Upload
+再完善：
+document-upload
+随着项目持续开发：
+openspec/specs/
+会逐渐覆盖真正重要和活跃的功能。
+这种方式更符合实际工程。
+纯重构不一定需要 Spec
+例如：
+重命名变量调整文件目录代码格式化升级 ESLint修改 CI内部重构README 更新
+如果对：
+用户可观察行为
+没有任何变化，就没有必要硬写 Requirement。
+这种 Change 可以考虑配置：
+schema: spec-drivenskip_specs: true
+表示：
+这个 Change 没有 Spec-Level Behavior Change
+但不要为了省时间，在真正存在行为变化时也跳过 Specs。
+OpenSpec 最好和 Git 一起使用
+比如：
+git switch -c feat/api-rate-limit
+创建 Change：
+/opsx:propose add-api-rate-limit
+先提交规范：
+git add .git commit -m &quot;docs: propose api rate limiting&quot;
+然后：
+/opsx:apply
+开发完成：
+git add .git commit -m &quot;feat: implement api rate limiting&quot;
+然后：
+/opsx:verify
+最后：
+/opsx:archive
+提交归档：
+git add .git commit -m &quot;docs: archive api rate limiting change&quot;
+这样：
+Git
+记录：
+代码什么时候变了
+而：
+OpenSpec
+记录：
+为什么变要求是什么设计是什么最终行为是什么
+两者非常互补。
+PR Review 时也可以：
+先看 proposal.md↓看 spec.md↓看 design.md↓最后看代码 Diff
+理解成本会明显降低。
+八、一个完整实战示例
+假设当前正在开发一个 RAG 项目，现在准备新增：
+删除文档
+表面看只是：
+DELETE /documents/&#123;id&#125;
+但真正涉及：
+关系数据库对象存储向量数据库权限异常一致性
+如果直接告诉 AI：
+增加删除文档功能。
+它很容易漏掉其中某一步。
+使用 OpenSpec，可以先：
+/opsx:explore
+输入：
+我准备给项目增加文档删除功能。要求：1. 用户只能删除自己的文档2. 删除数据库中的文档记录3. 删除对象存储中的原始文件4. 删除向量数据库对应的 Embedding5. 如果外部资源删除失败，需要避免产生无法追踪的数据不一致先分析项目现有结构和实现方案，不要修改代码。
+AI 分析完成以后：
+/opsx:propose add-document-delete
+然后：
+openspec/changes/add-document-delete/
+可能出现：
+proposal.mddesign.mdtasks.mdspecs/└── document-delete/    └── spec.md
+Spec 可以包含：
+## ADDED Requirements### Requirement: Delete owned documentThe system SHALL allow a user to delete a document they own.#### Scenario: Delete owned document- **WHEN** the authenticated user deletes a document they own- **THEN** the database record SHALL be removed- **THEN** the original stored file SHALL be removed- **THEN** the associated vector records SHALL be removed
+还可以增加权限场景：
+### Requirement: Reject unauthorized deletionThe system SHALL prevent users from deleting documents owned by other users.#### Scenario: Delete another user&#x27;s document- **WHEN** a user attempts to delete a document owned by another user- **THEN** the system SHALL reject the request
+Design 则可以描述：
+先验证 Owner↓标记删除状态↓删除 Object Storage↓删除 Vector Records↓删除数据库记录↓失败时记录 Cleanup Job
+Tasks 则拆成：
+- [ ] Add ownership validation- [ ] Add document delete service- [ ] Remove object storage file- [ ] Remove vector database entries- [ ] Add cleanup failure handling- [ ] Add authorization tests- [ ] Add integration tests
+然后执行：
+openspec validate add-document-delete
+没有问题后：
+/opsx:apply
+让 AI 开始开发。
+实现完成后运行：
+pytest
+或者项目自己的：
+npm test
+随后：
+/opsx:verify
+最后：
+/opsx:archive
+这样一次开发完成以后，项目不仅得到了：
+删除文档功能代码
+同时还永久保存了：
+为什么增加这个功能↓它应该如何表现↓使用什么设计↓具体开发了哪些任务↓最终系统规范是什么
+这就是 OpenSpec 相比普通 AI Coding 最大的区别。
+常用命令速查
+最后整理一下最常用的 OpenSpec CLI。
+
+
+
+命令
+作用
+
+
+
+
+openspec init
+初始化 OpenSpec
+
+
+openspec update
+更新 Agent Workflow
+
+
+openspec list
+查看当前 Changes
+
+
+openspec list --specs
+查看现有 Specs
+
+
+openspec view
+查看 OpenSpec 状态
+
+
+openspec show &lt;name&gt;
+查看某个 Change 或 Spec
+
+
+openspec validate &lt;name&gt;
+验证指定 Change
+
+
+openspec validate --all
+验证全部 OpenSpec 内容
+
+
+openspec validate --all --strict
+严格验证
+
+
+openspec archive &lt;change&gt;
+归档 Change
+
+
+openspec status
+查看状态
+
+
+openspec schemas
+查看 Schema
+
+
+openspec config
+管理配置
+
+
+
+AI Agent 中最值得记住的则是：
+/opsx:explore
+分析需求。
+/opsx:propose
+建立 Change。
+/opsx:update
+修改规划。
+/opsx:apply
+正式实现。
+/opsx:verify
+检查代码是否满足规范。
+/opsx:archive
+结束并归档 Change。
+如果你只想记住一套最实用的工作流，可以直接记：
+Explore↓Propose↓Review↓Validate↓Apply↓Test↓Verify↓Archive
+总结
+OpenSpec 本质上并不是一个：
+让 AI 写代码更快
+的工具。
+它真正解决的是：
+让 AI 更少把代码写错方向。
+传统 AI Coding：
+Prompt   ↓Code
+而 OpenSpec：
+Idea   ↓Explore   ↓Proposal   ↓Specification   ↓Design   ↓Tasks   ↓Implementation   ↓Verification   ↓Archive
+当 Claude Code、Codex 这种 Agent 越来越强以后，真正稀缺的已经不是：
+代码生成能力
+而是：
+需求边界系统规范架构约束长期上下文验收标准
+如果没有这些东西，AI 越强，甚至可能：
+越快地把错误方向实现完整。
+而 OpenSpec 做的事情，就是在：
+人类需求
+和：
+AI 实现
+之间建立一层长期、结构化、可验证的规范。
+第一次使用 OpenSpec，其实不用学得太复杂。
+安装：
+npm install -g @fission-ai/openspec@latest
+进入项目：
+cd your-project
+初始化：
+openspec init
+然后进入 Claude Code、Codex 或 Cursor：
+/opsx:explore↓/opsx:propose add-your-feature↓检查 Proposal / Spec / Design / Tasks↓/opsx:apply↓/opsx:verify↓/opsx:archive
+中间配合：
+openspec validate --all
+基本就已经掌握了 OpenSpec 最核心的使用方式。
+真正值得形成的开发习惯其实只有一句话：
+
+不要让 AI 拿到需求以后立刻写代码。先定义什么叫正确，再让 AI 去实现正确。
+
+]]></content>
+  </entry>
+  <entry>
+    <title>MySql</title>
+    <url>/posts/6cac71de/</url>
+    <content><![CDATA[基础
+DDL
+数据库操作
+查询所有数据库：
+show databases;
+选择当前数据库：
+select database();
+创建数据库：
+create database &#123;if not exists&#125; 数据库名;
+删除数据库：
+drop database &#123;if exists&#125; 数据库名;
+切换数据库：
+use 数据库名;
+
+表操作
+查询当前数据库所有表：
+show tables;
+查看指定表的结构：
+desc 表名;
+查询指定表的建表语句：
+show create table 表名;
+创建表结构：
+create table 表名&#123;	字段1 字段1类型 [comment 字段1注释],	字段2 字段2类型 [comment 字段2注释],	字段3 字段3类型 [comment 字段3注释],	字段4 字段4类型 [comment 字段4注释],	....	字段n 字段n类型 [comment 字段n注释]&#125;[comment 表注释];
+[]内为可选参数
+
+修改表：
+添加：
+alter table 表名 add 字段名 类型(长度) [comment 注释] [约束];
+修改数据类型：
+alter table 表名 modify 字段名 新数据类型(长度);
+修改字段名和字段类型：
+alter table 表名 change 旧字段名 新字段名 类型(长度) [comment 注释] [约束];
+删除字段：
+alter table 表名 drop 字段名;
+修改表名：
+alter table 表名 rename to 新表名;
+删除表：
+drop table [if exists] 表名;
+删除指定表并重新创建：
+truncate table 表名;删除的时候表中的所有数据都会被删除
+
+数据类型：
+数值类型：
+
+
+
+类型
+描述
+
+
+
+
+tinyint
+小整数值
+
+
+smallint
+大整数值
+
+
+mediumint
+大整数值
+
+
+int/integer
+大整数值
+
+
+bigint
+极大整数值
+
+
+float
+单精度浮点数值
+
+
+double
+双精度浮点数值
+
+
+decimal
+小数值
+
+
+
+字符串类型：
+
+
+
+类型
+描述
+
+
+
+
+char
+定长字符串
+
+
+varchar
+变长字符串
+
+
+tinyblob
+不超过255个字符的二进制数据
+
+
+tinytext
+短文本字符串
+
+
+blob
+二进制形式长文本数据
+
+
+text
+长文本数据
+
+
+mediumblob
+二进制形式中文本数据
+
+
+mediumtext
+中文本数据
+
+
+longblob
+极大文本数据
+
+
+longblob
+二进制形式极大文本数据
+
+
+longtext
+极大文本数据
+
+
+
+日期时间类型：
+
+
+
+类型
+格式
+描述
+
+
+
+
+date
+YYYY-MM-DD
+日期值
+
+
+time
+HH:MM:SS
+时间值或者持续时间
+
+
+year
+YYYY
+年份值
+
+
+datetime
+YYYY-MM-DD HH:MM:SS
+混合时间和日期
+
+
+timestamp
+YYYY-MM-DD HH:MM:SS
+混合日期和时间值
+
+
+
+
+DML
+添加数据
+给指定的字段添加数据：
+insert into 表名 (字段1，字段2，...) values(值1，值2，...);
+给全部的字段添加数据：
+insert into 表名 values (值1，值2，...);
+批量添加数据：
+insert into (字段名1，字段名2，...) values(值1，值2,..),(值1，值2,..),(值1，值2,..);
+修改数据：
+update 表名 set 字段名1=值1，字段名2=值2，... [where 条件];
+删除数据
+delete from 表名 [where 条件];
+DQL
+基础查询
+查询多个字段：
+select 字段1，字段2，字段3... from 表名;select * from 表名;
+字段设置别名：
+select 字段1 [as 别名1]，字段2 [as 别名2] ... from 表名;as可以省略select 字段1 [别名1]，字段2 [别名2]，... from 表名;
+去除重复记录：
+select distinct 字段列表 from 表名;
+条件查询
+语法：
+select 字段列表 from 表名 where 条件列表;
+条件：
+
+
+
+比较运算符
+功能
+
+
+
+
+&gt;
+
+
+
+&lt;
+
+
+
+&gt;=
+
+
+
+&lt;=
+
+
+
+=
+
+
+
+&lt;&gt;或者!=
+
+
+
+detween … and …
+在某个范围之内
+
+
+in(…)
+在in之后的列表中的值，多选一
+
+
+like(占位符)
+模糊匹配
+
+
+is NULL
+
+
+
+
+
+
+
+逻辑运算符
+功能
+
+
+
+
+and 或者 &amp;&amp;
+
+
+
+or 或者 ||
+
+
+
+not 或者 ！
+
+
+
+
+聚合函数：
+语法
+select 聚合函数(字段列表) from 表名;null值不参与聚合函数的运算
+常见的聚合函数:
+
+
+
+函数
+功能
+
+
+
+
+count
+统计数量
+
+
+max
+最大值
+
+
+min
+最小值
+
+
+avg
+平均值
+
+
+sum
+求和
+
+
+
+分组查询
+select 字段列表 from 表名 [where 条件] group by 分组字段名 [having 分组后的过滤条件];
+where和having的区别：
+
+执行时间不同：where是分组之前进行过滤,不满足where条件，不参与分组，而having是分组之后再对结果进行过滤
+判断时间不同：where不能对聚合函数进行判断，而having可以
+执行顺序：where&gt;聚合函数&gt;having
+
+排序查询
+select 字段列表 from 表名 order by 字段1 排序方式1,字段2 排序方式2;
+排序方式：
+
+ASC: 升序（默认值）
+DESC:降序
+
+分页查询
+select 字段列表 from 表名 limit 起始索引,查询记录数;
+
+DCL
+管理用户
+查询用户：
+select * from mysql.user;
+创建用户：
+create user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified by &#x27;密码&#x27;;
+修改用户密码：
+alter user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified with mysql_native_password by &#x27;新密码&#x27;;
+删除用户：
+drop user &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+主机名可以使用用%通配
+权限控制
+
+
+
+权限
+说明
+
+
+
+
+all，all privileges
+所有权限
+
+
+select
+查询数据
+
+
+insert
+插入数据
+
+
+update
+修改数据
+
+
+delete
+删除数据
+
+
+alter
+修改表
+
+
+drop
+删除数据库/表/视图
+
+
+create
+创建数据库/表
+
+
+
+查询权限：
+show grants for &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+授予权限
+grant 权限列表 on 数据库.表名 to &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+撤销权限
+revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机名&#x27;;
+]]></content>
+      <categories>
+        <category>数据存储</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>数据库</tag>
+        <tag>SQL</tag>
       </tags>
   </entry>
   <entry>
@@ -5793,402 +6959,179 @@ ImageContainerDockerfileVolumeNetworkDocker Compose
       </tags>
   </entry>
   <entry>
-    <title>MySql</title>
-    <url>/posts/6cac71de/</url>
-    <content><![CDATA[基础
-DDL
-数据库操作
-查询所有数据库：
-show databases;
-选择当前数据库：
-select database();
-创建数据库：
-create database &#123;if not exists&#125; 数据库名;
-删除数据库：
-drop database &#123;if exists&#125; 数据库名;
-切换数据库：
-use 数据库名;
+    <title>缓存技术常见问题及解决</title>
+    <url>/posts/aad9f202/</url>
+    <content><![CDATA[缓存技术常见的问题
+缓存雪崩
+认识
 
-表操作
-查询当前数据库所有表：
-show tables;
-查看指定表的结构：
-desc 表名;
-查询指定表的建表语句：
-show create table 表名;
-创建表结构：
-create table 表名&#123;	字段1 字段1类型 [comment 字段1注释],	字段2 字段2类型 [comment 字段2注释],	字段3 字段3类型 [comment 字段3注释],	字段4 字段4类型 [comment 字段4注释],	....	字段n 字段n类型 [comment 字段n注释]&#125;[comment 表注释];
-[]内为可选参数
+当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
 
-修改表：
-添加：
-alter table 表名 add 字段名 类型(长度) [comment 注释] [约束];
-修改数据类型：
-alter table 表名 modify 字段名 新数据类型(长度);
-修改字段名和字段类型：
-alter table 表名 change 旧字段名 新字段名 类型(长度) [comment 注释] [约束];
-删除字段：
-alter table 表名 drop 字段名;
-修改表名：
-alter table 表名 rename to 新表名;
-删除表：
-drop table [if exists] 表名;
-删除指定表并重新创建：
-truncate table 表名;删除的时候表中的所有数据都会被删除
+解决方案
 
-数据类型：
-数值类型：
+为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
 
+缓存穿透
+认识
 
+解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
 
-类型
-描述
+举个栗子:
 
+假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
 
+解决方案
 
+为了应对上述情况，可以选择如下两种策略：
 
-tinyint
-小整数值
 
 
-smallint
-大整数值
+当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
 
+这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
+为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
 
-mediumint
-大整数值
 
 
-int/integer
-大整数值
+引入布隆过滤器；
 
+布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
+布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
 
-bigint
-极大整数值
+将数据库中的所有用户数据加入布隆过滤器中；
+当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
+若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
+若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
 
 
-float
-单精度浮点数值
 
 
-double
-双精度浮点数值
+缓存击穿
+认识
 
+解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
 
-decimal
-小数值
+解决方案
+为了应对上述情况，可以选择如下方案：
 
 
+缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
 
-字符串类型：
 
+加分布式锁；
 
+当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
 
-类型
-描述
 
 
+引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
 
 
-char
-定长字符串
-
-
-varchar
-变长字符串
-
-
-tinyblob
-不超过255个字符的二进制数据
-
-
-tinytext
-短文本字符串
-
-
-blob
-二进制形式长文本数据
-
-
-text
-长文本数据
-
-
-mediumblob
-二进制形式中文本数据
-
-
-mediumtext
-中文本数据
-
-
-longblob
-极大文本数据
-
-
-longblob
-二进制形式极大文本数据
-
-
-longtext
-极大文本数据
-
-
-
-日期时间类型：
-
-
-
-类型
-格式
-描述
-
-
-
-
-date
-YYYY-MM-DD
-日期值
-
-
-time
-HH:MM:SS
-时间值或者持续时间
-
-
-year
-YYYY
-年份值
-
-
-datetime
-YYYY-MM-DD HH:MM:SS
-混合时间和日期
-
-
-timestamp
-YYYY-MM-DD HH:MM:SS
-混合日期和时间值
-
-
-
-
-DML
-添加数据
-给指定的字段添加数据：
-insert into 表名 (字段1，字段2，...) values(值1，值2，...);
-给全部的字段添加数据：
-insert into 表名 values (值1，值2，...);
-批量添加数据：
-insert into (字段名1，字段名2，...) values(值1，值2,..),(值1，值2,..),(值1，值2,..);
-修改数据：
-update 表名 set 字段名1=值1，字段名2=值2，... [where 条件];
-删除数据
-delete from 表名 [where 条件];
-DQL
-基础查询
-查询多个字段：
-select 字段1，字段2，字段3... from 表名;select * from 表名;
-字段设置别名：
-select 字段1 [as 别名1]，字段2 [as 别名2] ... from 表名;as可以省略select 字段1 [别名1]，字段2 [别名2]，... from 表名;
-去除重复记录：
-select distinct 字段列表 from 表名;
-条件查询
-语法：
-select 字段列表 from 表名 where 条件列表;
-条件：
-
-
-
-比较运算符
-功能
-
-
-
-
-&gt;
-
-
-
-&lt;
-
-
-
-&gt;=
-
-
-
-&lt;=
-
-
-
-=
-
-
-
-&lt;&gt;或者!=
-
-
-
-detween … and …
-在某个范围之内
-
-
-in(…)
-在in之后的列表中的值，多选一
-
-
-like(占位符)
-模糊匹配
-
-
-is NULL
-
-
-
-
-
-
-
-逻辑运算符
-功能
-
-
-
-
-and 或者 &amp;&amp;
-
-
-
-or 或者 ||
-
-
-
-not 或者 ！
-
-
-
-
-聚合函数：
-语法
-select 聚合函数(字段列表) from 表名;null值不参与聚合函数的运算
-常见的聚合函数:
-
-
-
-函数
-功能
-
-
-
-
-count
-统计数量
-
-
-max
-最大值
-
-
-min
-最小值
-
-
-avg
-平均值
-
-
-sum
-求和
-
-
-
-分组查询
-select 字段列表 from 表名 [where 条件] group by 分组字段名 [having 分组后的过滤条件];
-where和having的区别：
-
-执行时间不同：where是分组之前进行过滤,不满足where条件，不参与分组，而having是分组之后再对结果进行过滤
-判断时间不同：where不能对聚合函数进行判断，而having可以
-执行顺序：where&gt;聚合函数&gt;having
-
-排序查询
-select 字段列表 from 表名 order by 字段1 排序方式1,字段2 排序方式2;
-排序方式：
-
-ASC: 升序（默认值）
-DESC:降序
-
-分页查询
-select 字段列表 from 表名 limit 起始索引,查询记录数;
-
-DCL
-管理用户
-查询用户：
-select * from mysql.user;
-创建用户：
-create user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified by &#x27;密码&#x27;;
-修改用户密码：
-alter user &#x27;用户名&#x27;@&#x27;主机名&#x27; identified with mysql_native_password by &#x27;新密码&#x27;;
-删除用户：
-drop user &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-主机名可以使用用%通配
-权限控制
-
-
-
-权限
-说明
-
-
-
-
-all，all privileges
-所有权限
-
-
-select
-查询数据
-
-
-insert
-插入数据
-
-
-update
-修改数据
-
-
-delete
-删除数据
-
-
-alter
-修改表
-
-
-drop
-删除数据库/表/视图
-
-
-create
-创建数据库/表
-
-
-
-查询权限：
-show grants for &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-授予权限
-grant 权限列表 on 数据库.表名 to &#x27;用户名&#x27;@&#x27;主机名&#x27;;
-撤销权限
-revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机名&#x27;;
 ]]></content>
       <categories>
-        <category>数据存储</category>
+        <category>开发</category>
       </categories>
       <tags>
-        <tag>MySQL</tag>
-        <tag>数据库</tag>
-        <tag>SQL</tag>
+        <tag>缓存</tag>
+        <tag>Redis</tag>
+        <tag>高并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+
+
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+
+
+
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
+
+
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
+
+
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
+
+
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
+
+
+易混淆的术语
+接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+
+
+QPS vs. RPS
+
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+
+
+TPS vs. RPS
+
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+
+
+
+VU (并发用户) 和 TPS 换算
+
+公式描述：TPS = VU/RT，（RT单位：秒）。
+
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比
+目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeter
+Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
+
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
+
+ApacheBench
+ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
+
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrk
+wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+      <tags>
+        <tag>高并发</tag>
+        <tag>性能测试</tag>
+        <tag>压测</tag>
       </tags>
   </entry>
   <entry>
@@ -6490,103 +7433,6 @@ Consumer 幂等 (processed_event 约束)：解决消费端在接收到多次重�
       </categories>
   </entry>
   <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语
-接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
-
-
-
-VU (并发用户) 和 TPS 换算
-
-公式描述：TPS = VU/RT，（RT单位：秒）。
-
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比
-目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeter
-Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
-
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
-
-ApacheBench
-ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
-
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
-
-wrk
-wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
-
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-      <tags>
-        <tag>性能测试</tag>
-        <tag>压测</tag>
-        <tag>高并发</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Redis</title>
     <url>/posts/bae4ff13/</url>
     <content><![CDATA[]]></content>
@@ -6594,87 +7440,8 @@ wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
         <category>数据存储</category>
       </categories>
       <tags>
-        <tag>Redis</tag>
         <tag>缓存</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>缓存技术常见问题及解决</title>
-    <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题
-缓存雪崩
-认识
-
-当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
-
-解决方案
-
-为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
-
-缓存穿透
-认识
-
-解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
-
-举个栗子:
-
-假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
-
-解决方案
-
-为了应对上述情况，可以选择如下两种策略：
-
-
-
-当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
-
-这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
-为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
-
-
-
-引入布隆过滤器；
-
-布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
-布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
-
-将数据库中的所有用户数据加入布隆过滤器中；
-当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
-若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
-若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
-
-
-
-
-缓存击穿
-认识
-
-解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
-
-解决方案
-为了应对上述情况，可以选择如下方案：
-
-
-缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
-
-
-加分布式锁；
-
-当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
-
-
-
-引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
-
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-      <tags>
-        <tag>高并发</tag>
         <tag>Redis</tag>
-        <tag>缓存</tag>
       </tags>
   </entry>
   <entry>
