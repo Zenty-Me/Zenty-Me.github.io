@@ -257,6 +257,89 @@ https://zhuanlan.zhihu.com/p/77151308
       </tags>
   </entry>
   <entry>
+    <title>如何添加书签</title>
+    <url>/posts/3ffe122/</url>
+    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
+一、书签数据文件
+所有书签数据存放在：
+source/_data/link.yml
+用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
+二、文件结构
+文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
+- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
+三、添加书签到已有分类
+在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
+- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
+注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
+四、新建分类
+在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
+- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
+新分类前面留一个空行和上个分类隔开。
+五、缩进规则（重要）
+YAML 对缩进敏感，必须用空格，不能用 Tab：
+
+
+
+层级
+内容
+缩进
+
+
+
+
+1
+class_name
+0 空格（顶格）
+
+
+2
+class_desc / link_list
+2 空格
+
+
+3
+name
+4 空格
+
+
+4
+link / avatar / descr
+6 空格
+
+
+
+六、图标自动获取
+avatar 字段填网站自己的 favicon，格式固定：
+https://网站域名/favicon.ico
+例如：
+
+GitHub → https://github.com/favicon.ico
+掘金 → https://juejin.cn/favicon.ico
+
+不用手动下载图标，浏览器会自动加载网站图标。
+七、删除书签
+找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
+八、部署上线
+改完 link.yml 后，执行：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
+
+GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+九、完整示例
+下面是一个包含两个分类的完整 link.yml 示例：
+- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
+照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>书签</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Alembic 使用教程</title>
     <url>/posts/f7088878/</url>
     <content><![CDATA[在 Python 后端开发中，只要项目使用了 SQLAlchemy，基本都会遇到一个问题：
@@ -738,6 +821,9 @@ Model↓Metadata↓Migration↓Database
 之间的关系。
 只要这个关系理解清楚，Alembic 基本就算入门了。
 ]]></content>
+      <categories>
+        <category>python</category>
+      </categories>
   </entry>
   <entry>
     <title>FastAPI教程</title>
@@ -1057,6 +1143,745 @@ uv run aerich upgrade
       </tags>
   </entry>
   <entry>
+    <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
+    <url>/posts/35a7b521/</url>
+    <content><![CDATA[本篇面向完全没接触过代码的同学。跟着做完，你会得到一个有独立网址（你的名字.github.io）、能写文章、手机电脑都能看的个人博客。
+一、先认识几个概念
+别急着动手，花两分钟搞清楚我们在做什么。
+
+
+
+名词
+是什么
+在本教程里干嘛
+
+
+
+
+Hexo
+一个博客生成工具
+把你写的 Markdown 文章变成网页
+
+
+Butterfly
+一个博客主题（皮肤）
+让博客好看
+
+
+Node.js
+运行环境
+Hexo 依赖它才能运行
+
+
+Git
+版本控制工具
+把博客推送到网上
+
+
+GitHub
+代码托管平台
+免费存放你的博客
+
+
+GitHub Pages
+GitHub 的建站服务
+让别人能通过网址访问你的博客
+
+
+
+一句话流程：用 Hexo 在本地写文章 → 用 Git 推到 GitHub → GitHub Pages 自动发布 → 全网可访问。
+二、准备工作
+1. 注册 GitHub 账号
+打开 https://github.com/ 注册账号。用户名要记住，因为你的博客网址会是 用户名.github.io。
+2. 安装 Node.js
+去 https://nodejs.org/ 下载 LTS（长期支持版），一路下一步安装即可。
+安装完打开命令行（Windows 按 Win+R 输入 cmd 回车），输入：
+node -vnpm -v
+能看到版本号就说明装好了。
+
+💡 国内用户如果后面安装很慢，可以换淘宝镜像：
+npm config set registry https://registry.npmmirror.com
+
+3. 安装 Git
+去 https://git-scm.com/ 下载安装，一路下一步。验证：
+git --version
+三、安装 Hexo
+在命令行执行：
+npm install -g hexo-cli
+-g 表示全局安装，装一次到处能用。验证：
+hexo version
+四、初始化博客
+先在电脑上新建一个空文件夹放博客（比如 D:\blog），然后命令行进入这个文件夹，执行：
+hexo initnpm install
+等一会儿，会生成这些文件：
+blog/├── _config.yml        # 站点配置文件（改站名、作者、部署等）├── package.json├── source/            # 文章和资源都放这里│   └── _posts/        # 文章目录（你写的文章在这）└── themes/            # 主题目录
+五、本地预览
+hexo server
+浏览器打开 http://localhost:4000/ ，看到一个默认博客就成功了。按 Ctrl+C 停止。
+六、安装 Butterfly 主题
+在博客根目录执行（推荐用 npm 安装，升级方便、不会有嵌套 git 仓库的坑）：
+npm install hexo-theme-butterfly --save
+再装主题需要的两个渲染依赖：
+npm install hexo-renderer-pug hexo-renderer-stylus --save
+打开 _config.yml，找到 theme 字段改成：
+theme: butterfly
+
+💡 接着在博客根目录新建一个文件 _config.butterfly.yml，把 node_modules/hexo-theme-butterfly/_config.yml 里的内容全部复制过去。以后改主题配置就改这个文件，升级主题不会丢配置。本文说的&quot;主题配置&quot;都指它。
+
+再次 hexo server 预览，能看到 Butterfly 的样式就对了。
+七、站点基础配置（_config.yml）
+打开 _config.yml，改这几项：
+title: 我的博客                     # 站点标题subtitle: &quot;&quot;description: &quot;&quot;author: 你的名字                    # 作者名（全站署名读这里）language: zh-CNtimezone: Asia/Shanghaiurl: https://用户名.github.io       # 换成你的 GitHub 用户名permalink: :year/:month/:day/:title/
+
+permalink 是文章网址格式，上面是默认值。想用更短的固定网址，可参考《文章分类、置顶与短链配置》装 abbrlink 插件。
+
+八、主题配置（_config.butterfly.yml）
+这里只列最常用的几项，完整外观配置见《如何配置网站外观与个人信息》。
+导航菜单：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标。图标去 https://fontawesome.com/icons 搜，复制 class 名。
+头像： 准备一张正方形图片放到 source/img/avatar.png（没有 img 文件夹就新建），然后：
+avatar:  img: /img/avatar.png  effect: false       # true 会一直转圈，一般关掉
+建菜单对应页面： 菜单里写了的页面要手动建，否则点进去 404：
+hexo new page tagshexo new page categorieshexo new page archiveshexo new page about
+然后编辑 source/tags/index.md，开头加上 type: tags；source/categories/index.md 加 type: categories。归档页和关于页不用加。
+九、写第一篇文章
+hexo new &quot;我的第一篇文章&quot;
+会在 source/_posts/ 生成 我的第一篇文章.md。用 Typora 或任意编辑器打开，开头是 front-matter（两行 --- 之间的配置）：
+---title: 我的第一篇文章date: 2026-08-06 14:30:00tags:  - 随笔categories:  - 生活---
+下面用 Markdown 写正文，常用语法：
+# 大标题## 二级标题普通段落直接写。- 列表项一- 列表项二**加粗** *斜体* `行内代码`[链接文字](https://example.com)![图片说明](图片名.png)
+写完 hexo server 预览效果。
+十、部署到 GitHub Pages
+最后一步，把博客发布到网上。
+1. 新建仓库
+在 GitHub 点 New repository，名字必须是 用户名.github.io（用户名换成你的）。选 Public，其他不勾，创建。
+2. 配置 SSH（让电脑有权推送到 GitHub）
+git config --global user.name &quot;你的名字&quot;git config --global user.email &quot;你的邮箱&quot;ssh-keygen -t ed25519 -C &quot;你的邮箱&quot;
+一路回车。然后打开生成的公钥文件（Windows 路径 C:\Users\你的用户名\.ssh\id_ed25519.pub），用记事本打开，复制全部内容。
+到 GitHub → 右上角头像 → Settings → SSH and GPG keys → New SSH key，Title 随便填，Key 粘贴刚才复制的内容，保存。
+验证：
+ssh -T git@github.com
+第一次问 yes/no 输 yes。看到 Hi 用户名! 就成功了。
+3. 安装部署插件
+npm install hexo-deployer-git --save
+4. 配置部署信息
+打开 _config.yml，翻到最下面的 deploy，改成：
+deploy:  type: git  repo: git@github.com:用户名/用户名.github.io.git  branch: main
+
+用户名要换成你自己的。repo 地址也能在 GitHub 仓库页面点 Code → SSH 复制。
+
+5. 一键发布
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+三个命令的作用：
+
+
+
+命令
+作用
+
+
+
+
+hexo clean
+清理缓存
+
+
+hexo g
+生成静态网页
+
+
+hexo d
+推送到 GitHub
+
+
+
+第一次推送可能要确认，输 yes。等 1-2 分钟，访问 https://用户名.github.io/ 就能看到你的博客了！
+十一、日常使用
+博客搭好后，日常写文章就三步：
+hexo new &quot;新文章&quot;                  # 1. 建文章# （用编辑器写内容）hexo clean &amp;&amp; hexo g &amp;&amp; hexo d     # 2. 发布
+想先看看效果不发布，用 hexo server 本地预览。
+完整的写作发布流程（图片处理、草稿、本地预览细节）见《Hexo 博客发布笔记完整教程》。
+十二、进阶推荐
+博客跑起来后，可以接着折腾：
+
+《如何配置网站外观与个人信息》——改背景、菜单、社交链接、公告
+《文章分类、置顶与短链配置》——文章自动归类、置顶、固定短网址
+《如何添加书签》——做个网址收藏页
+
+十三、常见问题
+Q：hexo server 打不开 localhost:4000？
+看命令行有没有报错。端口可能被占用，换一个：hexo server -p 5000。
+Q：部署报错 Permission denied (publickey)？
+SSH 没配好。重新按第十步生成 key 并添加到 GitHub，确认 ssh -T git@github.com 能通过。
+Q：部署成功了但访问 404？
+按顺序检查：仓库名是不是严格的 用户名.github.io；仓库是不是 Public；去仓库 Settings → Pages 看是否已开启。
+Q：部署后看到的还是旧内容？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可去仓库 Actions 页面看部署状态。
+Q：中文文章网址又长又丑？
+默认网址带中文和日期。装 hexo-abbrlink 插件可生成 8 位固定短链，详见《文章分类、置顶与短链配置》。
+Q：图片显示不出来？
+在 _config.yml 设置 post_asset_folder: true，图片放文章同名文件夹，用裸文件名引用 ![](图片.png)。详见《Hexo 博客发布笔记完整教程》。
+小结
+
+
+
+步骤
+命令 / 操作
+
+
+
+
+装环境
+Node.js + Git
+
+
+装 Hexo
+npm install -g hexo-cli
+
+
+建博客
+hexo init
+
+
+装主题
+npm install hexo-theme-butterfly --save + 改 theme: butterfly
+
+
+改配置
+_config.yml + _config.butterfly.yml
+
+
+写文章
+hexo new &quot;标题&quot;
+
+
+发布
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+
+
+搭一次，以后写文章只需要后两行。祝写作愉快。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>文章分类、置顶与短链配置</title>
+    <url>/posts/1784a007/</url>
+    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
+一、文件夹自动归类（auto_category）
+装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
+用法
+在 source/_posts/ 下建文件夹，文章放进去：
+source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
+上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
+注意
+
+手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
+_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
+建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
+
+配置（已设好，一般不用改）
+_config.yml 里：
+auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
+想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
+二、置顶排序（sticky）
+首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
+---title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
+规则
+
+有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
+没 sticky 的文章：按日期倒序排在置顶文章之后
+sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
+
+示例
+本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
+三、永久短链（abbrlink）
+装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
+https://zenty-me.github.io/posts/b9c5d664/
+为什么用短链
+
+永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
+简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
+适合分享：短链好看，外链稳定
+
+工作机制
+
+第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
+之后这个值永久不变，URL 固定为 /posts/abbrlink值/
+不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
+
+配置（已设好）
+_config.yml 里：
+permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
+四、系列文章（series）
+写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
+归入系列
+在 front-matter 加 series: 系列名，同名的就是一个系列：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
+加完后该文章自动获得：
+
+文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
+侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
+
+自定义顺序
+默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
+---title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
+series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
+排序规则
+
+
+
+情况
+排序方式
+
+
+
+
+系列里有任一篇带 series_order
+按 series_order 数字升序（没加的排最后）
+
+
+全都没加 series_order
+按 date 排序
+
+
+
+配置在 _config.butterfly.yml：
+series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
+示例
+本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
+五、日常写笔记流程
+结合三个机制，写一篇新笔记的完整流程：
+
+建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
+移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
+（可选）置顶：在 front-matter 加 sticky: 100
+（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
+编辑：Typora 写正文
+部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+
+分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
+小结
+
+
+
+需求
+怎么做
+
+
+
+
+给文章归类
+把 md 文件放进 _posts/分类名/ 文件夹
+
+
+新建分类
+在 _posts/ 下新建文件夹并放入文章
+
+
+置顶文章
+front-matter 加 sticky: 100
+
+
+文章 URL
+自动生成 /posts/xxxxxxxx/，不用管
+
+
+多级分类
+auto_category.depth 改大、multiple: true
+
+
+组成系列文章
+front-matter 加 series: 系列名
+
+
+指定系列内顺序
+front-matter 加 series_order: 数字（越小越靠前）
+
+
+
+一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo 博客发布笔记完整教程</title>
+    <url>/posts/b9c5d664/</url>
+    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
+一、新建文章
+hexo new &quot;文章标题&quot;
+执行后会在 source/_posts/ 下生成两个东西：
+
+文章标题.md：Markdown 文章文件
+文章标题/：同名文件夹，用于存放图片等资源
+
+二、文章结构（Front-matter）
+文章开头 --- 之间是 front-matter，用于配置文章元信息：
+---title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
+常用字段说明：
+
+
+
+字段
+作用
+必填
+
+
+
+
+title
+文章标题
+是
+
+
+date
+发布时间
+是
+
+
+tags
+标签（列表）
+否
+
+
+categories
+分类（列表）
+否
+
+
+cover
+封面图路径
+否
+
+
+description
+摘要（首页显示）
+否
+
+
+
+三、写作与图片处理
+用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
+图片存放规则
+本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
+图片引用方式
+文章里用裸文件名引用图片：
+![图片说明](图片名.png)
+
+⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
+
+Typora 配置建议
+如果用 Typora 写作，推荐这样配置：
+
+偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
+路径填：./${filename}/（Typora 变量，自动替换成文章名）
+勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
+
+这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
+四、本地预览
+hexo server
+访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
+预览草稿：
+hexo server --draft
+按 Ctrl+C 停止服务。
+
+修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
+
+五、部署到 GitHub Pages
+写完满意后，一键部署：
+hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
+简写形式：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+各步骤作用：
+
+
+
+命令
+作用
+
+
+
+
+hexo clean
+清理缓存（删 db.json 和 public/）
+
+
+hexo generate
+生成静态文件到 public/
+
+
+hexo deploy
+把 public/ 推送到 GitHub 仓库
+
+
+
+部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
+六、访问博客
+部署完成后访问主页：
+https://zenty-me.github.io/
+文章地址格式：
+https://zenty-me.github.io/年/月/日/文章标题/
+
+GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
+
+七、草稿机制
+不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
+新建草稿：
+hexo new draft &quot;草稿标题&quot;
+把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
+hexo publish &quot;草稿标题&quot;
+发布后记得执行部署命令。
+八、常用命令速查
+
+
+
+命令
+作用
+
+
+
+
+hexo new &quot;标题&quot;
+新建文章
+
+
+hexo new draft &quot;标题&quot;
+新建草稿
+
+
+hexo publish &quot;标题&quot;
+草稿转正式
+
+
+hexo server
+本地预览
+
+
+hexo server --draft
+预览含草稿
+
+
+hexo clean
+清理缓存
+
+
+hexo generate
+生成静态文件
+
+
+hexo deploy
+部署到远程
+
+
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+一键发布
+
+
+hexo list
+列出所有文章
+
+
+hexo version
+查看版本
+
+
+
+简写：g = generate，s = server，d = deploy，c = clean
+九、常见问题
+1. 修改配置后预览没变化？
+改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
+2. 图片显示不出来？
+按顺序检查：
+
+确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
+确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
+确认 _config.yml 里 post_asset_folder: true 已开启
+确认 marked 配置了 postAsset: true
+
+3. 部署后看不到更新？
+GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
+4. 草稿为什么没部署上去？
+_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
+
+以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用uv管理环境</title>
+    <url>/posts/587dcf3b/</url>
+    <content><![CDATA[uv 是 Astral 开发的 Python 项目与包管理工具，基于 Rust 构建。它将解释器下载、虚拟环境配置、依赖安装和锁文件管理整合到了单一二进制文件中，可以直接替代 pip、virtualenv、pyenv 和 Poetry。
+
+一、安装 uv
+macOS 与 Linux：
+curl -LsSf https://astral.sh/uv/install.sh | sh# 或通过 Homebrew 安装brew install uv
+Windows (PowerShell)：
+powershell -ExecutionPolicy ByPass -c &quot;irm https://astral.sh/uv/install.ps1 | iex&quot;# 或通过 winget 安装winget install --id=astral-sh.uv
+安装后重新打开终端，验证安装情况：
+uv --version
+
+二、管理 Python 版本
+uv 内置跨平台的 Python 解释器下载功能，无需在操作系统中预先安装 Python。
+查看本地已安装及线上可选的版本：
+uv python list
+下载并安装指定版本：
+uv python install 3.10 3.11 3.12
+卸载特定版本：
+uv python uninstall 3.10
+直接调用指定版本执行命令：
+uv run --python 3.12 python -c &quot;import sys; print(sys.version)&quot;
+
+三、虚拟环境与依赖管理
+uv 支持两种使用模式：
+
+项目工作流：使用 pyproject.toml 与 uv.lock 统一管理依赖与环境，免去手动激活虚拟环境的步骤。
+独立虚拟环境：沿用传统的 venv 与 pip 模式，适合轻量脚本或存量项目的平滑过渡。
+
+1. 项目工作流
+初始化新项目：
+uv init my_projectcd my_project
+执行后会自动生成项目结构，包括 pyproject.toml（依赖配置）、.python-version（当前锁定版本）和 main.py（入口代码）。
+绑定当前项目的 Python 版本：
+uv python pin 3.11
+添加与移除依赖（uv 会自动同步到 .venv，无需手动激活）：
+# 添加运行依赖，自动写入 pyproject.toml 并刷新 uv.lockuv add requests fastapi# 添加开发期依赖uv add --dev pytest ruff# 移除依赖uv remove requests
+运行代码与测试：
+使用 uv run 可以在当前项目的隔离环境中执行脚本，系统会自动确认依赖完整性。
+uv run python main.pyuv run pytest
+在团队成员间同步环境：
+拉取代码后，根据锁文件还原一致的虚拟环境：
+uv sync
+2. 独立虚拟环境工作流
+如果只需要在任意目录手动建立一个虚拟环境：
+创建虚拟环境：
+# 使用系统默认 Python 创建 .venvuv venv# 指定 Python 版本uv venv --python 3.11# 自定义目录名称uv venv myenv
+激活虚拟环境：
+
+macOS / Linux: source .venv/bin/activate
+Windows: .venv\Scripts\activate
+
+安装与管理包：
+# 安装单个或多个包uv pip install numpy pandas# 通过 requirements.txt 安装uv pip install -r requirements.txt# 导出当前环境依赖清单uv pip freeze &gt; requirements.txt
+
+四、直接运行 Python CLI 工具
+通过 uvx（等同于 uv tool run），可以在隔离的临时环境中运行命令行工具，不需要全局安装到本地系统：
+# 临时运行 ruff 检查代码uvx ruff check .# 临时启动 httpieuvx httpie GET https://api.github.com# 运行测试脚本工具uvx pycowsay &quot;Hello uv&quot;
+
+五、配置镜像源
+临时指定源：
+uv add requests --index-url https://mirrors.aliyun.com/pypi/simple/
+通过环境变量配置全局默认源：
+
+Linux / macOS（写入 ~/.bashrc 或 ~/.zshrc）：export UV_INDEX_URL=&quot;https://mirrors.aliyun.com/pypi/simple/&quot;
+
+Windows PowerShell：[Environment]::SetEnvironmentVariable(&quot;UV_INDEX_URL&quot;, &quot;https://mirrors.aliyun.com/pypi/simple/&quot;, &quot;User&quot;)
+
+
+为单个项目配置独立源：
+在项目的 pyproject.toml 末尾补充：
+[[tool.uv.index]]url = &quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;default = true
+
+六、常用命令速查
+
+
+
+类别
+命令
+说明
+
+
+
+
+Python 版本
+uv python install &lt;version&gt;
+下载并安装指定 Python 版本
+
+
+
+uv python list
+查看本地及远程可用 Python 版本
+
+
+
+uv python pin &lt;version&gt;
+将当前项目绑定至指定版本
+
+
+项目依赖
+uv init &lt;name&gt;
+初始化 Python 项目
+
+
+
+uv add &lt;package&gt;
+添加依赖并写入 lock 文件
+
+
+
+uv add --dev &lt;package&gt;
+添加开发依赖
+
+
+
+uv remove &lt;package&gt;
+移除依赖项
+
+
+
+uv sync
+按照 uv.lock 同步当前环境
+
+
+
+uv run &lt;command&gt;
+在项目环境中执行脚本或命令
+
+
+基础虚拟环境
+uv venv
+创建轻量虚拟环境
+
+
+
+uv pip install &lt;package&gt;
+安装指定 Python 包
+
+
+独立工具
+uvx &lt;tool&gt; [args]
+在临时环境中执行 CLI 工具
+
+
+
+]]></content>
+      <categories>
+        <category>python</category>
+      </categories>
+      <tags>
+        <tag>uv</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>asyncio模块</title>
     <url>/posts/6200c646/</url>
     <content><![CDATA[Python asyncio 核心模块解析与实践。内容梳理了事件循环、async 与 await、asyncio.create_task、asyncio.gather、AsyncIterator 以及 asyncio.Queue 的用法，并提供一个整合上述模块的生产者消费者流水线示例。
@@ -1186,6 +2011,47 @@ import timeimport asynciores = await asyncio.to_thread(time.sleep, 2)
       </tags>
   </entry>
   <entry>
+    <title>图床搭建</title>
+    <url>/posts/f7ade587/</url>
+    <content><![CDATA[1. 准备
+
+github账号
+PicList软件：https://github.com/Kuingsmile/PicList
+
+2. 配置
+2.1 github新建仓库+token获取
+
+新建一个公开的仓库，eg：images-test
+
+
+
+在设置页面申请token
+
+
+
+2.2 PicList配置
+
+打开下载好的PicList，对图床进行配置
+
+
+
+CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
+⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
+
+
+3. 使用
+
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>图床</tag>
+        <tag>PicList</tag>
+        <tag>GitHub</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ModelMeter 开发复盘</title>
     <url>/posts/4c268a9c/</url>
     <content><![CDATA[这次参加初试，我选了方向 A 的模型价格计算器，交付作品是 ModelMeter。
@@ -1204,6 +2070,772 @@ import timeimport asynciores = await asyncio.to_thread(time.sleep, 2)
 最后，无论工具演进到什么程度，代码的正确性、数据的真实性，最终必须由开发者自己负责。
 技术栈：Next.js / React / TypeScript / Tailwind CSS / Vitest / Vercel
 项目仓库：https://github.com/Zenty-Me/modelmeter
+]]></content>
+      <categories>
+        <category>其他</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>如何配置网站外观与个人信息</title>
+    <url>/posts/9fa0ea99/</url>
+    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
+
+
+
+文件
+作用
+
+
+
+
+_config.yml
+Hexo 站点级配置（站名、作者、语言、部署等）
+
+
+_config.butterfly.yml
+Butterfly 主题配置（头像、背景、菜单、侧边栏等）
+
+
+
+改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
+一、站点基本信息
+编辑 _config.yml 顶部的 Site 段：
+title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
+
+title：浏览器标签页和首页大标题都读这里
+description：搜索引擎抓取的站点描述，写一句话介绍即可
+author：改一次，全站的作者署名、版权信息都会同步
+
+二、头像
+编辑 _config.butterfly.yml：
+avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
+图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
+
+支持 png / jpg / webp，建议用正方形图，否则会被裁切。
+
+三、网站背景
+背景在 _config.butterfly.yml 的 background 字段：
+# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
+本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
+四、顶部图（Top Img）
+顶部图是每页面顶部那张大横图：
+disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
+图片放到 source/img/top-bg.webp（或你指定的路径）。
+
+单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
+
+五、导航菜单
+菜单在 _config.butterfly.yml 顶部：
+menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
+格式是 显示名: 路径 || 图标class。
+
+显示名：菜单上显示的文字
+路径：页面的 URL，比如 /tags/
+图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
+
+新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
+六、社交链接
+侧边栏的社交图标：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
+格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
+social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
+七、侧边栏作者卡片
+侧边栏那个带头像和按钮的卡片：
+card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
+description 是作者名下面那一行小字，改成自己的签名即可。
+八、Favicon（浏览器标签页小图标）
+favicon: /img/favicon.png
+图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
+九、图片资源放哪
+所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
+source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
+引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
+十、图片灯箱（lightbox）
+文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
+在 _config.butterfly.yml 里：
+lightbox: fancybox
+一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
+
+写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
+
+十一、部署生效
+任何配置改完后，三连部署：
+hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
+等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
+小结
+
+
+
+想改什么
+改哪里
+
+
+
+
+站点名 / 作者名 / SEO 描述
+_config.yml 的 title / author / description
+
+
+头像
+_config.butterfly.yml 的 avatar.img + 放图到 source/img/
+
+
+背景色 / 渐变
+_config.butterfly.yml 的 background
+
+
+顶部图
+_config.butterfly.yml 的 default_top_img 等
+
+
+导航菜单
+_config.butterfly.yml 的 menu
+
+
+社交图标
+_config.butterfly.yml 的 social
+
+
+作者签名
+_config.butterfly.yml 的 card_author.description
+
+
+图片点击放大
+_config.butterfly.yml 的 lightbox: fancybox
+
+
+标签页小图标
+_config.butterfly.yml 的 favicon
+
+
+
+记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
+]]></content>
+      <categories>
+        <category>博客搭建</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Butterfly</tag>
+        <tag>教程</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Vim教程</title>
+    <url>/posts/6b2eee5a/</url>
+    <content><![CDATA[Vim 入门教程：从第一次打开到高效编辑代码
+Vim 是 Linux、服务器、Git、Docker 等开发环境中非常常见的文本编辑器。
+很多人第一次打开 Vim 时都会遇到同一个问题：
+
+为什么我不能直接输入？又该怎么退出？
+
+这并不是 Vim 难，而是因为 Vim 和普通编辑器的设计思路不一样。
+普通编辑器默认是“输入文字”，而 Vim 默认是“执行编辑命令”。
+所以学习 Vim 的第一步，不是背快捷键，而是理解它的模式。
+如果只是想先把 Vim 用起来，可以先记住下面四个操作：
+i       进入输入模式Esc     返回普通模式:wq     保存并退出:q!     不保存强制退出
+仅靠这几个命令，就已经可以完成最基本的编辑工作。
+
+1. 第一次使用 Vim
+假设我们要创建一个 Python 文件：
+vim hello.py
+打开后，Vim 默认处于 Normal Mode（普通模式）。
+此时按：
+i
+进入输入模式，然后输入：
+print(&quot;Hello Vim&quot;)
+输入完成后按：
+Esc
+回到普通模式。
+接着输入：
+:wq
+按 Enter。
+这样文件就保存并退出了。
+完整过程可以记成：
+vim hello.py    ↓    i    ↓输入内容    ↓   Esc    ↓   :wq    ↓  Enter
+如果修改错了，不想保存：
+Esc:q!Enter
+这套流程是 Vim 最基本的“生存操作”。
+
+2. Vim 的模式
+Vim 最重要的概念就是模式。
+初学阶段主要掌握四种模式即可：
+
+
+
+模式
+作用
+
+
+
+
+Normal Mode
+移动、删除、复制、粘贴、执行编辑命令
+
+
+Insert Mode
+输入文字
+
+
+Visual Mode
+选择文本
+
+
+Command-line Mode
+保存、退出、搜索替换、设置
+
+
+
+Normal Mode
+打开 Vim 后默认进入 Normal Mode。
+这个模式下，键盘主要用来执行命令，而不是输入文字。
+例如：
+dd
+删除当前行。
+yy
+复制当前行。
+p
+粘贴。
+无论你当前在哪个模式，不确定怎么办时，都可以先按：
+Esc
+回到 Normal Mode。
+
+Insert Mode
+Normal Mode 下按：
+i
+进入 Insert Mode。
+这时才可以正常输入文字。
+常用的进入方式还有：
+
+
+
+命令
+作用
+
+
+
+
+i
+在当前光标前插入
+
+
+a
+在当前光标后插入
+
+
+o
+在下一行新建一行并输入
+
+
+O
+在上一行新建一行并输入
+
+
+I
+跳到行首并输入
+
+
+A
+跳到行尾并输入
+
+
+
+刚开始只需要熟悉：
+iao
+就够用了。
+
+Visual Mode
+Normal Mode 下按：
+v
+进入字符选择模式。
+按：
+V
+进入整行选择模式。
+选择内容后可以继续执行：
+d
+删除。
+y
+复制。
+
+Command-line Mode
+Normal Mode 下按：
+:
+进入命令行模式。
+最常用的是：
+:w
+保存。
+:q
+退出。
+:wq
+保存并退出。
+:q!
+放弃修改并退出。
+
+3. 光标移动
+Vim 支持方向键，但更推荐使用：
+h j k l
+对应：
+      k      ↑h ←       → l      ↓      j
+也就是：
+h    左j    下k    上l    右
+一开始可以继续用方向键，不必强迫自己立刻适应。
+等基本操作熟悉后，再逐渐换成 h j k l。
+按单词移动
+w
+跳到下一个单词。
+b
+跳到上一个单词。
+例如：
+hello world vim^
+按一次：
+w
+光标会跳到：
+hello world vim      ^
+行内跳转
+0
+跳到当前行开头。
+$
+跳到当前行结尾。
+文件内跳转
+gg
+跳到文件第一行。
+G
+跳到文件最后一行。
+100G
+跳到第 100 行。
+如果程序报错：
+server.py:916
+可以直接：
+vim +916 server.py
+打开文件后直接定位到第 916 行。
+
+4. 删除、复制和粘贴
+删除
+删除一个字符：
+x
+删除当前行：
+dd
+删除三行：
+3dd
+删除一个单词：
+dw
+删除到行尾：
+d$
+删除到行首：
+d0
+
+复制
+Vim 中的复制叫 Yank。
+复制当前行：
+yy
+复制三行：
+3yy
+复制一个单词：
+yw
+
+粘贴
+p
+例如：
+yyp
+表示：
+复制当前行↓粘贴到下一行
+所以这一组命令非常值得优先熟悉：
+ddyyp
+
+5. 撤销和重做
+撤销：
+u
+重做：
+Ctrl + r
+例如误删了一行：
+dd
+马上按：
+u
+即可恢复。
+Vim 的撤销操作非常方便，所以学习阶段可以大胆尝试各种命令。
+
+6. 理解 Vim 的命令组合
+Vim 真正高效的地方，不是某个单独快捷键，而是它的组合方式。
+可以把很多 Vim 命令理解成：
+操作符 + 范围
+例如：
+d = deletew = word
+组合：
+dw
+意思就是：
+删除一个单词
+再例如：
+y = yankw = word
+组合：
+yw
+就是：
+复制一个单词
+类似命令还有：
+d$    删除到行尾y$    复制到行尾cw    修改一个单词
+Vim 还可以加入数量：
+3dd
+删除三行。
+5j
+向下移动五行。
+2w
+向后移动两个单词。
+理解这个组合规则后，很多操作就不需要单独背诵。
+
+7. 程序员非常实用的文本对象
+写代码时，ciw 是一个非常值得掌握的命令。
+假设代码为：
+username = &quot;zhang&quot;
+光标只要位于：
+username
+内部。
+输入：
+ciw
+Vim 会删除整个单词，并自动进入 Insert Mode。
+然后直接输入：
+user_name
+最终变成：
+user_name = &quot;zhang&quot;
+ciw 可以拆成：
+c = changei = innerw = word
+也就是：
+change inner word
+
+修改引号内部
+例如：
+name = &quot;zhang&quot;
+光标位于 zhang 内部。
+输入：
+ci&quot;
+然后输入：
+zenty
+最终变成：
+name = &quot;zenty&quot;
+类似操作还有：
+ci&#x27;     修改单引号内部ci(     修改括号内部ci[     修改中括号内部ci&#123;     修改大括号内部
+例如：
+print(&quot;Hello World&quot;)
+把光标放在括号内部：
+ci(
+即可直接修改整个括号中的内容。
+对于写代码来说，这类操作通常比鼠标选择再删除快很多。
+
+8. 搜索和替换
+搜索
+Normal Mode 下输入：
+/关键词
+例如：
+/user
+按 Enter。
+然后：
+n
+跳到下一个结果。
+N
+跳到上一个结果。
+例如想查找所有函数定义：
+/def
+然后不断按：
+n
+即可向后查找。
+
+替换
+替换当前行第一个匹配项：
+:s/hello/world/
+替换当前行所有匹配项：
+:s/hello/world/g
+替换整个文件：
+:%s/hello/world/g
+例如把整个文件中的：
+localhost
+替换成：
+127.0.0.1
+执行：
+:%s/localhost/127.0.0.1/g
+如果想在替换前逐个确认，可以使用：
+:%s/hello/world/gc
+其中：
+c
+表示 confirm。
+这样 Vim 会逐个询问是否替换，更适合修改代码中的变量名或配置项。
+
+9. 保存、退出和显示行号
+保存和退出
+:w
+保存。
+:q
+退出。
+:wq
+保存并退出。
+:q!
+不保存强制退出。
+保存为另外一个文件：
+:w test2.txt
+如果不知道怎么离开 Vim：
+Esc:q!Enter
+如果想保存：
+Esc:wqEnter
+
+显示行号
+显示行号：
+:set number
+简写：
+:set nu
+关闭：
+:set nonumber
+简写：
+:set nonu
+
+10. 分屏编辑
+Vim 可以同时打开多个窗口。
+上下分屏
+:split
+简写：
+:sp
+例如：
+:sp test.py
+左右分屏
+:vsplit
+简写：
+:vsp
+例如：
+:vsp main.py
+切换窗口
+Ctrl+w hCtrl+w jCtrl+w kCtrl+w l
+分别表示：
+左下上右
+例如同时查看：
+main.pytest_main.py
+就可以使用左右分屏：
+:vsp test_main.py
+一边看源码，一边看测试代码。
+
+11. Git 中突然进入 Vim 怎么办
+执行：
+git commit
+有时候 Git 会打开 Vim，让你填写 Commit Message。
+这时候不要慌。
+按：
+i
+进入 Insert Mode。
+输入：
+feat: add RAG API
+然后：
+Esc:wqEnter
+即可完成提交。
+整个流程就是：
+i↓输入 Commit Message↓Esc↓:wq↓Enter
+如果不想提交：
+Esc:q!Enter
+
+12. 高频命令速查
+
+
+
+命令
+作用
+
+
+
+
+i
+进入 Insert Mode
+
+
+a
+在光标后插入
+
+
+o
+下一行新建并输入
+
+
+Esc
+返回 Normal Mode
+
+
+h
+左移
+
+
+j
+下移
+
+
+k
+上移
+
+
+l
+右移
+
+
+w
+下一个单词
+
+
+b
+上一个单词
+
+
+0
+行首
+
+
+$
+行尾
+
+
+gg
+文件开头
+
+
+G
+文件末尾
+
+
+100G
+跳到第 100 行
+
+
+x
+删除一个字符
+
+
+dd
+删除一行
+
+
+3dd
+删除三行
+
+
+dw
+删除一个单词
+
+
+yy
+复制一行
+
+
+3yy
+复制三行
+
+
+p
+粘贴
+
+
+u
+撤销
+
+
+Ctrl+r
+重做
+
+
+/xxx
+搜索
+
+
+n
+下一个结果
+
+
+N
+上一个结果
+
+
+v
+字符选择
+
+
+V
+整行选择
+
+
+ciw
+修改当前单词
+
+
+ci&quot;
+修改双引号内部
+
+
+ci(
+修改括号内部
+
+
+:%s/a/b/g
+全局替换
+
+
+:set nu
+显示行号
+
+
+:w
+保存
+
+
+:wq
+保存并退出
+
+
+:q!
+不保存退出
+
+
+
+
+13. 推荐练习顺序
+不建议第一次学习 Vim 就去研究插件、宏和寄存器。
+先按照下面的顺序练习即可。
+第一阶段：能够正常使用
+先掌握：
+iEsc:w:q:wq:q!
+目标是：
+能输入能保存能退出
+
+第二阶段：学会移动
+h j k lw b0 $gg G
+目标是逐渐减少对方向键和鼠标的依赖。
+
+第三阶段：掌握基本编辑
+ddyypuCtrl+r
+目标是能够快速完成：
+删除复制粘贴撤销重做
+
+第四阶段：掌握搜索和替换
+/nN:%s
+这一步对于修改配置文件、日志和源码都非常实用。
+
+第五阶段：理解 Vim 的编辑语言
+重点练习：
+dwcwciwci&quot;ci(ci[ci&#123;
+这时不要再把它们看成孤立快捷键，而是理解为：
+操作符 + 范围
+或者：
+操作符 + 文本对象
+例如：
+d + w   = 删除一个单词c + iw  = 修改当前单词c + i&quot;  = 修改引号内部
+一旦理解这一层，Vim 的学习会轻松很多。
+
+总结
+Vim 入门其实不需要掌握很多命令。
+最开始记住：
+iEsc:wq:q!
+就可以完成基本编辑。
+之后逐渐加入：
+h j k lw bgg Gddyypu/nciwci&quot;ci(
+真正需要理解的只有两件事。
+第一件是：
+模式
+第二件是：
+命令组合
+Vim 的核心思路并不是“记很多快捷键”，而是：
+
+用键盘描述“我要对哪一段文本执行什么操作”。
+
+当你开始理解 dw、ciw、ci&quot; 这些命令为什么这样组合时，Vim 才真正开始变得顺手。
 ]]></content>
       <categories>
         <category>其他</category>
@@ -1420,157 +3052,889 @@ Go 文档：go 命令
       </categories>
   </entry>
   <entry>
-    <title>使用uv管理环境</title>
-    <url>/posts/587dcf3b/</url>
-    <content><![CDATA[uv 是 Astral 开发的 Python 项目与包管理工具，基于 Rust 构建。它将解释器下载、虚拟环境配置、依赖安装和锁文件管理整合到了单一二进制文件中，可以直接替代 pip、virtualenv、pyenv 和 Poetry。
+    <title>Open Spec使用教程</title>
+    <url>/posts/67f9161d/</url>
+    <content><![CDATA[随着 Claude Code、Codex、Cursor 等 AI 编程工具越来越强，现在让 AI 完成一个完整功能已经不是什么难事。
+真正麻烦的问题反而变成了：
 
-一、安装 uv
-macOS 与 Linux：
-curl -LsSf https://astral.sh/uv/install.sh | sh# 或通过 Homebrew 安装brew install uv
-Windows (PowerShell)：
-powershell -ExecutionPolicy ByPass -c &quot;irm https://astral.sh/uv/install.ps1 | iex&quot;# 或通过 winget 安装winget install --id=astral-sh.uv
-安装后重新打开终端，验证安装情况：
-uv --version
+AI 写代码很快，但它不一定真正理解你想做什么。
 
-二、管理 Python 版本
-uv 内置跨平台的 Python 解释器下载功能，无需在操作系统中预先安装 Python。
-查看本地已安装及线上可选的版本：
-uv python list
-下载并安装指定版本：
-uv python install 3.10 3.11 3.12
-卸载特定版本：
-uv python uninstall 3.10
-直接调用指定版本执行命令：
-uv run --python 3.12 python -c &quot;import sys; print(sys.version)&quot;
+比如我们直接告诉 AI：
+给这个项目增加用户登录功能。
+AI 很可能马上开始创建接口、修改数据库、增加依赖、设计 Token 机制。
+等它全部写完以后，你才发现：
+登录方式不是你想要的数据库字段设计不合理Token 生命周期不符合需求接口路径和现有项目风格不一致甚至修改了本来不应该修改的代码
+这就是目前 AI Coding 中非常典型的问题。
+而 OpenSpec 想解决的，就是让：
+需求 → 代码
+变成：
+需求 ↓分析 ↓规范 ↓设计 ↓任务 ↓实现 ↓验证
+也就是所谓的：
+Spec-Driven Development规范驱动开发
+OpenSpec 并不是一个新的 Web 框架，也不会替代 Claude Code、Codex 或 Cursor。
+它更像是开发者和 AI 编码助手之间的一层“协议”。
+开发之前，先把：
+为什么做做什么系统最终应该是什么样准备怎么实现具体需要完成哪些任务
+全部明确下来。
+然后再允许 AI 开始修改代码。
+这样，AI Coding 就不再是：
+给一句 Prompt↓AI 自由发挥
+而变成：
+先定义正确答案↓再让 AI 实现
+这篇文章会从零开始完整介绍 OpenSpec 的安装、初始化、目录结构、工作流、Spec 写法、Claude Code / Codex 配合方式，以及实际项目中的推荐使用方式。
+一、OpenSpec 是什么，以及为什么需要它
+传统 AI Coding 的基本流程通常是：
+开发者   ↓Prompt   ↓AI   ↓代码
+比如：
+给系统增加 API 限流。
+听起来很简单，但实际上里面包含大量没有明确的信息：
+对谁限流？IP？用户？API Key？限流多少？100 次 / 分钟？1000 次 / 小时？哪些接口限流？全部接口？公开 API？登录接口？超过限制怎么办？HTTP 429？排队？直接丢弃？限流状态放在哪里？Redis？数据库？内存？
+如果这些问题没有提前说明，AI 就必须自己猜。
+而 OpenSpec 的思路是：
+不要直接 Coding
+先建立一个 Change：
+我要修改什么？
+然后逐步生成：
+ProposalSpecDesignTasks
+最终再开始实现。
+整个流程大致如下：
+开发者提出需求       ↓AI Explore       ↓分析现有代码       ↓Proposal       ↓Specification       ↓Design       ↓Tasks       ↓人工 Review       ↓AI Apply       ↓Test / Verify       ↓Archive
+所以 OpenSpec 真正解决的问题不是：
+AI 不会写代码
+而是：
+AI 写代码之前缺少明确约束。
+对于简单 Demo，这种约束可能不重要。
+但项目一旦变成：
+长期维护多人协作几十个模块大量 AI Coding复杂业务逻辑Agent 一次修改十几个甚至几十个文件
+需求规范就会越来越重要。
+OpenSpec 中最重要的两个概念
+理解 OpenSpec，其实只需要先搞懂两个东西：
+SpecChange
+Spec：系统现在应该是什么样
+OpenSpec 中：
+openspec/specs/
+保存的是当前系统已经确认的正式规范。
+例如：
+openspec/specs/├── user-auth/│   └── spec.md│├── document-upload/│   └── spec.md│└── api-rate-limit/    └── spec.md
+分别可能描述：
+用户认证如何工作文档上传如何工作API 限流如何工作
+因此可以把：
+openspec/specs/
+理解成：
 
-三、虚拟环境与依赖管理
-uv 支持两种使用模式：
+当前项目行为的长期知识库。
 
-项目工作流：使用 pyproject.toml 与 uv.lock 统一管理依赖与环境，免去手动激活虚拟环境的步骤。
-独立虚拟环境：沿用传统的 venv 与 pip 模式，适合轻量脚本或存量项目的平滑过渡。
+半年以后即使换了开发人员，甚至换了 AI Agent，只要读取 Specs，就应该能够知道：
+这个系统目前应该怎么运行。
+Change：系统准备发生什么变化
+假设当前系统已经支持：
+用户登录
+现在准备增加：
+用户退出登录
+OpenSpec 不会立刻修改主 Spec。
+而是先创建：
+openspec/changes/add-user-logout/
+例如：
+openspec/│├── specs/│   └── user-auth/│       └── spec.md│└── changes/    └── add-user-logout/        ├── proposal.md        ├── design.md        ├── tasks.md        │        └── specs/            └── user-auth/                └── spec.md
+其中：
+openspec/specs/user-auth/spec.md
+表示：
+当前系统正式规范
+而：
+openspec/changes/add-user-logout/specs/user-auth/spec.md
+表示：
+这次修改准备让 user-auth 发生什么变化
+这部分也叫：
+Delta Spec
+Delta 就是：
+变化量
+所以可以简单理解：
+Specs=系统现在是什么Changes=系统准备变成什么
+这两个概念理解以后，OpenSpec 的整个工作流就很好理解了。
+二、安装 OpenSpec 并初始化项目
+OpenSpec 本身是一个 CLI 工具，因此首先需要 Node.js。
+可以检查当前版本：
+node --version
+如果得到类似：
+v22.23.0
+就可以正常使用。
+然后安装 OpenSpec：
+npm install -g @fission-ai/openspec@latest
+如果使用 pnpm：
+pnpm add -g @fission-ai/openspec@latest
+安装完成以后：
+openspec --version
+能够正常显示版本号，就说明安装成功。
+初始化现有项目
+假设项目结构：
+my-project/
+进入：
+cd my-project
+执行：
+openspec init
+OpenSpec 会让你选择使用的 AI Coding 工具。
+比如：
+Claude CodeCodexCursor
+选择以后，OpenSpec 会自动生成对应 Agent 所需要的：
+CommandsSkillsWorkflow
+例如 Claude Code 项目中可能出现：
+.claude/├── commands/└── skills/
+同时项目会增加：
+openspec/
+目录。
+基础结构一般类似：
+my-project/│├── src/├── tests/│├── openspec/│   ├── config.yaml│   ├── specs/│   └── changes/│└── ...
+如果希望指定 Agent，也可以：
+openspec init --tools claude,cursor
+如果暂时不需要绑定任何 Agent：
+openspec init --tools none
+后续 OpenSpec 更新以后，可以在项目中运行：
+openspec update
+更新项目中的 Agent Skill 和 Command。
+一定要区分两种命令
+第一次使用 OpenSpec 最容易踩的坑，就是混淆：
+openspec xxx
+和：
+/opsx:xxx
+前者属于：
+终端命令
+比如：
+openspec initopenspec listopenspec validate --allopenspec showopenspec archive
+这些应该输入：
+PowerShellCMDTerminalWarpLinux Shell
+而：
+/opsx:explore/opsx:propose/opsx:apply
+属于：
+AI Coding Agent
+应该输入：
+Claude CodeCursorCodex
+等 AI 工具。
+可以这样记：
+openspec xxx      ↓Terminal/opsx:xxx      ↓AI Chat
+另外，不同 AI 工具对 OpenSpec Workflow 的展示方式可能不完全相同。
+有的使用：
+/opsx:propose
+有的可能展示成：
+/opsx-propose
+还有一些 Agent 会直接通过 Skill 调用。
+因此初始化完成以后，最好以：
+openspec init
+生成的实际提示为准。
+三、OpenSpec 的完整开发工作流
+OpenSpec 最核心的流程可以概括为：
+Explore   ↓Propose   ↓Review   ↓Apply   ↓Verify   ↓Archive
+其中真正日常使用最多的是：
+ExploreProposeApplyArchive
+如果是比较重要的功能，则推荐完整使用：
+Explore↓Propose↓人工检查规范↓Validate↓Apply↓Test↓Verify↓Archive
+下面用：
+增加 API 限流
+作为例子完整走一遍。
+Explore：先分析，不要急着写代码
+首先进入 Claude Code、Codex 或 Cursor。
+执行：
+/opsx:explore
+然后描述需求：
+我准备给项目增加 API 限流功能。公开 API 需要限流。普通客户端限制为每分钟 100 次请求。超过限制返回 HTTP 429。希望使用 Redis 保存限流状态。请先分析当前项目结构、API 组织方式、Redis 使用情况以及适合的实现方案。暂时不要修改代码。
+Explore 最重要的特点就是：
+只分析不实施
+AI 可以先研究：
+项目结构路由层认证逻辑Redis 是否已经存在中间件体系公共 API 如何识别错误处理方式测试框架
+然后告诉你：
+应该在哪一层实现会影响哪些文件有什么技术风险有没有更合适的方案
+这一步看起来会多花几分钟，但经常能够避免后面大量返工。
+因为 AI Coding 最大的浪费并不是：
+代码写得慢
+而是：
+方向写错了。
+Propose：把需求正式变成 Change
+需求分析完成后执行：
+/opsx:propose add-api-rate-limit
+也可以直接描述：
+/opsx:propose 为公开 API 增加基于 Redis 的限流机制，每个客户端每分钟最多请求 100 次，超过以后返回 HTTP 429
+然后 OpenSpec 会生成：
+openspec/changes/add-api-rate-limit/
+一般包含：
+add-api-rate-limit/│├── proposal.md├── design.md├── tasks.md│└── specs/    └── api-rate-limit/        └── spec.md
+这几个文件分别负责不同内容：
 
-1. 项目工作流
-初始化新项目：
-uv init my_projectcd my_project
-执行后会自动生成项目结构，包括 pyproject.toml（依赖配置）、.python-version（当前锁定版本）和 main.py（入口代码）。
-绑定当前项目的 Python 版本：
-uv python pin 3.11
-添加与移除依赖（uv 会自动同步到 .venv，无需手动激活）：
-# 添加运行依赖，自动写入 pyproject.toml 并刷新 uv.lockuv add requests fastapi# 添加开发期依赖uv add --dev pytest ruff# 移除依赖uv remove requests
-运行代码与测试：
-使用 uv run 可以在当前项目的隔离环境中执行脚本，系统会自动确认依赖完整性。
-uv run python main.pyuv run pytest
-在团队成员间同步环境：
-拉取代码后，根据锁文件还原一致的虚拟环境：
-uv sync
-2. 独立虚拟环境工作流
-如果只需要在任意目录手动建立一个虚拟环境：
-创建虚拟环境：
-# 使用系统默认 Python 创建 .venvuv venv# 指定 Python 版本uv venv --python 3.11# 自定义目录名称uv venv myenv
-激活虚拟环境：
-
-macOS / Linux: source .venv/bin/activate
-Windows: .venv\Scripts\activate
-
-安装与管理包：
-# 安装单个或多个包uv pip install numpy pandas# 通过 requirements.txt 安装uv pip install -r requirements.txt# 导出当前环境依赖清单uv pip freeze &gt; requirements.txt
-
-四、直接运行 Python CLI 工具
-通过 uvx（等同于 uv tool run），可以在隔离的临时环境中运行命令行工具，不需要全局安装到本地系统：
-# 临时运行 ruff 检查代码uvx ruff check .# 临时启动 httpieuvx httpie GET https://api.github.com# 运行测试脚本工具uvx pycowsay &quot;Hello uv&quot;
-
-五、配置镜像源
-临时指定源：
-uv add requests --index-url https://mirrors.aliyun.com/pypi/simple/
-通过环境变量配置全局默认源：
-
-Linux / macOS（写入 ~/.bashrc 或 ~/.zshrc）：export UV_INDEX_URL=&quot;https://mirrors.aliyun.com/pypi/simple/&quot;
-
-Windows PowerShell：[Environment]::SetEnvironmentVariable(&quot;UV_INDEX_URL&quot;, &quot;https://mirrors.aliyun.com/pypi/simple/&quot;, &quot;User&quot;)
 
 
-为单个项目配置独立源：
-在项目的 pyproject.toml 末尾补充：
-[[tool.uv.index]]url = &quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;default = true
-
-六、常用命令速查
+文件
+作用
 
 
 
-类别
+
+proposal.md
+为什么做、准备改变什么
+
+
+specs/*/spec.md
+最终系统应该有什么行为
+
+
+design.md
+技术上如何实现
+
+
+tasks.md
+AI 接下来要完成哪些任务
+
+
+
+它们之间可以理解成：
+proposal   │   ├──── specs   │   └──── design            │            ▼          tasks            │            ▼          apply
+Proposal 负责：
+WhyWhat
+Spec 负责：
+Behavior
+Design 负责：
+How
+Tasks 负责：
+Execution
+这是 OpenSpec 整个体系最核心的一层关系。
+四、Proposal、Spec、Design 和 Tasks 应该怎么写
+这四个文件看起来都在描述需求，但它们实际上分工非常明确。
+如果混在一起写，OpenSpec 的价值就会大幅下降。
+Proposal：说明为什么做，以及准备改变什么
+例如：
+openspec/changes/add-api-rate-limit/proposal.md
+可以类似：
+# Add API Rate Limiting## WhyPublic APIs currently have no request rate limits.A single client can consume excessive server resources.## What Changes- Add rate limiting for public API endpoints- Limit clients to 100 requests per minute- Return HTTP 429 when the limit is exceeded- Store rate limit state in Redis## Impact- API middleware- Redis- Public API endpoints
+Proposal 最重要的是回答：
+为什么要做？准备改变什么？影响哪些模块？
+不要在这里写大量：
+Redis Lua 脚本具体类名函数设计数据库字段Middleware 实现
+这些属于 Design。
+所以可以记成：
+Proposal = Why + What
+Spec：定义什么叫“正确”
+Spec 是 OpenSpec 最重要的部分。
+例如：
+openspec/changes/add-api-rate-limit/specs/api-rate-limit/spec.md
+可以写：
+# Spec Delta## ADDED Requirements### Requirement: Public API rate limitingThe system SHALL limit each public API client to 100 requests per minute.#### Scenario: Request within limit- **WHEN** a client sends fewer than 100 requests within one minute- **THEN** the system SHALL process the request normally#### Scenario: Request exceeds limit- **WHEN** a client exceeds 100 requests within one minute- **THEN** the system SHALL reject the request- **THEN** the system SHALL return HTTP status 429
+这里完全没有规定：
+必须使用 Redis SETEX必须使用某个 Middleware必须使用某个类
+它只规定：
+系统最终必须表现成什么样。
+这就是最关键的区别。
+Spec 实际上很接近：
+验收标准
+甚至可以直接对应测试。
+例如：
+WHEN第 101 个请求到达THEN返回 HTTP 429
+以后完全可以转成 Integration Test。
+所以 OpenSpec 的思路并不是：
+AI 写完以后我再判断它写得对不对
+而是：
+先定义什么叫做对↓再让 AI 去实现这个正确结果
+Spec 中的 ADDED、MODIFIED、REMOVED
+OpenSpec 的 Delta Spec 中常见：
+## ADDED Requirements
+表示新增。
+## MODIFIED Requirements
+表示修改。
+## REMOVED Requirements
+表示删除。
+例如已有：
+### Requirement: User LoginThe system SHALL authenticate users using email and password.
+现在增加 Google 登录。
+如果原来的邮箱登录没有改变：
+## ADDED Requirements### Requirement: Google LoginThe system SHALL allow users to authenticate using Google OAuth.
+而如果原来：
+Session 7 天过期
+现在修改成：
+Session 30 天过期
+这才属于：
+## MODIFIED Requirements
+还有一个非常重要的规则：
+
+MODIFIED 应该写修改后的完整 Requirement，而不是只写变化的那一句。
+
+否则归档时容易造成原有规范信息缺失。
+Requirement 和 Scenario 的结构
+OpenSpec Spec 中一般使用：
+### Requirement: Name
+Requirement 下至少应该存在一个：
+#### Scenario: Name
+例如：
+### Requirement: PDF UploadThe system SHALL allow users to upload PDF documents.#### Scenario: Upload valid PDF- **WHEN** the user uploads a valid PDF file- **THEN** the system SHALL save the document
+这里要特别注意标题层级：
+Requirement=###Scenario=####
+Scenario 不是三级标题。
+另外规范最好使用：
+SHALLMUST
+这类明确表达。
+少写：
+最好可能应该尽量maybeusually
+因为 Spec 必须：
+可以判断可以测试可以验证
+例如：
+系统应该拥有良好的性能。
+就不是很好的规范。
+因为：
+什么叫良好？
+没法测试。
+更好的写法：
+The search API SHALL return within 500 ms for 95% of requests under the defined test workload.
+至少它可以被验证。
+Design：描述技术实现方式
+如果 Proposal 解决：
+为什么做什么
+Spec 解决：
+系统最终应该怎么表现
+那么 Design 解决：
+怎么实现
+例如：
+# Design## ContextThe backend uses FastAPI and Redis is already available.## Goals- Support distributed API rate limiting- Work across multiple backend instances- Avoid database writes## DecisionsUse Redis fixed-window counters.Each client uses a Redis key in the following format:rate-limit:&#123;client_id&#125;:&#123;minute&#125;The counter expires after 60 seconds.## RisksIf Redis becomes unavailable, rate limiting temporarily fails open and the failure is logged.## MigrationNo database migration is required.
+如果涉及以下内容，Design 通常非常重要：
+数据库改动系统架构跨多个模块新依赖性能安全迁移方案兼容性缓存策略消息队列
+而如果只是：
+修改按钮文字简单 CSS修一个小 Bug
+Design 就可以相对简单。
+Tasks：把规范拆成 AI 能执行的工作
+最后生成：
+tasks.md
+例如：
+# Tasks## 1. Rate Limiter- [ ] 1.1 Create rate limiter service- [ ] 1.2 Implement Redis counter- [ ] 1.3 Add TTL handling## 2. Middleware- [ ] 2.1 Add API rate limit middleware- [ ] 2.2 Resolve client identifier- [ ] 2.3 Return HTTP 429## 3. Tests- [ ] 3.1 Test requests within limit- [ ] 3.2 Test requests exceeding limit- [ ] 3.3 Test Redis unavailable scenario
+Tasks 最好使用：
+- [ ]
+而不是：
+-
+因为 OpenSpec 可以通过 Checkbox 判断任务完成情况。
+完成后：
+- [x]
+这样以后运行：
+openspec list
+就能看到类似：
+add-api-rate-limit    8/10 tasks
+五、Apply、Validate、Verify 和 Archive
+Proposal、Spec、Design、Tasks 全部确认以后，才真正进入编码阶段。
+这一步叫：
+Apply
+执行：
+/opsx:apply
+AI 会读取：
+proposal.mdspec.mddesign.mdtasks.md
+然后开始按照 Tasks 修改项目。
+此时 AI 的任务不再是：
+自己想该怎么做
+而是：
+按照已经确认的规范完成实现。
+这就是 OpenSpec 和普通 Prompt Coding 最大的区别。
+不要 Propose 完就直接 Apply
+一个很常见的错误是：
+Propose↓完全不看↓Apply
+这样其实会让 OpenSpec 退化成：
+AI 写代码之前顺便多生成几份 Markdown
+真正推荐的是：
+Propose↓检查 proposal.md↓检查 spec.md↓检查 design.md↓检查 tasks.md↓发现问题就修改↓Apply
+OpenSpec 的核心价值恰恰就在：
+
+代码还没写之前，你就可以发现 AI 理解错了。
+
+修改已经生成的 Change
+如果原来 Spec 写的是：
+100 requests/minute
+后来决定改成：
+300 requests/minute
+最好不要直接修改代码。
+应该先更新 OpenSpec。
+例如让 AI：
+把当前 API Rate Limit Change 修改为每分钟 300 次。同步更新 Proposal、Spec、Design 和 Tasks 中受影响的内容。
+也可以使用：
+/opsx:update
+这样可以尽量保证几个 Artifact 之间保持一致。
+Validate：检查规范有没有问题
+日常非常推荐执行：
+openspec validate --all
+它可以检查：
+Spec 格式RequirementScenarioDelta SpecTasksArchive 冲突
+例如某个 Requirement 没有 Scenario：
+ADDED &quot;Rate limiting&quot; must include at least one scenario
+或者 Scenario 标题层级写错，也可能被发现。
+如果希望更严格：
+openspec validate --all --strict
+我的推荐是至少在两个阶段执行：
+Apply 之前Archive 之前
+也就是：
+Propose↓Review↓Validate↓Apply
+然后：
+Apply↓Test↓Verify↓Validate↓Archive
+Verify：检查实现是否真的符合规范
+代码写完只是：
+Implementation Complete
+不代表：
+Requirement Complete
+例如 Spec 写：
+超过限制返回 HTTP 429
+结果 AI 实现成：
+HTTP 403
+代码可能：
+没有报错测试甚至能跑
+但是：
+实现 != Spec
+Verify 就是用来检查这种问题。
+如果当前 OpenSpec Profile 安装了 Verify Workflow，可以使用：
+/opsx:verify
+让 Agent 对照：
+ProposalSpecDesignTasks
+检查代码是否满足要求。
+如果没有 Verify，可以查看 OpenSpec Workflow 配置：
+openspec config profile
+调整以后：
+openspec update
+重新生成 Agent 工作流。
+对于复杂项目，我非常建议保留 Verify。
+Sync 和 Archive 的区别
+OpenSpec 还有：
+/opsx:sync
+它主要用于：
+把当前 Change 中的 Delta Spec同步到 openspec/specs/
+但 Change 本身仍然保持 Active。
+也就是说：
+Sync=更新主 Spec但不结束 Change
+而：
+Archive=完成 Change并归档
+绝大多数普通功能开发可以直接：
+Archive
+只有 Change 生命周期很长，而中间已经有一部分稳定规范需要同步时，Sync 才更加有价值。
+Archive：完成一次 OpenSpec 生命周期
+功能完成以后：
+/opsx:archive
+或者终端：
+openspec archive add-api-rate-limit
+自动确认：
+openspec archive add-api-rate-limit -y
+Archive 通常会：
+合并 Delta Spec        ↓更新 openspec/specs/        ↓移动 Change        ↓openspec/changes/archive/
+例如：
+openspec/changes/add-api-rate-limit/
+最终变成：
+openspec/changes/archive/2026-10-04-add-api-rate-limit/
+此时：
+Change
+已经变成：
+历史开发记录
+而最终规范：
+api-rate-limit
+进入：
+openspec/specs/
+成为：
+当前系统事实
+所以 OpenSpec 的整个生命周期其实可以总结成：
+Change↓Implement↓Verify↓Archive↓Spec
+六、Claude Code、Codex 和 Cursor 中如何实际使用
+OpenSpec 最适合和 AI Coding Agent 一起使用。
+假设使用 Claude Code。
+首先：
+cd my-project
+启动：
+claude
+然后：
+/opsx:explore
+告诉 Claude：
+我准备增加文档搜索功能。用户提交关键词以后，需要在已有文档中搜索相关内容。先分析当前项目的数据库结构、文档模型、搜索接口和现有技术栈。不要修改代码。
+讨论完成以后：
+/opsx:propose add-document-search
+然后人工检查：
+openspec/changes/add-document-search/
+重点查看：
+proposal.mdspecs/design.mdtasks.md
+终端运行：
+openspec validate add-document-search
+确认没有问题：
+/opsx:apply
+实现完成以后运行项目测试：
+pytest
+或者：
+npm test
+然后：
+/opsx:verify
+最后：
+/opsx:archive
+完整流程就是：
+需求   ↓Explore   ↓分析项目   ↓Propose   ↓人工审核   ↓Validate   ↓Apply   ↓Test   ↓Verify   ↓Archive
+Codex 和 Cursor 的整体逻辑完全一样。
+区别主要只是：
+OpenSpec Workflow 如何暴露给 Agent
+某些工具会使用：
+Slash Commands
+有的则会通过：
+Skills
+调用。
+因此最稳妥的方法是：
+运行 openspec init↓选择当前 AI Agent↓按照生成的提示使用
+而不是死记某一种固定 Command。
+七、项目中的推荐实践
+真正把 OpenSpec 用好，并不是会敲几条命令，而是需要建立一套比较稳定的开发习惯。
+一个 Change 尽量只解决一个问题
+例如：
+重构系统架构增加权限增加支付增加消息通知优化 UI提高性能
+如果全部写进：
+one-big-change
+后面一定很难维护。
+更合理：
+add-rbacadd-paymentadd-notificationrefactor-auth-serviceoptimize-document-query
+也就是尽量保持：
+One Change=One Clear Goal
+这样：
+Proposal 更清晰Spec 更容易验证Task 更容易执行Archive 历史也更好读
+Spec 写行为，Design 写实现
+这是最值得记住的一条。
+错误的 Spec：
+系统 SHALL 使用 Redis SETEX 存储限流 Key。
+这实际上是在规定技术实现。
+更好的 Spec：
+系统 SHALL limit each public client to 100 requests per minute.
+然后 Design 再写：
+Use Redis fixed-window counters.
+因此：
+Spec=What the system doesDesign=How the system does it
+以后即使从 Redis 换成其他存储：
+Spec 可能完全不用改Design 才需要调整
+这才是好的系统规范。
+已经开发一半的大项目，不要一次性补全部 Specs
+很多人第一次给已有项目接 OpenSpec，会想：
+让 AI 扫描整个项目然后生成全部 Specs
+如果项目有几十万行代码，结果往往是：
+文档很多但质量不高没人愿意维护
+更推荐渐进式建立。
+比如当前准备改：
+Authentication
+那就先完善：
+user-auth
+下一次修改：
+Document Upload
+再完善：
+document-upload
+随着项目持续开发：
+openspec/specs/
+会逐渐覆盖真正重要和活跃的功能。
+这种方式更符合实际工程。
+纯重构不一定需要 Spec
+例如：
+重命名变量调整文件目录代码格式化升级 ESLint修改 CI内部重构README 更新
+如果对：
+用户可观察行为
+没有任何变化，就没有必要硬写 Requirement。
+这种 Change 可以考虑配置：
+schema: spec-drivenskip_specs: true
+表示：
+这个 Change 没有 Spec-Level Behavior Change
+但不要为了省时间，在真正存在行为变化时也跳过 Specs。
+OpenSpec 最好和 Git 一起使用
+比如：
+git switch -c feat/api-rate-limit
+创建 Change：
+/opsx:propose add-api-rate-limit
+先提交规范：
+git add .git commit -m &quot;docs: propose api rate limiting&quot;
+然后：
+/opsx:apply
+开发完成：
+git add .git commit -m &quot;feat: implement api rate limiting&quot;
+然后：
+/opsx:verify
+最后：
+/opsx:archive
+提交归档：
+git add .git commit -m &quot;docs: archive api rate limiting change&quot;
+这样：
+Git
+记录：
+代码什么时候变了
+而：
+OpenSpec
+记录：
+为什么变要求是什么设计是什么最终行为是什么
+两者非常互补。
+PR Review 时也可以：
+先看 proposal.md↓看 spec.md↓看 design.md↓最后看代码 Diff
+理解成本会明显降低。
+八、一个完整实战示例
+假设当前正在开发一个 RAG 项目，现在准备新增：
+删除文档
+表面看只是：
+DELETE /documents/&#123;id&#125;
+但真正涉及：
+关系数据库对象存储向量数据库权限异常一致性
+如果直接告诉 AI：
+增加删除文档功能。
+它很容易漏掉其中某一步。
+使用 OpenSpec，可以先：
+/opsx:explore
+输入：
+我准备给项目增加文档删除功能。要求：1. 用户只能删除自己的文档2. 删除数据库中的文档记录3. 删除对象存储中的原始文件4. 删除向量数据库对应的 Embedding5. 如果外部资源删除失败，需要避免产生无法追踪的数据不一致先分析项目现有结构和实现方案，不要修改代码。
+AI 分析完成以后：
+/opsx:propose add-document-delete
+然后：
+openspec/changes/add-document-delete/
+可能出现：
+proposal.mddesign.mdtasks.mdspecs/└── document-delete/    └── spec.md
+Spec 可以包含：
+## ADDED Requirements### Requirement: Delete owned documentThe system SHALL allow a user to delete a document they own.#### Scenario: Delete owned document- **WHEN** the authenticated user deletes a document they own- **THEN** the database record SHALL be removed- **THEN** the original stored file SHALL be removed- **THEN** the associated vector records SHALL be removed
+还可以增加权限场景：
+### Requirement: Reject unauthorized deletionThe system SHALL prevent users from deleting documents owned by other users.#### Scenario: Delete another user&#x27;s document- **WHEN** a user attempts to delete a document owned by another user- **THEN** the system SHALL reject the request
+Design 则可以描述：
+先验证 Owner↓标记删除状态↓删除 Object Storage↓删除 Vector Records↓删除数据库记录↓失败时记录 Cleanup Job
+Tasks 则拆成：
+- [ ] Add ownership validation- [ ] Add document delete service- [ ] Remove object storage file- [ ] Remove vector database entries- [ ] Add cleanup failure handling- [ ] Add authorization tests- [ ] Add integration tests
+然后执行：
+openspec validate add-document-delete
+没有问题后：
+/opsx:apply
+让 AI 开始开发。
+实现完成后运行：
+pytest
+或者项目自己的：
+npm test
+随后：
+/opsx:verify
+最后：
+/opsx:archive
+这样一次开发完成以后，项目不仅得到了：
+删除文档功能代码
+同时还永久保存了：
+为什么增加这个功能↓它应该如何表现↓使用什么设计↓具体开发了哪些任务↓最终系统规范是什么
+这就是 OpenSpec 相比普通 AI Coding 最大的区别。
+常用命令速查
+最后整理一下最常用的 OpenSpec CLI。
+
+
+
 命令
-说明
+作用
 
 
 
 
-Python 版本
-uv python install &lt;version&gt;
-下载并安装指定 Python 版本
+openspec init
+初始化 OpenSpec
+
+
+openspec update
+更新 Agent Workflow
+
+
+openspec list
+查看当前 Changes
+
+
+openspec list --specs
+查看现有 Specs
+
+
+openspec view
+查看 OpenSpec 状态
+
+
+openspec show &lt;name&gt;
+查看某个 Change 或 Spec
+
+
+openspec validate &lt;name&gt;
+验证指定 Change
+
+
+openspec validate --all
+验证全部 OpenSpec 内容
+
+
+openspec validate --all --strict
+严格验证
+
+
+openspec archive &lt;change&gt;
+归档 Change
+
+
+openspec status
+查看状态
+
+
+openspec schemas
+查看 Schema
+
+
+openspec config
+管理配置
 
 
 
-uv python list
-查看本地及远程可用 Python 版本
+AI Agent 中最值得记住的则是：
+/opsx:explore
+分析需求。
+/opsx:propose
+建立 Change。
+/opsx:update
+修改规划。
+/opsx:apply
+正式实现。
+/opsx:verify
+检查代码是否满足规范。
+/opsx:archive
+结束并归档 Change。
+如果你只想记住一套最实用的工作流，可以直接记：
+Explore↓Propose↓Review↓Validate↓Apply↓Test↓Verify↓Archive
+总结
+OpenSpec 本质上并不是一个：
+让 AI 写代码更快
+的工具。
+它真正解决的是：
+让 AI 更少把代码写错方向。
+传统 AI Coding：
+Prompt   ↓Code
+而 OpenSpec：
+Idea   ↓Explore   ↓Proposal   ↓Specification   ↓Design   ↓Tasks   ↓Implementation   ↓Verification   ↓Archive
+当 Claude Code、Codex 这种 Agent 越来越强以后，真正稀缺的已经不是：
+代码生成能力
+而是：
+需求边界系统规范架构约束长期上下文验收标准
+如果没有这些东西，AI 越强，甚至可能：
+越快地把错误方向实现完整。
+而 OpenSpec 做的事情，就是在：
+人类需求
+和：
+AI 实现
+之间建立一层长期、结构化、可验证的规范。
+第一次使用 OpenSpec，其实不用学得太复杂。
+安装：
+npm install -g @fission-ai/openspec@latest
+进入项目：
+cd your-project
+初始化：
+openspec init
+然后进入 Claude Code、Codex 或 Cursor：
+/opsx:explore↓/opsx:propose add-your-feature↓检查 Proposal / Spec / Design / Tasks↓/opsx:apply↓/opsx:verify↓/opsx:archive
+中间配合：
+openspec validate --all
+基本就已经掌握了 OpenSpec 最核心的使用方式。
+真正值得形成的开发习惯其实只有一句话：
 
-
-
-uv python pin &lt;version&gt;
-将当前项目绑定至指定版本
-
-
-项目依赖
-uv init &lt;name&gt;
-初始化 Python 项目
-
-
-
-uv add &lt;package&gt;
-添加依赖并写入 lock 文件
-
-
-
-uv add --dev &lt;package&gt;
-添加开发依赖
-
-
-
-uv remove &lt;package&gt;
-移除依赖项
-
-
-
-uv sync
-按照 uv.lock 同步当前环境
-
-
-
-uv run &lt;command&gt;
-在项目环境中执行脚本或命令
-
-
-基础虚拟环境
-uv venv
-创建轻量虚拟环境
-
-
-
-uv pip install &lt;package&gt;
-安装指定 Python 包
-
-
-独立工具
-uvx &lt;tool&gt; [args]
-在临时环境中执行 CLI 工具
-
-
+不要让 AI 拿到需求以后立刻写代码。先定义什么叫正确，再让 AI 去实现正确。
 
 ]]></content>
       <categories>
-        <category>python</category>
+        <category>开发</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>解决lmstudio下载模型卡顿问题</title>
+    <url>/posts/17dd0035/</url>
+    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
+引言
+在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
+本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
+一、准备工作
+在开始之前，请确保：
+
+安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
+注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
+了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
+
+二、从魔搭社区下载模型
+魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
+方式一：网页直接下载（最直观）
+
+进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
+搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
+进入模型详情页：点击目标模型，进入其详情页面。
+进入文件列表：点击页面中的“模型文件”标签。
+选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
+
+
+提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
+
+方式二：命令行CLI下载（推荐）
+魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
+首先安装modelscope库：
+pip install modelscope
+然后使用以下命令下载：
+modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
+示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
+modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
+方式三：Python SDK下载
+如果你更习惯使用Python，也可以使用SDK进行下载：
+from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
+三、导入LM Studio
+下载好模型文件后，有两种方式将其导入LM Studio。
+方式一：使用 lms import 命令（最推荐）
+LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
+
+
+打开终端（Windows用户可使用PowerShell或CMD）。
+
+
+执行导入命令：
+基本导入（默认会移动文件）：
+lms import /path/to/your/model.gguf
+保留原文件（复制一份）：
+lms import /path/to/your/model.gguf --copy
+创建符号链接（不复制也不移动，在原位置创建引用）：
+lms import /path/to/your/model.gguf --symbolic-link
+这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
+
+
+根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
+
+
+方式二：手动放置文件（备选）
+如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
+
+
+找到LM Studio的模型目录：
+
+Windows: C:\Users\你的用户名\.lmstudio\models\
+macOS/Linux: ~/.lmstudio/models/
+
+你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
+
+
+创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
+.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
+如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
+
+
+刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
+
+
+
+注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
+
+四、验证与使用
+导入成功后，在LM Studio中：
+
+点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
+点击模型进行加载。
+切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
+
+提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
+五、常见问题与技巧
+Q：下载的模型在LM Studio中无法识别？
+A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
+Q：LM Studio内置下载速度太慢怎么办？
+A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
+Q：如何选择合适量化版本的模型？
+A：一般来说：
+
+q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
+q8_0：质量更好，体积也更大
+f16：接近原始精度，但又大又慢
+
+如果显存有限（如8GB），推荐使用Q4量化版本。
+结语
+通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
+]]></content>
+      <categories>
+        <category>其他</category>
       </categories>
       <tags>
-        <tag>uv</tag>
+        <tag>LM Studio</tag>
+        <tag>大模型</tag>
+        <tag>本地部署</tag>
       </tags>
   </entry>
   <entry>
@@ -2402,2194 +4766,6 @@ request.ts+api/user.ts+Token 拦截器+统一错误处理
 ]]></content>
       <categories>
         <category>前端</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Vim教程</title>
-    <url>/posts/6b2eee5a/</url>
-    <content><![CDATA[Vim 入门教程：从第一次打开到高效编辑代码
-Vim 是 Linux、服务器、Git、Docker 等开发环境中非常常见的文本编辑器。
-很多人第一次打开 Vim 时都会遇到同一个问题：
-
-为什么我不能直接输入？又该怎么退出？
-
-这并不是 Vim 难，而是因为 Vim 和普通编辑器的设计思路不一样。
-普通编辑器默认是“输入文字”，而 Vim 默认是“执行编辑命令”。
-所以学习 Vim 的第一步，不是背快捷键，而是理解它的模式。
-如果只是想先把 Vim 用起来，可以先记住下面四个操作：
-i       进入输入模式Esc     返回普通模式:wq     保存并退出:q!     不保存强制退出
-仅靠这几个命令，就已经可以完成最基本的编辑工作。
-
-1. 第一次使用 Vim
-假设我们要创建一个 Python 文件：
-vim hello.py
-打开后，Vim 默认处于 Normal Mode（普通模式）。
-此时按：
-i
-进入输入模式，然后输入：
-print(&quot;Hello Vim&quot;)
-输入完成后按：
-Esc
-回到普通模式。
-接着输入：
-:wq
-按 Enter。
-这样文件就保存并退出了。
-完整过程可以记成：
-vim hello.py    ↓    i    ↓输入内容    ↓   Esc    ↓   :wq    ↓  Enter
-如果修改错了，不想保存：
-Esc:q!Enter
-这套流程是 Vim 最基本的“生存操作”。
-
-2. Vim 的模式
-Vim 最重要的概念就是模式。
-初学阶段主要掌握四种模式即可：
-
-
-
-模式
-作用
-
-
-
-
-Normal Mode
-移动、删除、复制、粘贴、执行编辑命令
-
-
-Insert Mode
-输入文字
-
-
-Visual Mode
-选择文本
-
-
-Command-line Mode
-保存、退出、搜索替换、设置
-
-
-
-Normal Mode
-打开 Vim 后默认进入 Normal Mode。
-这个模式下，键盘主要用来执行命令，而不是输入文字。
-例如：
-dd
-删除当前行。
-yy
-复制当前行。
-p
-粘贴。
-无论你当前在哪个模式，不确定怎么办时，都可以先按：
-Esc
-回到 Normal Mode。
-
-Insert Mode
-Normal Mode 下按：
-i
-进入 Insert Mode。
-这时才可以正常输入文字。
-常用的进入方式还有：
-
-
-
-命令
-作用
-
-
-
-
-i
-在当前光标前插入
-
-
-a
-在当前光标后插入
-
-
-o
-在下一行新建一行并输入
-
-
-O
-在上一行新建一行并输入
-
-
-I
-跳到行首并输入
-
-
-A
-跳到行尾并输入
-
-
-
-刚开始只需要熟悉：
-iao
-就够用了。
-
-Visual Mode
-Normal Mode 下按：
-v
-进入字符选择模式。
-按：
-V
-进入整行选择模式。
-选择内容后可以继续执行：
-d
-删除。
-y
-复制。
-
-Command-line Mode
-Normal Mode 下按：
-:
-进入命令行模式。
-最常用的是：
-:w
-保存。
-:q
-退出。
-:wq
-保存并退出。
-:q!
-放弃修改并退出。
-
-3. 光标移动
-Vim 支持方向键，但更推荐使用：
-h j k l
-对应：
-      k      ↑h ←       → l      ↓      j
-也就是：
-h    左j    下k    上l    右
-一开始可以继续用方向键，不必强迫自己立刻适应。
-等基本操作熟悉后，再逐渐换成 h j k l。
-按单词移动
-w
-跳到下一个单词。
-b
-跳到上一个单词。
-例如：
-hello world vim^
-按一次：
-w
-光标会跳到：
-hello world vim      ^
-行内跳转
-0
-跳到当前行开头。
-$
-跳到当前行结尾。
-文件内跳转
-gg
-跳到文件第一行。
-G
-跳到文件最后一行。
-100G
-跳到第 100 行。
-如果程序报错：
-server.py:916
-可以直接：
-vim +916 server.py
-打开文件后直接定位到第 916 行。
-
-4. 删除、复制和粘贴
-删除
-删除一个字符：
-x
-删除当前行：
-dd
-删除三行：
-3dd
-删除一个单词：
-dw
-删除到行尾：
-d$
-删除到行首：
-d0
-
-复制
-Vim 中的复制叫 Yank。
-复制当前行：
-yy
-复制三行：
-3yy
-复制一个单词：
-yw
-
-粘贴
-p
-例如：
-yyp
-表示：
-复制当前行↓粘贴到下一行
-所以这一组命令非常值得优先熟悉：
-ddyyp
-
-5. 撤销和重做
-撤销：
-u
-重做：
-Ctrl + r
-例如误删了一行：
-dd
-马上按：
-u
-即可恢复。
-Vim 的撤销操作非常方便，所以学习阶段可以大胆尝试各种命令。
-
-6. 理解 Vim 的命令组合
-Vim 真正高效的地方，不是某个单独快捷键，而是它的组合方式。
-可以把很多 Vim 命令理解成：
-操作符 + 范围
-例如：
-d = deletew = word
-组合：
-dw
-意思就是：
-删除一个单词
-再例如：
-y = yankw = word
-组合：
-yw
-就是：
-复制一个单词
-类似命令还有：
-d$    删除到行尾y$    复制到行尾cw    修改一个单词
-Vim 还可以加入数量：
-3dd
-删除三行。
-5j
-向下移动五行。
-2w
-向后移动两个单词。
-理解这个组合规则后，很多操作就不需要单独背诵。
-
-7. 程序员非常实用的文本对象
-写代码时，ciw 是一个非常值得掌握的命令。
-假设代码为：
-username = &quot;zhang&quot;
-光标只要位于：
-username
-内部。
-输入：
-ciw
-Vim 会删除整个单词，并自动进入 Insert Mode。
-然后直接输入：
-user_name
-最终变成：
-user_name = &quot;zhang&quot;
-ciw 可以拆成：
-c = changei = innerw = word
-也就是：
-change inner word
-
-修改引号内部
-例如：
-name = &quot;zhang&quot;
-光标位于 zhang 内部。
-输入：
-ci&quot;
-然后输入：
-zenty
-最终变成：
-name = &quot;zenty&quot;
-类似操作还有：
-ci&#x27;     修改单引号内部ci(     修改括号内部ci[     修改中括号内部ci&#123;     修改大括号内部
-例如：
-print(&quot;Hello World&quot;)
-把光标放在括号内部：
-ci(
-即可直接修改整个括号中的内容。
-对于写代码来说，这类操作通常比鼠标选择再删除快很多。
-
-8. 搜索和替换
-搜索
-Normal Mode 下输入：
-/关键词
-例如：
-/user
-按 Enter。
-然后：
-n
-跳到下一个结果。
-N
-跳到上一个结果。
-例如想查找所有函数定义：
-/def
-然后不断按：
-n
-即可向后查找。
-
-替换
-替换当前行第一个匹配项：
-:s/hello/world/
-替换当前行所有匹配项：
-:s/hello/world/g
-替换整个文件：
-:%s/hello/world/g
-例如把整个文件中的：
-localhost
-替换成：
-127.0.0.1
-执行：
-:%s/localhost/127.0.0.1/g
-如果想在替换前逐个确认，可以使用：
-:%s/hello/world/gc
-其中：
-c
-表示 confirm。
-这样 Vim 会逐个询问是否替换，更适合修改代码中的变量名或配置项。
-
-9. 保存、退出和显示行号
-保存和退出
-:w
-保存。
-:q
-退出。
-:wq
-保存并退出。
-:q!
-不保存强制退出。
-保存为另外一个文件：
-:w test2.txt
-如果不知道怎么离开 Vim：
-Esc:q!Enter
-如果想保存：
-Esc:wqEnter
-
-显示行号
-显示行号：
-:set number
-简写：
-:set nu
-关闭：
-:set nonumber
-简写：
-:set nonu
-
-10. 分屏编辑
-Vim 可以同时打开多个窗口。
-上下分屏
-:split
-简写：
-:sp
-例如：
-:sp test.py
-左右分屏
-:vsplit
-简写：
-:vsp
-例如：
-:vsp main.py
-切换窗口
-Ctrl+w hCtrl+w jCtrl+w kCtrl+w l
-分别表示：
-左下上右
-例如同时查看：
-main.pytest_main.py
-就可以使用左右分屏：
-:vsp test_main.py
-一边看源码，一边看测试代码。
-
-11. Git 中突然进入 Vim 怎么办
-执行：
-git commit
-有时候 Git 会打开 Vim，让你填写 Commit Message。
-这时候不要慌。
-按：
-i
-进入 Insert Mode。
-输入：
-feat: add RAG API
-然后：
-Esc:wqEnter
-即可完成提交。
-整个流程就是：
-i↓输入 Commit Message↓Esc↓:wq↓Enter
-如果不想提交：
-Esc:q!Enter
-
-12. 高频命令速查
-
-
-
-命令
-作用
-
-
-
-
-i
-进入 Insert Mode
-
-
-a
-在光标后插入
-
-
-o
-下一行新建并输入
-
-
-Esc
-返回 Normal Mode
-
-
-h
-左移
-
-
-j
-下移
-
-
-k
-上移
-
-
-l
-右移
-
-
-w
-下一个单词
-
-
-b
-上一个单词
-
-
-0
-行首
-
-
-$
-行尾
-
-
-gg
-文件开头
-
-
-G
-文件末尾
-
-
-100G
-跳到第 100 行
-
-
-x
-删除一个字符
-
-
-dd
-删除一行
-
-
-3dd
-删除三行
-
-
-dw
-删除一个单词
-
-
-yy
-复制一行
-
-
-3yy
-复制三行
-
-
-p
-粘贴
-
-
-u
-撤销
-
-
-Ctrl+r
-重做
-
-
-/xxx
-搜索
-
-
-n
-下一个结果
-
-
-N
-上一个结果
-
-
-v
-字符选择
-
-
-V
-整行选择
-
-
-ciw
-修改当前单词
-
-
-ci&quot;
-修改双引号内部
-
-
-ci(
-修改括号内部
-
-
-:%s/a/b/g
-全局替换
-
-
-:set nu
-显示行号
-
-
-:w
-保存
-
-
-:wq
-保存并退出
-
-
-:q!
-不保存退出
-
-
-
-
-13. 推荐练习顺序
-不建议第一次学习 Vim 就去研究插件、宏和寄存器。
-先按照下面的顺序练习即可。
-第一阶段：能够正常使用
-先掌握：
-iEsc:w:q:wq:q!
-目标是：
-能输入能保存能退出
-
-第二阶段：学会移动
-h j k lw b0 $gg G
-目标是逐渐减少对方向键和鼠标的依赖。
-
-第三阶段：掌握基本编辑
-ddyypuCtrl+r
-目标是能够快速完成：
-删除复制粘贴撤销重做
-
-第四阶段：掌握搜索和替换
-/nN:%s
-这一步对于修改配置文件、日志和源码都非常实用。
-
-第五阶段：理解 Vim 的编辑语言
-重点练习：
-dwcwciwci&quot;ci(ci[ci&#123;
-这时不要再把它们看成孤立快捷键，而是理解为：
-操作符 + 范围
-或者：
-操作符 + 文本对象
-例如：
-d + w   = 删除一个单词c + iw  = 修改当前单词c + i&quot;  = 修改引号内部
-一旦理解这一层，Vim 的学习会轻松很多。
-
-总结
-Vim 入门其实不需要掌握很多命令。
-最开始记住：
-iEsc:wq:q!
-就可以完成基本编辑。
-之后逐渐加入：
-h j k lw bgg Gddyypu/nciwci&quot;ci(
-真正需要理解的只有两件事。
-第一件是：
-模式
-第二件是：
-命令组合
-Vim 的核心思路并不是“记很多快捷键”，而是：
-
-用键盘描述“我要对哪一段文本执行什么操作”。
-
-当你开始理解 dw、ciw、ci&quot; 这些命令为什么这样组合时，Vim 才真正开始变得顺手。
-]]></content>
-      <categories>
-        <category>其他</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>解决lmstudio下载模型卡顿问题</title>
-    <url>/posts/17dd0035/</url>
-    <content><![CDATA[从魔搭社区下载模型并导入LM Studio：一份完整的本地部署指南
-引言
-在本地运行大语言模型已成为许多开发者和爱好者的热门选择。LM Studio凭借其图形化界面和易用性，成为了一个出色的本地LLM部署工具。然而，LM Studio内置的模型下载功能在国内往往速度不理想。魔搭社区（ModelScope） 作为国内最大的AI模型社区，提供了高速、稳定的模型下载服务。
-本文将手把手教你如何从魔搭社区下载GGUF格式的模型，并导入LM Studio中使用。
-一、准备工作
-在开始之前，请确保：
-
-安装LM Studio：前往 LM Studio官网 下载并安装对应你操作系统的版本。
-注册魔搭社区账号：访问 ModelScope魔搭社区 并注册登录。
-了解GGUF格式：GGUF是专为本地推理优化的模型格式，支持量化，能大幅降低显存/内存占用。LM Studio、Ollama、llama.cpp等都支持这一格式。请务必确认你要下载的模型是GGUF格式，魔搭社区上的模型如果不是GGUF格式（如HuggingFace的Transformers格式），则需要先转换为GGUF才能在LM Studio中使用。
-
-二、从魔搭社区下载模型
-魔搭社区提供了多种下载方式，你可以根据自己的情况选择。
-方式一：网页直接下载（最直观）
-
-进入模型库：打开魔搭社区首页，点击顶部导航栏的“模型库”。
-搜索模型：在搜索框中输入你想要的模型名称（例如 Qwen3-VL-4B-Instruct-GGUF）。
-进入模型详情页：点击目标模型，进入其详情页面。
-进入文件列表：点击页面中的“模型文件”标签。
-选择并下载：在文件列表中，找到适合你硬件配置的GGUF文件（如 Qwen3VL-4B-Instruct-Q4_K_M.gguf），点击文件名右侧的下载按钮即可。
-
-
-提示：如果浏览器下载速度慢，可以复制下载链接，使用迅雷等下载工具进行加速。
-
-方式二：命令行CLI下载（推荐）
-魔搭社区提供了命令行工具 modelscope，可以高效下载模型。
-首先安装modelscope库：
-pip install modelscope
-然后使用以下命令下载：
-modelscope download --model=&lt;模型ID&gt; --local_dir &lt;下载目录&gt; &lt;文件名&gt;
-示例：下载 Qwen2-7B-Instruct-GGUF 的Q8量化版本：
-modelscope download --model=qwen/Qwen2-7B-Instruct-GGUF --local_dir ./qwen_model qwen2-7b-instruct-q8_0.gguf
-方式三：Python SDK下载
-如果你更习惯使用Python，也可以使用SDK进行下载：
-from modelscope.hub.file_download import model_file_downloadmodel_dir = model_file_download(    model_id=&#x27;qwen/Qwen2-7B-Instruct-GGUF&#x27;,    file_path=&#x27;qwen2-7b-instruct-q8_0.gguf&#x27;)
-三、导入LM Studio
-下载好模型文件后，有两种方式将其导入LM Studio。
-方式一：使用 lms import 命令（最推荐）
-LM Studio 提供了名为 lms 的命令行工具，这是最稳定、最不容易出错的导入方式。
-
-
-打开终端（Windows用户可使用PowerShell或CMD）。
-
-
-执行导入命令：
-基本导入（默认会移动文件）：
-lms import /path/to/your/model.gguf
-保留原文件（复制一份）：
-lms import /path/to/your/model.gguf --copy
-创建符号链接（不复制也不移动，在原位置创建引用）：
-lms import /path/to/your/model.gguf --symbolic-link
-这种方式可以避免重复占用磁盘空间，适合模型文件较大的情况。
-
-
-根据交互提示操作：命令执行后，可能会弹出交互式提示，引导你完成导入。
-
-
-方式二：手动放置文件（备选）
-如果无法使用命令行，也可以手动将文件放到LM Studio的模型目录中。
-
-
-找到LM Studio的模型目录：
-
-Windows: C:\Users\你的用户名\.lmstudio\models\
-macOS/Linux: ~/.lmstudio/models/
-
-你也可以在LM Studio界面中通过左上角的文件夹图标来打开或查看这个目录。
-
-
-创建正确的文件夹结构：LM Studio要求模型文件按 发布者/模型名称/ 的层级结构存放。例如：
-.lmstudio/models/└── Qwen/                          # 发布者 (publisher)    └── Qwen3-VL-4B-Instruct-GGUF/ # 模型名称 (repository)        └── Qwen3VL-4B-Instruct-Q4_K_M.gguf  # 模型文件
-如果你下载的是视觉多模态模型，记得把配套的 mmproj-*.gguf 文件也放在同一个文件夹下。
-
-
-刷新LM Studio：将文件放入后，在LM Studio的 “My Models”（我的模型）页面刷新，模型应该就会出现。
-
-
-
-注意：手动放置文件容易因路径结构错误导致模型无法被识别，优先推荐使用 lms import 命令。
-
-四、验证与使用
-导入成功后，在LM Studio中：
-
-点击左侧 “My Models”（我的模型），应该能在列表中看到刚刚导入的模型。
-点击模型进行加载。
-切换到 “Chat”（聊天）页面，选择已加载的模型，即可开始对话。
-
-提示：在模型加载时，可以将 “GPU Offload”（GPU卸载）参数拉到最大，这样可以减少CPU使用率并提高回答效率。
-五、常见问题与技巧
-Q：下载的模型在LM Studio中无法识别？
-A：首先确认下载的是否为GGUF格式。其次，检查模型文件是否放置在正确的目录结构中。推荐使用 lms import 命令导入，可以避免路径问题。
-Q：LM Studio内置下载速度太慢怎么办？
-A：这正是本文的核心解决方案——从魔搭社区下载后手动导入。魔搭社区在国内下载速度稳定，可以大幅提升效率。
-Q：如何选择合适量化版本的模型？
-A：一般来说：
-
-q4_K_M：默认推荐，体积小、速度快，本地跑最舒服
-q8_0：质量更好，体积也更大
-f16：接近原始精度，但又大又慢
-
-如果显存有限（如8GB），推荐使用Q4量化版本。
-结语
-通过魔搭社区下载模型再导入LM Studio，既能享受国内高速下载的便利，又能体验LM Studio友好的图形化界面。希望这篇指南能帮助你顺利搭建自己的本地大模型运行环境。如果在操作过程中遇到任何问题，欢迎在评论区交流讨论！
-]]></content>
-      <categories>
-        <category>其他</category>
-      </categories>
-      <tags>
-        <tag>LM Studio</tag>
-        <tag>大模型</tag>
-        <tag>本地部署</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Elasticsearch使用</title>
-    <url>/posts/78c3da92/</url>
-    <content><![CDATA[安装
-docker安装 es
-
-拉取镜像
-
-docker pull elasticsearch:7.3.0
-
-准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
-
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
-
-复制需要挂载的文件夹
-
-docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
-
-修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
-
-cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
-
-删除刚刚创建的容器
-
-docker rm -f es7
-
-新建容器，使用挂载的文件夹
-
-docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
-
-浏览器访问 http://localhost:9200/ 如下：
-
-
-可视化工具 Kibana 安装
-
-拉取镜像
-
-docker pull kibana:7.3.0
-
-准备和挂载的文件夹，先运行一个容器
-
-docker run -d --name kibana -p 5601:5601 kibana:7.3.0
-
-复制配置到挂载的文件夹
-
-docker cp kibana:/usr/share/kibana/config E:\docker\kibana
-
-编辑配置文件 kibana.yml 如下
-
-server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
-
-如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
-
-
-
-删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
-
-docker rm -f kibana
-docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
-
-浏览器访问 http://localhost:5601 即可访问控制台
-
-
-Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
-
-命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
-历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
-语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
-响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
-
-
-Elasticsearch 基本请求格式
-Elasticsearch 提供 REST API，常见请求格式如下：
-GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
-Elasticsearch 基础语法学习
-1. 创建索引
-
-创建一个名为 users 的索引。
-
-PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
-
-2. 新增文档
-指定 ID 新增
-PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-自动生成 ID 新增
-POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
-3. 根据 ID 查询文档
-GET /users/_doc/1
-
-4. 搜索文档
-查询所有文档
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
-条件搜索
-
-查询 name 包含 张 的文档：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
-精确查询
-
-查询 email 等于指定值：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
-范围查询
-
-查询年龄大于等于 20 的文档：
-
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
-分页查询
-GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
-含义：
-
-from：从第几条开始
-size：每页返回多少条
-
-5. 更新文档
-局部更新
-只更新某个字段：
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-增加字段
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
-
-6. 删除文档
-删除 ID 为 1 的文档：
-DELETE /users/_doc/1
-
-7. 删除索引
-删除整个 users 索引：
-DELETE /users
-
-8. 查看索引是否存在
-HEAD /users
-如果存在，返回状态码：
-200
-如果不存在，返回：
-404
-
-9. 查看索引信息
-GET /users
-查看索引 mapping：
-GET /users/_mapping
-查看索引 settings：
-GET /users/_settings
-
-10. 最小可用 CRUD 总结
-增
-PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
-查
-GET /users/_doc/1
-改
-POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
-删
-DELETE /users/_doc/1
-
-记住这个格式就行：
-PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
-倒排索引
-认识
-
-倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
-
-
-简单示例：
-假设我们有以下文档，分别对应一条中文句子：
-
-文档 1: Elasticsearch 是分布式引擎
-文档 2: 分布式系统的核心是搜索
-文档 3: 搜索引擎的未来是智能化
-
-倒排索引将这些文档转化为如下形式：
-
-
-
-关键词
-文档 ID
-
-
-
-
-elasticsearch
-1
-
-
-分布式
-1, 2
-
-
-系统
-2
-
-
-核心
-2
-
-
-搜索
-2, 3
-
-
-引擎
-1, 3
-
-
-智能化
-3
-
-
-
-当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
-构建过程
-1. 分词（Tokenization）
-
-分词是将文本内容拆分为独立的单词或短语，例如：
-
-原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
-2. 归一化（Normalization）
-
-归一化是对分词结果进行标准化处理，包括：
-
-
-转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
-去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
-词干提取：将词汇归为基本形式，如 running → run。
-
-3. 创建倒排索引
-
-根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
-
-&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
-
-此时，倒排索引已经完成，后续的搜索操作会以此为基础。
-
-ik 中文分词器插件
-安装
-
-打开终端进入 es7 容器的内部
-
-docker exec -it es7 /bin/sh
-
-执行安装命令
-
-bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
-
-安装完成后，执行如下命令，退出容器：
-
-exit
-
-然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
-
-docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
-
-重启容器
-
-docker restart es7
-分词模式
-智能化分词 - ik_smart
-POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
-
-最细粒度分词 - ik_max_word
-POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
-
-进阶使用
-索引
-常用属性
-顶层控制属性
-dynamic
-场景：你定义了 title 是 text，结果代码不小心多传了个 age 字段。
-
-dynamic: true（默认）：ES 默默帮你在映射里加上 age，类型可能错判成 long，导致后续范围查询异常。
-dynamic: strict（推荐）：直接拒绝写入，返回明确报错，倒逼你修正代码。
-
-示例（严格模式下的报错）：
-# 1. 创建索引，开启 strictPUT /test_strict&#123;  &quot;mappings&quot;: &#123;    &quot;dynamic&quot;: &quot;strict&quot;,    &quot;properties&quot;: &#123; &quot;title&quot;: &#123; &quot;type&quot;: &quot;text&quot; &#125; &#125;  &#125;&#125;# 2. 插入一条多带了字段的数据POST /test_strict/_doc/1&#123;  &quot;title&quot;: &quot;Hello&quot;,  &quot;unexpected_field&quot;: &quot;oops&quot;   # 这个字段没在 mapping 里定义过&#125;# 3. 返回结果：直接报错 400# &#123;#   &quot;error&quot;: &#123;#     &quot;reason&quot;: &quot;mapping set to strict, dynamic introduction of [unexpected_field] is not allowed&quot;#   &#125;# &#125;
-
-fields + ignore_above
-场景：title 既要全文搜索（用 text），又要按字母排序（必须用 keyword）。同时，为了防止有人存超长文本撑爆内存，用 ignore_above 切断。
-# 1. 创建索引PUT /test_fields&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;title&quot;: &#123;        &quot;type&quot;: &quot;text&quot;,        &quot;fields&quot;: &#123;                # 扩展子字段          &quot;keyword&quot;: &#123;             &quot;type&quot;: &quot;keyword&quot;,            &quot;ignore_above&quot;: 10      # 超过10个字符的，不建立 keyword 索引          &#125;        &#125;      &#125;    &#125;  &#125;&#125;# 2. 插入两条数据POST /test_fields/_doc/1&#123; &quot;title&quot;: &quot;Short&quot; &#125;              # 5个字符，正常POST /test_fields/_doc/2&#123; &quot;title&quot;: &quot;Very Very Long Title&quot; &#125; # 超过10个字符# 3. 尝试按 title.keyword 排序GET /test_fields/_search&#123;  &quot;sort&quot;: [&#123; &quot;title.keyword&quot;: &quot;asc&quot; &#125;]&#125;# 结果：文档1正常排序，文档2被忽略了（不会出现在排序结果中），# 这有效防止了对超长字符串排序导致的内存溢出崩溃。
-
-copy_to
-场景：用户想搜索 title 或 content，不想分两个字段查，希望一个 full 字段覆盖所有。用 copy_to 把多个字段的内容复制到一个隐藏字段里。
-# 1. 创建索引PUT /test_copy&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;title&quot;: &#123;        &quot;type&quot;: &quot;text&quot;,        &quot;copy_to&quot;: &quot;full_text&quot;    # 复制一份给 full_text      &#125;,      &quot;content&quot;: &#123;        &quot;type&quot;: &quot;text&quot;,        &quot;copy_to&quot;: &quot;full_text&quot;    # 复制一份给 full_text      &#125;,      &quot;full_text&quot;: &#123;              # 专门用来搜的组合字段        &quot;type&quot;: &quot;text&quot;      &#125;    &#125;  &#125;&#125;# 2. 插入数据POST /test_copy/_doc/1&#123;  &quot;title&quot;: &quot;Elasticsearch 教程&quot;,  &quot;content&quot;: &quot;本文讲解 mappings 核心属性&quot;&#125;# 3. 直接在 full_text 里搜，能命中 title 或 content 里的词GET /test_copy/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123; &quot;full_text&quot;: &quot;教程&quot; &#125;   # 成功命中！  &#125;&#125;
-
-format
-场景：你的数据来源复杂，有时候传 &quot;2026-09-05&quot;，有时候传 &quot;2026/09/05&quot;，默认的 ES 只认 ISO 标准（2026-09-05T10:30:00Z），不认斜杠。
-# 1. 创建索引，指定多种兼容格式（用 || 分隔）PUT /test_date&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;create_time&quot;: &#123;        &quot;type&quot;: &quot;date&quot;,        &quot;format&quot;: &quot;yyyy-MM-dd||yyyy/MM/dd||yyyy-MM-dd HH:mm:ss&quot;      &#125;    &#125;  &#125;&#125;# 2. 插入三种不同格式，全部成功！POST /test_date/_doc/1&#123; &quot;create_time&quot;: &quot;2026-09-05&quot; &#125;POST /test_date/_doc/2&#123; &quot;create_time&quot;: &quot;2026/09/05&quot; &#125;POST /test_date/_doc/3&#123; &quot;create_time&quot;: &quot;2026-09-05 18:30:00&quot; &#125;# 3. 此时按日期范围查询，所有文档都能被正确筛选，不会因为格式报错。
-
-null_value
-场景：有些文档的 tags 字段没填，是 null。默认情况下，null 值不会建立倒排索引，你搜 tags: &quot;NULL&quot; 搜不到。如果你想统一把空值替换成占位符，就用 null_value。
-# 1. 创建索引，将 null 替换成 &quot;EMPTY&quot;PUT /test_null&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;tags&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;,        &quot;null_value&quot;: &quot;EMPTY&quot;   # 存 null 时，实际索引里存的是 &quot;EMPTY&quot;      &#125;    &#125;  &#125;&#125;# 2. 插入一条 tags 为 null 的数据POST /test_null/_doc/1&#123; &quot;tags&quot;: null &#125;# 3. 搜索 &quot;EMPTY&quot;，能够搜到这条数据！GET /test_null/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;tags&quot;: &quot;EMPTY&quot; &#125;  &#125;&#125;# 成功返回文档1
-
-normalizer
-场景：存邮箱或用户名，用户搜 &quot;Admin&quot; 想命中 &quot;admin&quot;，但 keyword 是精确匹配，区分大小写。用 normalizer 在索引时统一转小写。
-# 1. 先在 settings 里定义自定义 normalizerPUT /test_normalizer&#123;  &quot;settings&quot;: &#123;    &quot;analysis&quot;: &#123;      &quot;normalizer&quot;: &#123;        &quot;lowercase_normalizer&quot;: &#123;          &quot;type&quot;: &quot;custom&quot;,          &quot;filter&quot;: [&quot;lowercase&quot;]   # 统一转小写        &#125;      &#125;    &#125;  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;username&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;,        &quot;normalizer&quot;: &quot;lowercase_normalizer&quot;      &#125;    &#125;  &#125;&#125;# 2. 插入数据时存大写的 &quot;Admin&quot;POST /test_normalizer/_doc/1&#123; &quot;username&quot;: &quot;Admin&quot; &#125;# 3. 实际 ES 倒排索引里存的是 &quot;admin&quot;（被转换了）# 此时用小写去 term 精确查询，依然能命中GET /test_normalizer/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;username&quot;: &quot;admin&quot; &#125;   # 成功命中！  &#125;&#125;
-
-字段级属性
-index：搜索开关
-场景：有些字段（如内部 ID、base64 图片、加密数据）只需要随文档返回展示，永远不需要被搜索。关闭索引可以节省大量磁盘空间和写入 CPU。
-# 1. 创建索引：secret_id 不建索引，name 正常建索引PUT /test_index_attr&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;secret_id&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;,        &quot;index&quot;: false      # 关闭索引，此字段不可被查询      &#125;,      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      # 默认 index: true，可被搜索      &#125;    &#125;  &#125;&#125;# 2. 插入数据POST /test_index_attr/_doc/1&#123;  &quot;secret_id&quot;: &quot;S999_TOP_SECRET&quot;,  &quot;name&quot;: &quot;Alice&quot;&#125;# 3. 尝试搜索 secret_id（会报错）GET /test_index_attr/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;secret_id&quot;: &quot;S999_TOP_SECRET&quot; &#125;  &#125;&#125;# ❌ 报错：Cannot search on field [secret_id] since it is not indexed.# 4. 搜索 name（正常返回）GET /test_index_attr/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123; &quot;name&quot;: &quot;Alice&quot; &#125;  &#125;&#125;# ✅ 成功命中
-
-analyzer vs search_analyzer
-场景：索引时希望尽可能多地切词（提高召回率），搜索时希望更符合用户意图（提高精准度）。比如中文搜索，索引用 ik_max_word（细粒度），搜索用 ik_smart（粗粒度）。
-# 1. 创建索引（假设你已安装 IK 分词器；若未安装，用 standard 做对比演示原理）PUT /test_analyzer&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;title&quot;: &#123;        &quot;type&quot;: &quot;text&quot;,        &quot;analyzer&quot;: &quot;ik_max_word&quot;,      # 索引时：尽可能多拆分（如&quot;中华人民共和国&quot;拆成&quot;中华&quot;,&quot;华人&quot;,&quot;共和&quot;,&quot;国&quot;...）        &quot;search_analyzer&quot;: &quot;ik_smart&quot;   # 搜索时：拆成最粗粒度（如&quot;中华人民共和国&quot;只拆成&quot;中华人民共和国&quot;）      &#125;    &#125;  &#125;&#125;# 2. 插入数据POST /test_analyzer/_doc/1&#123; &quot;title&quot;: &quot;中华人民共和国国歌&quot; &#125;# 3. 用户搜索&quot;国歌&quot;（ik_smart 会把&quot;国歌&quot;作为一个词），能命中GET /test_analyzer/_search&#123;  &quot;query&quot;: &#123; &quot;match&quot;: &#123; &quot;title&quot;: &quot;国歌&quot; &#125; &#125;&#125;# ✅ 命中（因为索引时 ik_max_word 拆出了&quot;国歌&quot;）# 注意：如果不设置 search_analyzer，默认等于 analyzer。# 如果搜索也用 ik_max_word，用户搜&quot;国歌&quot;时会被拆成&quot;国&quot;和&quot;歌&quot;，会搜出更多无关结果，精准度下降。
-
-doc_values
-核心原理：text 类型默认 doc_values: false（因为分词后无法做精确排序/聚合），keyword 和数值类型默认 true。如果你错误地关闭了它，排序和聚合会直接报错。
-# 1. 创建索引：score 关闭 doc_valuesPUT /test_docvalues&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;score&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;,        &quot;doc_values&quot;: false   # 强制关闭列式存储      &#125;    &#125;  &#125;&#125;# 2. 插入数据POST /test_docvalues/_doc/1&#123; &quot;score&quot;: 100 &#125;POST /test_docvalues/_doc/2&#123; &quot;score&quot;: 200 &#125;# 3. 尝试按 score 排序（会报错）GET /test_docvalues/_search&#123;  &quot;sort&quot;: [&#123; &quot;score&quot;: &quot;asc&quot; &#125;]&#125;# ❌ 报错：Cannot sort on field [score] without doc_values# 结论：除非你百分百确定这个字段永不排序/聚合，否则永远保持 doc_values: true（默认）
-
-coerce
-场景：你定义字段为 integer，但数据源传来 &quot;10.0&quot;（字符串带小数点）。默认 coerce: true 会自动转成整数 10，不会报错。如果你希望严格校验，就关掉它。
-# 1. 创建索引，关闭 coerce（严格模式）PUT /test_coerce&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;price&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;,        &quot;coerce&quot;: false     # 关闭自动类型转换      &#125;    &#125;  &#125;&#125;# 2. 插入带小数点的字符串（会报错）POST /test_coerce/_doc/1&#123; &quot;price&quot;: &quot;10.0&quot; &#125;# ❌ 报错：failed to parse field [price] of type [integer]# 对比：如果设为 coerce: true（默认），&quot;10.0&quot; 会被自动转为 10，正常写入。# 生产建议：日志/爬虫数据来源混乱，保持 true；核心业务接口数据，设为 false 强制规范。
-
-properties
-场景：你的文档里有一个嵌套的 user 对象，包含 name 和 age。必须在 properties 里再定义一次内部字段，否则 ES 会动态映射，类型可能不准。
-# 1. 创建索引，定义 object 内部结构PUT /test_object&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;user&quot;: &#123;        &quot;type&quot;: &quot;object&quot;,              # 显式声明为对象        &quot;properties&quot;: &#123;                # 关键：必须在这里定义内部字段          &quot;name&quot;: &#123; &quot;type&quot;: &quot;keyword&quot; &#125;,          &quot;age&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;        &#125;      &#125;    &#125;  &#125;&#125;# 2. 插入数据（标准 JSON 对象格式）POST /test_object/_doc/1&#123;  &quot;user&quot;: &#123;    &quot;name&quot;: &quot;Charlie&quot;,    &quot;age&quot;: 28  &#125;&#125;# 3. 查询时用「点号」访问内部字段GET /test_object/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;user.name&quot;: &quot;Charlie&quot; &#125;   # ✅ 点号访问，成功命中  &#125;&#125;# 如果不定义 properties，ES 也能动态生成，但 name 可能会被误判为 text（分词），导致 term 查询失效。
-
-enabled
-场景：你需要存储一个巨大的、结构不固定的 JSON（如第三方回调的原始报文），只是存着将来展示用，永远不需要在内部字段上做搜索或聚合。开启 enabled: false 可以节省大量索引开销。
-# 1. 创建索引，metadata 字段只存不解析PUT /test_enabled&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;metadata&quot;: &#123;        &quot;type&quot;: &quot;object&quot;,        &quot;enabled&quot;: false       # 整个对象被当作一个“黑盒”字符串存储，不解析内部字段      &#125;    &#125;  &#125;&#125;# 2. 插入任意复杂 JSON（完全不报错）POST /test_enabled/_doc/1&#123;  &quot;metadata&quot;: &#123;    &quot;ip&quot;: &quot;192.168.1.1&quot;,    &quot;device&quot;: &#123; &quot;os&quot;: &quot;iOS&quot;, &quot;version&quot;: 17.5 &#125;,    &quot;nested_any&quot;: &#123; &quot;deep&quot;: &#123; &quot;value&quot;: [1,2,3] &#125; &#125;  &#125;&#125;# 3. 尝试在 metadata 内部字段上搜索（会报错或查不到）GET /test_enabled/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;metadata.ip&quot;: &quot;192.168.1.1&quot; &#125;  &#125;&#125;# ❌ 因为 enabled: false，内部字段未索引，搜索无效。# 但取回文档时，metadata 完整保留（因为 _source 存储了原始 JSON）。
-
-字段的数据类型
-核心基础类型
-1. text vs keyword
-
-text：会分词，用于全文模糊搜索（如百度搜索文章内容）。默认不支持排序和聚合。
-keyword：不分词，整个值作为一个整体，用于精确匹配、排序、聚合统计（如状态码、分类、邮箱）。
-
-实战对比示例：
-# 1. 创建索引，对比 text 和 keywordPUT /test_strings&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;content&quot;: &#123; &quot;type&quot;: &quot;text&quot; &#125;,      // 全文搜索      &quot;status&quot;: &#123; &quot;type&quot;: &quot;keyword&quot; &#125;     // 精确过滤    &#125;  &#125;&#125;# 2. 插入一条数据POST /test_strings/_doc/1&#123;  &quot;content&quot;: &quot;Hello World&quot;,  &quot;status&quot;: &quot;Published&quot;&#125;# 3. 用 match 搜 content（text 类型）—— 能搜到，因为 &quot;Hello World&quot; 被拆成了 &quot;Hello&quot; 和 &quot;World&quot;GET /test_strings/_search&#123; &quot;query&quot;: &#123; &quot;match&quot;: &#123; &quot;content&quot;: &quot;Hello&quot; &#125; &#125; &#125;   // ✅ 命中# 4. 用 term 搜 status（keyword 类型）—— 必须完全匹配 &quot;Published&quot;GET /test_strings/_search&#123; &quot;query&quot;: &#123; &quot;term&quot;: &#123; &quot;status&quot;: &quot;Published&quot; &#125; &#125; &#125; // ✅ 命中GET /test_strings/_search&#123; &quot;query&quot;: &#123; &quot;term&quot;: &#123; &quot;status&quot;: &quot;published&quot; &#125; &#125; &#125; // ❌ 查不到（大小写敏感）
-2. long、integer、short、byte、double、float
-
-用途：存储数字，用于范围查询（range）、排序（sort）、数学聚合（sum、avg）。
-选型原则：尽量选最小的够用的类型，以节省磁盘。
-
-人的年龄：byte（-128~127）就够了。
-商品价格：用 float 或 scaled_float（推荐，精确控制小数点）。
-商品浏览量：用 integer（约 21 亿）通常够。
-订单金额（精确到分）：建议用 long 存储“分”的整数值，避免浮点精度丢失。
-
-
-
-示例：
-PUT /test_numbers&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;age&quot;: &#123; &quot;type&quot;: &quot;byte&quot; &#125;,        // 小范围      &quot;price&quot;: &#123; &quot;type&quot;: &quot;scaled_float&quot;, &quot;scaling_factor&quot;: 100 &#125;, // 存 19.99 实际存 1999，精确      &quot;views&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;    // 常规整数    &#125;  &#125;&#125;
-3. date
-
-用途：存储时间，支持范围查询（最近7天）、排序（按发布时间）。
-关键配置：必须指定 format，否则只认 ISO 标准（2026-09-05T10:30:00Z）。
-
-实战示例（兼容多种格式）：
-PUT /test_dates&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;create_time&quot;: &#123;        &quot;type&quot;: &quot;date&quot;,        &quot;format&quot;: &quot;yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis&quot;      &#125;    &#125;  &#125;&#125;# 以下三种格式都能正常写入：POST /test_dates/_doc/1 &#123; &quot;create_time&quot;: &quot;2026-09-05 18:30:00&quot; &#125;POST /test_dates/_doc/2 &#123; &quot;create_time&quot;: &quot;2026-09-05&quot; &#125;POST /test_dates/_doc/3 &#123; &quot;create_time&quot;: &quot;1693900000000&quot; &#125;  // 毫秒时间戳
-4. boolean
-
-用途：存真/假。
-注意：ES 会自动将 &quot;true&quot;、&quot;false&quot;、&quot;on&quot;、&quot;off&quot;、1、0 转成布尔值。
-
-PUT /test_boolean&#123; &quot;mappings&quot;: &#123; &quot;properties&quot;: &#123; &quot;is_active&quot;: &#123; &quot;type&quot;: &quot;boolean&quot; &#125; &#125; &#125; &#125;POST /test_boolean/_doc/1&#123; &quot;is_active&quot;: &quot;true&quot; &#125;   // 字符串也能被正确解析为 true
-
-复杂结构类型
-1. object
-
-用途：处理普通的 JSON 嵌套对象。
-写法：直接用 properties 定义内部字段。
-
-PUT /test_object&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;user&quot;: &#123;                     // 默认就是 object 类型，可省略        &quot;properties&quot;: &#123;          &quot;name&quot;: &#123; &quot;type&quot;: &quot;keyword&quot; &#125;,          &quot;age&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;        &#125;      &#125;    &#125;  &#125;&#125;# 插入数据POST /test_object/_doc/1&#123; &quot;user&quot;: &#123; &quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 30 &#125; &#125;# 查询时用点号访问GET /test_object/_search&#123; &quot;query&quot;: &#123; &quot;term&quot;: &#123; &quot;user.name&quot;: &quot;Alice&quot; &#125; &#125; &#125; // ✅ 命中
-2. nested
-
-场景：当你的对象是数组，且需要独立维护数组内每个对象的查询条件时，必须用 nested。
-为什么必须用？ 如果用默认的 object 存数组，ES 会将其扁平化，丢失对象间的边界。
-
-经典错误场景：
-# 错误示范：用 object 存员工数组PUT /test_wrong_object&#123; &quot;mappings&quot;: &#123; &quot;properties&quot;: &#123; &quot;employees&quot;: &#123; &quot;type&quot;: &quot;object&quot; &#125; &#125; &#125; &#125;POST /test_wrong_object/_doc/1&#123;  &quot;employees&quot;: [    &#123; &quot;name&quot;: &quot;John&quot;, &quot;age&quot;: 25 &#125;,    &#123; &quot;name&quot;: &quot;Jane&quot;, &quot;age&quot;: 30 &#125;  ]&#125;# 此时你想查「name=John 且 age=30」的人，本应查不到，但 object 会扁平化成：# employees.name = [John, Jane]  AND  employees.age = [25, 30]# 结果导致 John(25) 和 Jane(30) 跨对象匹配，**错误地命中了这条文档**！
-正确写法：
-PUT /test_correct_nested&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;employees&quot;: &#123;        &quot;type&quot;: &quot;nested&quot;,          // 声明为 nested        &quot;properties&quot;: &#123;          &quot;name&quot;: &#123; &quot;type&quot;: &quot;keyword&quot; &#125;,          &quot;age&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;        &#125;      &#125;    &#125;  &#125;&#125;# 查询时，必须用 nested 查询包裹，保证条件只在同一个对象内生效GET /test_correct_nested/_search&#123;  &quot;query&quot;: &#123;    &quot;nested&quot;: &#123;      &quot;path&quot;: &quot;employees&quot;,      &quot;query&quot;: &#123;        &quot;bool&quot;: &#123;          &quot;must&quot;: [            &#123; &quot;term&quot;: &#123; &quot;employees.name&quot;: &quot;John&quot; &#125; &#125;,            &#123; &quot;term&quot;: &#123; &quot;employees.age&quot;: 30 &#125; &#125;          ]        &#125;      &#125;    &#125;  &#125;&#125;# ✅ 结果：正确地返回 0 条（因为 John 只有 25 岁）
-
-创建索引
-1.1 基础创建（使用默认配置）
-最简单的创建方式，Elasticsearch 会应用默认设置（如1个主分片、1个副本分片）并启用动态映射。
-PUT /my_first_index
-1.2 指定分片与副本设置
-在生产环境中，建议你根据数据量规划好主分片数，并设置副本以提高可用性。
-PUT /my_blog&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 3,    # 主分片数，创建后不可修改！    &quot;number_of_replicas&quot;: 2   # 副本数，可动态调整  &#125;&#125;
-1.3 定义字段映射 (Mappings)
-映射定义了索引中字段的数据类型，这对于搜索和聚合至关重要。下面的例子定义了一个包含 id（整数）、title（文本，支持全文搜索）和 publish_date（日期）的映射。
-PUT /my_blog&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 2  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;id&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;,      &quot;title&quot;: &#123; &quot;type&quot;: &quot;text&quot; &#125;,      &quot;publish_date&quot;: &#123; &quot;type&quot;: &quot;date&quot; &#125;    &#125;  &#125;&#125;
-
-注意：一旦创建，主分片数 (number_of_shards) 和已有字段的类型通常无法修改。如需更改，通常需要重建索引（Reindex）。
-
-
-2. 查看索引信息
-
-查看单个索引的详细信息（包括设置和映射）：
-
-GET /my_blog
-
-查看集群中所有索引的概览：
-
-GET /_cat/indices?v
-
-仅查看索引的设置或映射：
-
-GET /my_blog/_settingsGET /my_blog/_mapping
-
-3. 删除索引
-此操作将永久删除整个索引及其包含的所有数据，操作前请务必确认。
-DELETE /my_blog
-你也可以使用通配符一次删除多个索引，例如 DELETE /index_*。
-
-4. 更新索引设置
-与映射不同，部分索引设置（如副本数）可以动态更新。
-PUT /my_blog/_settings&#123;  &quot;number_of_replicas&quot;: 1&#125;
-查询
-查询基础
-Elasticsearch 所有查询都通过 _search 接口，并使用基于 JSON 的 Query DSL (领域特定语言) 来构建。其核心结构如下：
-GET /your_index/_search&#123;  &quot;query&quot;: &#123;    &quot;查询类型&quot;: &#123;      // 查询的具体条件    &#125;  &#125;&#125;
-
-注意：_search 是固定路径。
-
-
-常用查询功能详解
-Elasticsearch 的查询 DSL 主要分为叶子查询（在单个字段上查询）和复合查询（组合多个叶子查询）。
-1. 全文检索
-这类查询会对输入的搜索文本进行分词，然后用分词结果去匹配索引中的内容，并根据相关性（_score）排序。
-
-match** 查询**：最常用的全文搜索，用于在一个指定字段中进行分词匹配。
-
-GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;description&quot;: &quot;分布式搜索引擎&quot;  // 会对 &quot;分布式搜索引擎&quot; 进行分词    &#125;  &#125;&#125;
-示例场景：在图书描述中搜索包含“分布式”或“搜索引擎”的书籍。
-
-multi_match** 查询**：match 的增强版，允许在多个字段中同时进行全文搜索。
-
-GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;multi_match&quot;: &#123;      &quot;query&quot;: &quot;分布式搜索引擎&quot;,      &quot;fields&quot;: [&quot;title&quot;, &quot;description&quot;] // 同时在标题和描述中搜索    &#125;  &#125;&#125;
-
-&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;match_phrase&lt;/font&gt; 查询：要求分词后的所有词项必须全部出现在文档中，并且顺序一致、位置连续（允许通过 **&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;slop&lt;/font&gt;** 参数调整间隔）。它不会像 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;match&lt;/font&gt; 那样将词项拆开独立匹配，而是当作一个整体短语来查找。
-
-GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;match_phrase&quot;: &#123;      &quot;description&quot;: &quot;分布式搜索引擎&quot;    &#125;  &#125;&#125;
-补充：
-
-在Elasticsearch中，operator主要用于match系列查询（如match、multi_match），其核心作用是控制多个搜索词之间的逻辑关系，决定文档需要满足“任意一个”还是“全部”搜索词才算匹配。
-它接受两个值，默认为or：
-
-or** (默认值)：只要文档包含任意一个**搜索词，就算匹配。例如，搜索“quick brown fox”，只要文档包含quick、brown或fox中的任意一个词就会被召回。
-and：文档必须同时包含所有搜索词，才算匹配。例如，搜索“quick brown fox”，文档必须同时包含quick、brown和fox这三个词才会被召回。
-
-示例对比：
-假设索引中有两篇文档：
-
-文档A: &quot;I love cats&quot;
-文档B: &quot;I love dogs&quot;
-
-执行查询 &quot;match&quot;: {&quot;content&quot;: {&quot;query&quot;: &quot;cats dogs&quot;}}：
-
-
-
-
-operator 参数
-逻辑
-匹配结果
-
-
-
-
-&quot;or&quot;** (默认)**
-cats OR dogs
-文档A和文档B都会被匹配，因为每篇文档至少包含其中一个词。
-
-
-&quot;and&quot;
-cats AND dogs
-两篇文档都不会被匹配，因为没有文档同时包含cats和dogs。
-
-
-
-2. 精确查询
-这类查询不会对输入文本进行分词，而是将整个输入作为一个词条，与字段中的精确值进行匹配。通常用于 keyword、数值、日期等类型的字段。
-
-term** 查询**：用于查找与指定值完全相等的文档。
-
-GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;status&quot;: &quot;published&quot;  // 精确匹配状态为 &quot;published&quot; 的文档    &#125;  &#125;&#125;
-注意：不要用 term 查询 text 类型的字段，否则可能查不到结果。
-
-terms** 查询**：term 的复数版本，用于匹配多个精确值中的任意一个。
-
-GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;terms&quot;: &#123;      &quot;category&quot;: [&quot;技术&quot;, &quot;科学&quot;]  // 查找分类是 &quot;技术&quot; 或 &quot;科学&quot; 的文档    &#125;  &#125;&#125;
-
-range** 查询**：用于查找字段值在指定范围内的文档。
-
-GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;price&quot;: &#123;        &quot;gte&quot;: 30,  // 价格 &gt;= 30        &quot;lte&quot;: 80   // 价格 &lt;= 80      &#125;    &#125;  &#125;&#125;
-同样适用于日期范围，如 publish_date 在 &quot;2023-01-01&quot; 之后。
-3. 复合查询
-主要用于组合多个查询条件，其中 bool** 查询**最为核心和常用。它包含四个子句：
-
-must：条件必须满足，有算分贡献。
-filter：条件必须满足，但不算分，用于过滤，性能更高。
-should：条件满足任意一个即可，有算分贡献。
-must_not：条件必须不满足，不算分。
-
-示例：查找标题或描述包含“Elasticsearch”，价格在 30 到 80 之间，且状态为“published”的书籍。
-GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;bool&quot;: &#123;      &quot;must&quot;: [        &#123; &quot;match&quot;: &#123; &quot;title&quot;: &quot;Elasticsearch&quot; &#125; &#125;,        &#123; &quot;match&quot;: &#123; &quot;description&quot;: &quot;Elasticsearch&quot; &#125; &#125;      ],      &quot;filter&quot;: [        &#123; &quot;range&quot;: &#123; &quot;price&quot;: &#123; &quot;gte&quot;: 30, &quot;lte&quot;: 80 &#125; &#125; &#125;,        &#123; &quot;term&quot;: &#123; &quot;status&quot;: &quot;published&quot; &#125; &#125;      ]    &#125;  &#125;&#125;
-4. 聚合查询
-聚合提供了对数据进行分组、统计和分析的能力，类似于 SQL 的 GROUP BY 和聚合函数。
-GET /books/_search&#123;  &quot;size&quot;: 0,  // 不返回具体文档，只看聚合结果  &quot;aggs&quot;: &#123;    &quot;category_stats&quot;: &#123;           // 自定义聚合名称      &quot;terms&quot;: &#123;                  // 按字段值分组        &quot;field&quot;: &quot;category.keyword&quot; // 注意：text 类型需用 .keyword 子字段      &#125;    &#125;  &#125;&#125;
-这个查询会统计每个图书分类下的文档数量。
-
-kNN 与 BM25 Rescore
-认识
-1. kNN
-在 kNN 向量检索出现之前，搜索主要依赖关键词匹配——你搜什么词，系统就找包含什么词的文档。这套机制在以下场景中显得力不从心：
-
-语义鸿沟：用户搜“性价比高的手机”，系统只认识“性价比”“高”“手机”这几个词，无法理解“划算”“实惠”“值”等语义相近的表达。
-非文本数据：图片、视频、音频等无法用关键词描述的内容，传统全文检索无能为力。
-推荐系统：需要根据用户行为找到“相似”的商品或内容，关键词匹配无法表达“相似”这个概念。
-
-kNN 检索的核心解决方案是：将文本、图片、用户行为等一切数据转化为向量（一串数字），用向量之间的“距离”来衡量相似度。你搜“好吃的餐厅”，系统会把这句话转成向量，然后找到向量最接近的那些文档——哪怕文档里没有“好吃”这个词，只要语义相近（如“美味”“口碑不错”），也能被检索出来。
-Elasticsearch 从 8.0 版本开始原生支持 kNN 向量检索。
-2. BM25 Rescore
-BM25 是 Elasticsearch 默认的相关性评分算法。它根据词频（TF） 、逆文档频率（IDF） 和字段长度来计算文档与查询的相关性。
-但 BM25 有一个局限：它只能基于关键词匹配来算分。在复杂场景下，比如：
-
-用户希望“苹果手机”这个短语整体匹配，而不是“苹果”和“手机”分开匹配；
-用户希望用更复杂的模型（如机器学习排序模型）来重新排序；
-第一轮检索结果不够精准，需要第二轮精细化调整。
-
-如果对所有文档都执行这些复杂计算，性能会急剧下降。
-Rescore（二次打分）的核心解决思路是：先用廉价的 BM25 快速召回 Top N 个候选文档，然后只对这 N 个文档执行第二轮更精准（但更昂贵）的评分，重新排序。这就像海选先用简单标准筛一遍，决赛再用严格标准精评——既保证了质量，又控制了成本。
-适用场景
-
-
-
-技术
-适用场景
-不适用场景
-
-
-
-
-kNN
-语义搜索、图片/视频相似检索、推荐系统、异常检测、RAG 知识库问答
-纯关键词精确匹配、数据量极小（&lt; 几千条）、对解释性要求极高的场景
-
-
-BM25 Rescore
-需要二次精排的复杂搜索、短语优先匹配、结合业务字段（如热度）重新排序、多轮渐进式排序
-数据量极小（不需要二次优化）、对实时性要求极高且无法接受额外延迟、排序逻辑在第一轮已完全满足
-
-
-
-特别地：kNN 和 BM25 Rescore 经常组合使用——先用 BM25 做关键词召回 + kNN 做语义召回（混合搜索），再用 Rescore 对结果做二次精排，实现“召回层 + 精排层”的经典搜索架构。
-使用
-dense_vector
-
-dense_vector 是 Elasticsearch 中专门用来存储向量数据的字段类型。你在索引里定义一个 dense_vector 字段，然后把 ML 模型生成的向量（一串浮点数）存进去，kNN 检索就靠它。
-使用：
-
-PUT my_index&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;title_vector&quot;: &#123;        &quot;type&quot;: &quot;dense_vector&quot;,        &quot;dims&quot;: 384,        &quot;similarity&quot;: &quot;cosine&quot;,        &quot;index&quot;: true,        &quot;index_options&quot;: &#123;          &quot;type&quot;: &quot;hnsw&quot;,          &quot;m&quot;: 16,          &quot;ef_construction&quot;: 100        &#125;      &#125;    &#125;  &#125;&#125;
-dims 是向量维度（必须与模型输出一致），similarity 是相似度算法（cosine/dot_product/l2_norm）。
-近似 kNN vs 精确 kNN
-
-近似 kNN 用 HNSW 图索引“大概”找到最近的向量，速度快但不保证 100% 精确；精确 kNN 逐个比较所有向量，保证精确但数据量大时极慢。
-使用：
-
-近似 kNN ：
-GET my_index/_search&#123;  &quot;knn&quot;: &#123;    &quot;field&quot;: &quot;title_vector&quot;,    &quot;query_vector&quot;: [0.1, 0.2, 0.3, ...],    &quot;k&quot;: 10,    &quot;num_candidates&quot;: 100  &#125;&#125;
-精确 kNN ：
-GET my_index/_search&#123;  &quot;query&quot;: &#123;    &quot;script_score&quot;: &#123;      &quot;query&quot;: &#123; &quot;match_all&quot;: &#123;&#125; &#125;,      &quot;script&quot;: &#123;        &quot;source&quot;: &quot;cosineSimilarity(params.query_vector, &#x27;title_vector&#x27;) + 1.0&quot;,        &quot;params&quot;: &#123;          &quot;query_vector&quot;: [0.1, 0.2, 0.3, ...]        &#125;      &#125;    &#125;  &#125;&#125;
-
-精确 kNN 通过 script_score 实现，必须扫描所有匹配文档。
-
-BM25（默认相关性评分算法）
-
-BM25 是 Elasticsearch 默认的“算分公式”。它根据三个因素给文档打分：这个词在文档里出现了几次（词频 TF）、这个词在整个索引里稀不稀有（逆文档频率 IDF）、文档的字段是长是短（字段长度归一化）。
-使用：
-
-GET my_index/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;title&quot;: &#123;        &quot;query&quot;: &quot;elasticsearch tutorial&quot;,        &quot;operator&quot;: &quot;or&quot;      &#125;    &#125;  &#125;&#125;
-BM25 的参数可在索引设置中调整：
-PUT my_index&#123;  &quot;settings&quot;: &#123;    &quot;similarity&quot;: &#123;      &quot;my_bm25&quot;: &#123;        &quot;type&quot;: &quot;BM25&quot;,        &quot;k1&quot;: 1.2,        &quot;b&quot;: 0.75      &#125;    &#125;  &#125;&#125;
-k1 控制词频饱和度（默认 1.2），b 控制字段长度归一化强度（默认 0.75）。
-Rescore（二次打分）
-
-Rescore 是在第一轮搜索结果返回后，只对排名靠前的少量文档“再算一次分”，用更复杂的逻辑重新排序。
-使用：
-
-GET my_index/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;title&quot;: &quot;elasticsearch tutorial&quot;    &#125;  &#125;,  &quot;rescore&quot;: &#123;    &quot;window_size&quot;: 50,    &quot;query&quot;: &#123;      &quot;rescore_query&quot;: &#123;        &quot;match_phrase&quot;: &#123;          &quot;title&quot;: &#123;            &quot;query&quot;: &quot;elasticsearch tutorial&quot;,            &quot;slop&quot;: 2          &#125;        &#125;      &#125;,      &quot;query_weight&quot;: 0.7,      &quot;rescore_query_weight&quot;: 1.2    &#125;  &#125;&#125;
-window_size 控制参与重打分的文档数（默认 10），query_weight 和 rescore_query_weight 控制两轮分数的权重。
-混合检索
-完整的查询请求示例
-&#123;  &quot;size&quot;: 10,  &quot;knn&quot;: &#123;    &quot;field&quot;: &quot;vector&quot;,    &quot;query_vector&quot;: [0.12, -0.34, 0.56, ...],    &quot;k&quot;: 300,    &quot;num_candidates&quot;: 300  &#125;,  &quot;query&quot;: &#123;    &quot;bool&quot;: &#123;      &quot;must&quot;: [        &#123; &quot;match&quot;: &#123; &quot;textContent&quot;: &quot;如何配置Redis集群&quot; &#125; &#125;      ],      &quot;filter&quot;: [        &#123;          &quot;bool&quot;: &#123;            &quot;should&quot;: [              &#123; &quot;term&quot;: &#123; &quot;userId&quot;: &quot;42&quot; &#125; &#125;,              &#123; &quot;term&quot;: &#123; &quot;public&quot;: true &#125; &#125;,              &#123;                &quot;bool&quot;: &#123;                  &quot;should&quot;: [                    &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;ENGINEERING&quot; &#125; &#125;,                    &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;TECH_DEPT&quot; &#125; &#125;,                    &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;COMPANY&quot; &#125; &#125;                  ]                &#125;              &#125;            ]          &#125;        &#125;      ]    &#125;  &#125;,  &quot;rescore&quot;: &#123;    &quot;window_size&quot;: 300,    &quot;query&quot;: &#123;      &quot;query_weight&quot;: 0.2,      &quot;rescore_query_weight&quot;: 1.0,      &quot;rescore_query&quot;: &#123;        &quot;match&quot;: &#123;          &quot;textContent&quot;: &#123;            &quot;query&quot;: &quot;如何配置Redis集群&quot;,            &quot;operator&quot;: &quot;and&quot;          &#125;        &#125;      &#125;    &#125;  &#125;&#125;
-
-注意：query_vector 里的 ... 是占位符，实际生产环境中是一长串几百位的浮点数（由 NLP 模型将“如何配置Redis集群”这句话转化而来）。
-
-
-为什么需要“混合检索”？
-假设你在公司内部知识库搜索“如何配置Redis集群”：
-
-纯关键词检索（BM25）：它会老老实实找包含“配置”、“Redis”、“集群”这些词的文档。但如果有人写的是“Redis 集群搭建步骤”（没有“配置”二字），它可能就搜不到了。
-纯向量检索（kNN）：它能读懂语义，知道“搭建”和“配置”是一回事。但它可能把权限搞混，把别人私密的“Redis故障演练”文档也推给你。
-
-混合检索 = 左手抓关键词精确匹配，右手抓语义泛化理解，脚下还踩着“权限过滤器”防止越权，最后再用“精排算法”把最好的结果顶到最前面。
-模块一：&quot;size&quot;: 10 —— 返回结果数
-这是整个查询的“出口阀门”。无论中间过程捞出来 300 条还是 1000 条，最后返回给前端或用户的，只有 10 条。
-模块二：knn —— 语义检索
-&quot;knn&quot;: &#123;  &quot;field&quot;: &quot;vector&quot;,           // ① 要在哪个字段里做向量搜索？  &quot;query_vector&quot;: [0.12, ...], // ② 把“如何配置Redis集群”变成数学向量  &quot;k&quot;: 300,                    // ③ 向量检索要拿回多少个“语义相似”的文档？  &quot;num_candidates&quot;: 300        // ④ 每个分片内部先看多少个候选？&#125;
-
-field：你在建索引时，一定有个字段叫 vector，类型是 dense_vector，里面存着每篇文档的向量值。
-query_vector：这是通过机器学习模型实时推理出来的向量。
-k：向量检索这一路，先猛捞 300 个语义最像的文档。
-num_candidates：为了性能，每个分片会先挑出 300 个“看起来像的”，再汇总挑出全局最优的 300 个。
-
-模块三：query.bool —— 关键词硬匹配 + 权限安检（最重要的复合查询）
-这是整个查询里最复杂的部分，由 must（必须匹配，算分）和 filter（必须匹配，不算分）组成。
-① must 里的 match —— 全文检索（传统搜索引擎老本行）
-&#123; &quot;match&quot;: &#123; &quot;textContent&quot;: &quot;如何配置Redis集群&quot; &#125; &#125;
-
-这个 match 会把“如何配置Redis集群”分词（比如分成：如何、配置、Redis、集群）。
-然后去 textContent 字段里找包含这些词的文档，并计算一个 相关性评分（_score），词频越高、越稀有的词，得分越高。
-
-② filter 里的 bool.should —— 权限门禁（OR 逻辑，必须满足其一）
-&quot;filter&quot;: [  &#123;    &quot;bool&quot;: &#123;      &quot;should&quot;: [        &#123; &quot;term&quot;: &#123; &quot;userId&quot;: &quot;42&quot; &#125; &#125;,          // 条件A：文档是你自己写的        &#123; &quot;term&quot;: &#123; &quot;public&quot;: true &#125; &#125;,          // 条件B：文档是公开的        &#123;                                          // 条件C：文档所属部门符合要求          &quot;bool&quot;: &#123;            &quot;should&quot;: [              &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;ENGINEERING&quot; &#125; &#125;,              &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;TECH_DEPT&quot; &#125; &#125;,              &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;COMPANY&quot; &#125; &#125;            ]          &#125;        &#125;      ]    &#125;  &#125;]
-这里的逻辑翻译成人话就是：
-
-只有满足以下条件之一的文档，才有资格进入候选池：
-
-作者 ID 是 42（你自己写的）；或者
-是公开文档；或者
-组织标签属于 “ENGINEERING / TECH_DEPT / COMPANY” 中的任意一个。
-
-
-关键区别：filter 里的条件 不影响相关性评分，只做“硬过滤”。也就是说，哪怕这篇文档关键词匹配度 100 分，只要不通过这里的安全检查，就会直接舍弃。
-模块四：rescore —— 二次精排
-前面的 knn + query 已经产生了一个初步排名，但 Elasticsearch 觉得“不够精细”，于是启动重打分机制。
-&quot;rescore&quot;: &#123;  &quot;window_size&quot;: 300,            // 只对当前排名前 300 名的文档进行重算  &quot;query&quot;: &#123;    &quot;query_weight&quot;: 0.2,         // 第一阶段的老分数，只占 20% 权重    &quot;rescore_query_weight&quot;: 1.0, // 新算的分数，占 100% 权重    &quot;rescore_query&quot;: &#123;      &quot;match&quot;: &#123;        &quot;textContent&quot;: &#123;          &quot;query&quot;: &quot;如何配置Redis集群&quot;,          &quot;operator&quot;: &quot;and&quot;      // 四个词（如何/配置/Redis/集群）必须全部同时出现！        &#125;      &#125;    &#125;  &#125;&#125;
-
-window_size: 300：大海捞针捞出来的几十万文档，我只关心当前得分最高的前 300 个，其他的不管了。
-rescore_query：用 operator: &quot;and&quot; 重新匹配一次。这意味着，只有在 textContent 里 同时包含“如何”、“配置”、“Redis”、“集群”这四个词 的文档，才会在这个环节获得极高的加分。
-权重计算：最终得分 = 0.2 * 老分数 + 1.0 * 新分数。rescore_query_weight 设为 1.0（远大于 0.2），相当于用“必须全部包含关键词”这个硬标准，把最精准的文档强行提拔到最前面。
-
-
-混合检索流程
-
-并行双路召回：
-
-一路走 knn（向量），捞出 300 条语义相似的。
-一路走 query（关键词 + 过滤器），筛出所有符合关键词且通过权限验证的文档，并算出初步分数。
-
-
-结果合并与粗排：
-
-系统将两路结果合并，去掉重复项，按初步分数（_score）排序，形成一个大的候选池。
-
-
-截取前 300 名：
-
-从候选池中只取出当前排名最靠前的 300 个文档（由 window_size 决定）。
-
-
-精排重算：
-
-对这 300 个文档执行 rescore_query（要求四个词全匹配），重新计算最终得分并排序。
-
-
-输出最终结果：
-
-从精排后的前 300 名里，截取前 10 条（size: 10）返回给调用方。
-
-
-
-
-调优建议
-
-k和 window_size 的关系：通常建议 window_size ≥ knn.k，确保向量捞回来的 300 条都能进入重打分环节。
-num_candidates 要大于 k：比如 k=300，num_candidates 可以设 500 或 1000，能提升召回率（但会增加性能开销）。
-query_weight 与 rescore_query_weight 的配比：如果你觉得关键词精确匹配更重要，可以把 rescore_query_weight 调得比 query_weight 大很多（就像本例中的 1.0 vs 0.2）。
-filter 里多用 term：对于精确匹配（如 ID、状态、标签），请务必用 term，千万别用 match，否则会被分词器拆散，导致权限越界！
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-      <tags>
-        <tag>Elasticsearch</tag>
-        <tag>Kibana</tag>
-        <tag>全文检索</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Open Spec使用教程</title>
-    <url>/posts/67f9161d/</url>
-    <content><![CDATA[随着 Claude Code、Codex、Cursor 等 AI 编程工具越来越强，现在让 AI 完成一个完整功能已经不是什么难事。
-真正麻烦的问题反而变成了：
-
-AI 写代码很快，但它不一定真正理解你想做什么。
-
-比如我们直接告诉 AI：
-给这个项目增加用户登录功能。
-AI 很可能马上开始创建接口、修改数据库、增加依赖、设计 Token 机制。
-等它全部写完以后，你才发现：
-登录方式不是你想要的数据库字段设计不合理Token 生命周期不符合需求接口路径和现有项目风格不一致甚至修改了本来不应该修改的代码
-这就是目前 AI Coding 中非常典型的问题。
-而 OpenSpec 想解决的，就是让：
-需求 → 代码
-变成：
-需求 ↓分析 ↓规范 ↓设计 ↓任务 ↓实现 ↓验证
-也就是所谓的：
-Spec-Driven Development规范驱动开发
-OpenSpec 并不是一个新的 Web 框架，也不会替代 Claude Code、Codex 或 Cursor。
-它更像是开发者和 AI 编码助手之间的一层“协议”。
-开发之前，先把：
-为什么做做什么系统最终应该是什么样准备怎么实现具体需要完成哪些任务
-全部明确下来。
-然后再允许 AI 开始修改代码。
-这样，AI Coding 就不再是：
-给一句 Prompt↓AI 自由发挥
-而变成：
-先定义正确答案↓再让 AI 实现
-这篇文章会从零开始完整介绍 OpenSpec 的安装、初始化、目录结构、工作流、Spec 写法、Claude Code / Codex 配合方式，以及实际项目中的推荐使用方式。
-一、OpenSpec 是什么，以及为什么需要它
-传统 AI Coding 的基本流程通常是：
-开发者   ↓Prompt   ↓AI   ↓代码
-比如：
-给系统增加 API 限流。
-听起来很简单，但实际上里面包含大量没有明确的信息：
-对谁限流？IP？用户？API Key？限流多少？100 次 / 分钟？1000 次 / 小时？哪些接口限流？全部接口？公开 API？登录接口？超过限制怎么办？HTTP 429？排队？直接丢弃？限流状态放在哪里？Redis？数据库？内存？
-如果这些问题没有提前说明，AI 就必须自己猜。
-而 OpenSpec 的思路是：
-不要直接 Coding
-先建立一个 Change：
-我要修改什么？
-然后逐步生成：
-ProposalSpecDesignTasks
-最终再开始实现。
-整个流程大致如下：
-开发者提出需求       ↓AI Explore       ↓分析现有代码       ↓Proposal       ↓Specification       ↓Design       ↓Tasks       ↓人工 Review       ↓AI Apply       ↓Test / Verify       ↓Archive
-所以 OpenSpec 真正解决的问题不是：
-AI 不会写代码
-而是：
-AI 写代码之前缺少明确约束。
-对于简单 Demo，这种约束可能不重要。
-但项目一旦变成：
-长期维护多人协作几十个模块大量 AI Coding复杂业务逻辑Agent 一次修改十几个甚至几十个文件
-需求规范就会越来越重要。
-OpenSpec 中最重要的两个概念
-理解 OpenSpec，其实只需要先搞懂两个东西：
-SpecChange
-Spec：系统现在应该是什么样
-OpenSpec 中：
-openspec/specs/
-保存的是当前系统已经确认的正式规范。
-例如：
-openspec/specs/├── user-auth/│   └── spec.md│├── document-upload/│   └── spec.md│└── api-rate-limit/    └── spec.md
-分别可能描述：
-用户认证如何工作文档上传如何工作API 限流如何工作
-因此可以把：
-openspec/specs/
-理解成：
-
-当前项目行为的长期知识库。
-
-半年以后即使换了开发人员，甚至换了 AI Agent，只要读取 Specs，就应该能够知道：
-这个系统目前应该怎么运行。
-Change：系统准备发生什么变化
-假设当前系统已经支持：
-用户登录
-现在准备增加：
-用户退出登录
-OpenSpec 不会立刻修改主 Spec。
-而是先创建：
-openspec/changes/add-user-logout/
-例如：
-openspec/│├── specs/│   └── user-auth/│       └── spec.md│└── changes/    └── add-user-logout/        ├── proposal.md        ├── design.md        ├── tasks.md        │        └── specs/            └── user-auth/                └── spec.md
-其中：
-openspec/specs/user-auth/spec.md
-表示：
-当前系统正式规范
-而：
-openspec/changes/add-user-logout/specs/user-auth/spec.md
-表示：
-这次修改准备让 user-auth 发生什么变化
-这部分也叫：
-Delta Spec
-Delta 就是：
-变化量
-所以可以简单理解：
-Specs=系统现在是什么Changes=系统准备变成什么
-这两个概念理解以后，OpenSpec 的整个工作流就很好理解了。
-二、安装 OpenSpec 并初始化项目
-OpenSpec 本身是一个 CLI 工具，因此首先需要 Node.js。
-可以检查当前版本：
-node --version
-如果得到类似：
-v22.23.0
-就可以正常使用。
-然后安装 OpenSpec：
-npm install -g @fission-ai/openspec@latest
-如果使用 pnpm：
-pnpm add -g @fission-ai/openspec@latest
-安装完成以后：
-openspec --version
-能够正常显示版本号，就说明安装成功。
-初始化现有项目
-假设项目结构：
-my-project/
-进入：
-cd my-project
-执行：
-openspec init
-OpenSpec 会让你选择使用的 AI Coding 工具。
-比如：
-Claude CodeCodexCursor
-选择以后，OpenSpec 会自动生成对应 Agent 所需要的：
-CommandsSkillsWorkflow
-例如 Claude Code 项目中可能出现：
-.claude/├── commands/└── skills/
-同时项目会增加：
-openspec/
-目录。
-基础结构一般类似：
-my-project/│├── src/├── tests/│├── openspec/│   ├── config.yaml│   ├── specs/│   └── changes/│└── ...
-如果希望指定 Agent，也可以：
-openspec init --tools claude,cursor
-如果暂时不需要绑定任何 Agent：
-openspec init --tools none
-后续 OpenSpec 更新以后，可以在项目中运行：
-openspec update
-更新项目中的 Agent Skill 和 Command。
-一定要区分两种命令
-第一次使用 OpenSpec 最容易踩的坑，就是混淆：
-openspec xxx
-和：
-/opsx:xxx
-前者属于：
-终端命令
-比如：
-openspec initopenspec listopenspec validate --allopenspec showopenspec archive
-这些应该输入：
-PowerShellCMDTerminalWarpLinux Shell
-而：
-/opsx:explore/opsx:propose/opsx:apply
-属于：
-AI Coding Agent
-应该输入：
-Claude CodeCursorCodex
-等 AI 工具。
-可以这样记：
-openspec xxx      ↓Terminal/opsx:xxx      ↓AI Chat
-另外，不同 AI 工具对 OpenSpec Workflow 的展示方式可能不完全相同。
-有的使用：
-/opsx:propose
-有的可能展示成：
-/opsx-propose
-还有一些 Agent 会直接通过 Skill 调用。
-因此初始化完成以后，最好以：
-openspec init
-生成的实际提示为准。
-三、OpenSpec 的完整开发工作流
-OpenSpec 最核心的流程可以概括为：
-Explore   ↓Propose   ↓Review   ↓Apply   ↓Verify   ↓Archive
-其中真正日常使用最多的是：
-ExploreProposeApplyArchive
-如果是比较重要的功能，则推荐完整使用：
-Explore↓Propose↓人工检查规范↓Validate↓Apply↓Test↓Verify↓Archive
-下面用：
-增加 API 限流
-作为例子完整走一遍。
-Explore：先分析，不要急着写代码
-首先进入 Claude Code、Codex 或 Cursor。
-执行：
-/opsx:explore
-然后描述需求：
-我准备给项目增加 API 限流功能。公开 API 需要限流。普通客户端限制为每分钟 100 次请求。超过限制返回 HTTP 429。希望使用 Redis 保存限流状态。请先分析当前项目结构、API 组织方式、Redis 使用情况以及适合的实现方案。暂时不要修改代码。
-Explore 最重要的特点就是：
-只分析不实施
-AI 可以先研究：
-项目结构路由层认证逻辑Redis 是否已经存在中间件体系公共 API 如何识别错误处理方式测试框架
-然后告诉你：
-应该在哪一层实现会影响哪些文件有什么技术风险有没有更合适的方案
-这一步看起来会多花几分钟，但经常能够避免后面大量返工。
-因为 AI Coding 最大的浪费并不是：
-代码写得慢
-而是：
-方向写错了。
-Propose：把需求正式变成 Change
-需求分析完成后执行：
-/opsx:propose add-api-rate-limit
-也可以直接描述：
-/opsx:propose 为公开 API 增加基于 Redis 的限流机制，每个客户端每分钟最多请求 100 次，超过以后返回 HTTP 429
-然后 OpenSpec 会生成：
-openspec/changes/add-api-rate-limit/
-一般包含：
-add-api-rate-limit/│├── proposal.md├── design.md├── tasks.md│└── specs/    └── api-rate-limit/        └── spec.md
-这几个文件分别负责不同内容：
-
-
-
-文件
-作用
-
-
-
-
-proposal.md
-为什么做、准备改变什么
-
-
-specs/*/spec.md
-最终系统应该有什么行为
-
-
-design.md
-技术上如何实现
-
-
-tasks.md
-AI 接下来要完成哪些任务
-
-
-
-它们之间可以理解成：
-proposal   │   ├──── specs   │   └──── design            │            ▼          tasks            │            ▼          apply
-Proposal 负责：
-WhyWhat
-Spec 负责：
-Behavior
-Design 负责：
-How
-Tasks 负责：
-Execution
-这是 OpenSpec 整个体系最核心的一层关系。
-四、Proposal、Spec、Design 和 Tasks 应该怎么写
-这四个文件看起来都在描述需求，但它们实际上分工非常明确。
-如果混在一起写，OpenSpec 的价值就会大幅下降。
-Proposal：说明为什么做，以及准备改变什么
-例如：
-openspec/changes/add-api-rate-limit/proposal.md
-可以类似：
-# Add API Rate Limiting## WhyPublic APIs currently have no request rate limits.A single client can consume excessive server resources.## What Changes- Add rate limiting for public API endpoints- Limit clients to 100 requests per minute- Return HTTP 429 when the limit is exceeded- Store rate limit state in Redis## Impact- API middleware- Redis- Public API endpoints
-Proposal 最重要的是回答：
-为什么要做？准备改变什么？影响哪些模块？
-不要在这里写大量：
-Redis Lua 脚本具体类名函数设计数据库字段Middleware 实现
-这些属于 Design。
-所以可以记成：
-Proposal = Why + What
-Spec：定义什么叫“正确”
-Spec 是 OpenSpec 最重要的部分。
-例如：
-openspec/changes/add-api-rate-limit/specs/api-rate-limit/spec.md
-可以写：
-# Spec Delta## ADDED Requirements### Requirement: Public API rate limitingThe system SHALL limit each public API client to 100 requests per minute.#### Scenario: Request within limit- **WHEN** a client sends fewer than 100 requests within one minute- **THEN** the system SHALL process the request normally#### Scenario: Request exceeds limit- **WHEN** a client exceeds 100 requests within one minute- **THEN** the system SHALL reject the request- **THEN** the system SHALL return HTTP status 429
-这里完全没有规定：
-必须使用 Redis SETEX必须使用某个 Middleware必须使用某个类
-它只规定：
-系统最终必须表现成什么样。
-这就是最关键的区别。
-Spec 实际上很接近：
-验收标准
-甚至可以直接对应测试。
-例如：
-WHEN第 101 个请求到达THEN返回 HTTP 429
-以后完全可以转成 Integration Test。
-所以 OpenSpec 的思路并不是：
-AI 写完以后我再判断它写得对不对
-而是：
-先定义什么叫做对↓再让 AI 去实现这个正确结果
-Spec 中的 ADDED、MODIFIED、REMOVED
-OpenSpec 的 Delta Spec 中常见：
-## ADDED Requirements
-表示新增。
-## MODIFIED Requirements
-表示修改。
-## REMOVED Requirements
-表示删除。
-例如已有：
-### Requirement: User LoginThe system SHALL authenticate users using email and password.
-现在增加 Google 登录。
-如果原来的邮箱登录没有改变：
-## ADDED Requirements### Requirement: Google LoginThe system SHALL allow users to authenticate using Google OAuth.
-而如果原来：
-Session 7 天过期
-现在修改成：
-Session 30 天过期
-这才属于：
-## MODIFIED Requirements
-还有一个非常重要的规则：
-
-MODIFIED 应该写修改后的完整 Requirement，而不是只写变化的那一句。
-
-否则归档时容易造成原有规范信息缺失。
-Requirement 和 Scenario 的结构
-OpenSpec Spec 中一般使用：
-### Requirement: Name
-Requirement 下至少应该存在一个：
-#### Scenario: Name
-例如：
-### Requirement: PDF UploadThe system SHALL allow users to upload PDF documents.#### Scenario: Upload valid PDF- **WHEN** the user uploads a valid PDF file- **THEN** the system SHALL save the document
-这里要特别注意标题层级：
-Requirement=###Scenario=####
-Scenario 不是三级标题。
-另外规范最好使用：
-SHALLMUST
-这类明确表达。
-少写：
-最好可能应该尽量maybeusually
-因为 Spec 必须：
-可以判断可以测试可以验证
-例如：
-系统应该拥有良好的性能。
-就不是很好的规范。
-因为：
-什么叫良好？
-没法测试。
-更好的写法：
-The search API SHALL return within 500 ms for 95% of requests under the defined test workload.
-至少它可以被验证。
-Design：描述技术实现方式
-如果 Proposal 解决：
-为什么做什么
-Spec 解决：
-系统最终应该怎么表现
-那么 Design 解决：
-怎么实现
-例如：
-# Design## ContextThe backend uses FastAPI and Redis is already available.## Goals- Support distributed API rate limiting- Work across multiple backend instances- Avoid database writes## DecisionsUse Redis fixed-window counters.Each client uses a Redis key in the following format:rate-limit:&#123;client_id&#125;:&#123;minute&#125;The counter expires after 60 seconds.## RisksIf Redis becomes unavailable, rate limiting temporarily fails open and the failure is logged.## MigrationNo database migration is required.
-如果涉及以下内容，Design 通常非常重要：
-数据库改动系统架构跨多个模块新依赖性能安全迁移方案兼容性缓存策略消息队列
-而如果只是：
-修改按钮文字简单 CSS修一个小 Bug
-Design 就可以相对简单。
-Tasks：把规范拆成 AI 能执行的工作
-最后生成：
-tasks.md
-例如：
-# Tasks## 1. Rate Limiter- [ ] 1.1 Create rate limiter service- [ ] 1.2 Implement Redis counter- [ ] 1.3 Add TTL handling## 2. Middleware- [ ] 2.1 Add API rate limit middleware- [ ] 2.2 Resolve client identifier- [ ] 2.3 Return HTTP 429## 3. Tests- [ ] 3.1 Test requests within limit- [ ] 3.2 Test requests exceeding limit- [ ] 3.3 Test Redis unavailable scenario
-Tasks 最好使用：
-- [ ]
-而不是：
--
-因为 OpenSpec 可以通过 Checkbox 判断任务完成情况。
-完成后：
-- [x]
-这样以后运行：
-openspec list
-就能看到类似：
-add-api-rate-limit    8/10 tasks
-五、Apply、Validate、Verify 和 Archive
-Proposal、Spec、Design、Tasks 全部确认以后，才真正进入编码阶段。
-这一步叫：
-Apply
-执行：
-/opsx:apply
-AI 会读取：
-proposal.mdspec.mddesign.mdtasks.md
-然后开始按照 Tasks 修改项目。
-此时 AI 的任务不再是：
-自己想该怎么做
-而是：
-按照已经确认的规范完成实现。
-这就是 OpenSpec 和普通 Prompt Coding 最大的区别。
-不要 Propose 完就直接 Apply
-一个很常见的错误是：
-Propose↓完全不看↓Apply
-这样其实会让 OpenSpec 退化成：
-AI 写代码之前顺便多生成几份 Markdown
-真正推荐的是：
-Propose↓检查 proposal.md↓检查 spec.md↓检查 design.md↓检查 tasks.md↓发现问题就修改↓Apply
-OpenSpec 的核心价值恰恰就在：
-
-代码还没写之前，你就可以发现 AI 理解错了。
-
-修改已经生成的 Change
-如果原来 Spec 写的是：
-100 requests/minute
-后来决定改成：
-300 requests/minute
-最好不要直接修改代码。
-应该先更新 OpenSpec。
-例如让 AI：
-把当前 API Rate Limit Change 修改为每分钟 300 次。同步更新 Proposal、Spec、Design 和 Tasks 中受影响的内容。
-也可以使用：
-/opsx:update
-这样可以尽量保证几个 Artifact 之间保持一致。
-Validate：检查规范有没有问题
-日常非常推荐执行：
-openspec validate --all
-它可以检查：
-Spec 格式RequirementScenarioDelta SpecTasksArchive 冲突
-例如某个 Requirement 没有 Scenario：
-ADDED &quot;Rate limiting&quot; must include at least one scenario
-或者 Scenario 标题层级写错，也可能被发现。
-如果希望更严格：
-openspec validate --all --strict
-我的推荐是至少在两个阶段执行：
-Apply 之前Archive 之前
-也就是：
-Propose↓Review↓Validate↓Apply
-然后：
-Apply↓Test↓Verify↓Validate↓Archive
-Verify：检查实现是否真的符合规范
-代码写完只是：
-Implementation Complete
-不代表：
-Requirement Complete
-例如 Spec 写：
-超过限制返回 HTTP 429
-结果 AI 实现成：
-HTTP 403
-代码可能：
-没有报错测试甚至能跑
-但是：
-实现 != Spec
-Verify 就是用来检查这种问题。
-如果当前 OpenSpec Profile 安装了 Verify Workflow，可以使用：
-/opsx:verify
-让 Agent 对照：
-ProposalSpecDesignTasks
-检查代码是否满足要求。
-如果没有 Verify，可以查看 OpenSpec Workflow 配置：
-openspec config profile
-调整以后：
-openspec update
-重新生成 Agent 工作流。
-对于复杂项目，我非常建议保留 Verify。
-Sync 和 Archive 的区别
-OpenSpec 还有：
-/opsx:sync
-它主要用于：
-把当前 Change 中的 Delta Spec同步到 openspec/specs/
-但 Change 本身仍然保持 Active。
-也就是说：
-Sync=更新主 Spec但不结束 Change
-而：
-Archive=完成 Change并归档
-绝大多数普通功能开发可以直接：
-Archive
-只有 Change 生命周期很长，而中间已经有一部分稳定规范需要同步时，Sync 才更加有价值。
-Archive：完成一次 OpenSpec 生命周期
-功能完成以后：
-/opsx:archive
-或者终端：
-openspec archive add-api-rate-limit
-自动确认：
-openspec archive add-api-rate-limit -y
-Archive 通常会：
-合并 Delta Spec        ↓更新 openspec/specs/        ↓移动 Change        ↓openspec/changes/archive/
-例如：
-openspec/changes/add-api-rate-limit/
-最终变成：
-openspec/changes/archive/2026-10-04-add-api-rate-limit/
-此时：
-Change
-已经变成：
-历史开发记录
-而最终规范：
-api-rate-limit
-进入：
-openspec/specs/
-成为：
-当前系统事实
-所以 OpenSpec 的整个生命周期其实可以总结成：
-Change↓Implement↓Verify↓Archive↓Spec
-六、Claude Code、Codex 和 Cursor 中如何实际使用
-OpenSpec 最适合和 AI Coding Agent 一起使用。
-假设使用 Claude Code。
-首先：
-cd my-project
-启动：
-claude
-然后：
-/opsx:explore
-告诉 Claude：
-我准备增加文档搜索功能。用户提交关键词以后，需要在已有文档中搜索相关内容。先分析当前项目的数据库结构、文档模型、搜索接口和现有技术栈。不要修改代码。
-讨论完成以后：
-/opsx:propose add-document-search
-然后人工检查：
-openspec/changes/add-document-search/
-重点查看：
-proposal.mdspecs/design.mdtasks.md
-终端运行：
-openspec validate add-document-search
-确认没有问题：
-/opsx:apply
-实现完成以后运行项目测试：
-pytest
-或者：
-npm test
-然后：
-/opsx:verify
-最后：
-/opsx:archive
-完整流程就是：
-需求   ↓Explore   ↓分析项目   ↓Propose   ↓人工审核   ↓Validate   ↓Apply   ↓Test   ↓Verify   ↓Archive
-Codex 和 Cursor 的整体逻辑完全一样。
-区别主要只是：
-OpenSpec Workflow 如何暴露给 Agent
-某些工具会使用：
-Slash Commands
-有的则会通过：
-Skills
-调用。
-因此最稳妥的方法是：
-运行 openspec init↓选择当前 AI Agent↓按照生成的提示使用
-而不是死记某一种固定 Command。
-七、项目中的推荐实践
-真正把 OpenSpec 用好，并不是会敲几条命令，而是需要建立一套比较稳定的开发习惯。
-一个 Change 尽量只解决一个问题
-例如：
-重构系统架构增加权限增加支付增加消息通知优化 UI提高性能
-如果全部写进：
-one-big-change
-后面一定很难维护。
-更合理：
-add-rbacadd-paymentadd-notificationrefactor-auth-serviceoptimize-document-query
-也就是尽量保持：
-One Change=One Clear Goal
-这样：
-Proposal 更清晰Spec 更容易验证Task 更容易执行Archive 历史也更好读
-Spec 写行为，Design 写实现
-这是最值得记住的一条。
-错误的 Spec：
-系统 SHALL 使用 Redis SETEX 存储限流 Key。
-这实际上是在规定技术实现。
-更好的 Spec：
-系统 SHALL limit each public client to 100 requests per minute.
-然后 Design 再写：
-Use Redis fixed-window counters.
-因此：
-Spec=What the system doesDesign=How the system does it
-以后即使从 Redis 换成其他存储：
-Spec 可能完全不用改Design 才需要调整
-这才是好的系统规范。
-已经开发一半的大项目，不要一次性补全部 Specs
-很多人第一次给已有项目接 OpenSpec，会想：
-让 AI 扫描整个项目然后生成全部 Specs
-如果项目有几十万行代码，结果往往是：
-文档很多但质量不高没人愿意维护
-更推荐渐进式建立。
-比如当前准备改：
-Authentication
-那就先完善：
-user-auth
-下一次修改：
-Document Upload
-再完善：
-document-upload
-随着项目持续开发：
-openspec/specs/
-会逐渐覆盖真正重要和活跃的功能。
-这种方式更符合实际工程。
-纯重构不一定需要 Spec
-例如：
-重命名变量调整文件目录代码格式化升级 ESLint修改 CI内部重构README 更新
-如果对：
-用户可观察行为
-没有任何变化，就没有必要硬写 Requirement。
-这种 Change 可以考虑配置：
-schema: spec-drivenskip_specs: true
-表示：
-这个 Change 没有 Spec-Level Behavior Change
-但不要为了省时间，在真正存在行为变化时也跳过 Specs。
-OpenSpec 最好和 Git 一起使用
-比如：
-git switch -c feat/api-rate-limit
-创建 Change：
-/opsx:propose add-api-rate-limit
-先提交规范：
-git add .git commit -m &quot;docs: propose api rate limiting&quot;
-然后：
-/opsx:apply
-开发完成：
-git add .git commit -m &quot;feat: implement api rate limiting&quot;
-然后：
-/opsx:verify
-最后：
-/opsx:archive
-提交归档：
-git add .git commit -m &quot;docs: archive api rate limiting change&quot;
-这样：
-Git
-记录：
-代码什么时候变了
-而：
-OpenSpec
-记录：
-为什么变要求是什么设计是什么最终行为是什么
-两者非常互补。
-PR Review 时也可以：
-先看 proposal.md↓看 spec.md↓看 design.md↓最后看代码 Diff
-理解成本会明显降低。
-八、一个完整实战示例
-假设当前正在开发一个 RAG 项目，现在准备新增：
-删除文档
-表面看只是：
-DELETE /documents/&#123;id&#125;
-但真正涉及：
-关系数据库对象存储向量数据库权限异常一致性
-如果直接告诉 AI：
-增加删除文档功能。
-它很容易漏掉其中某一步。
-使用 OpenSpec，可以先：
-/opsx:explore
-输入：
-我准备给项目增加文档删除功能。要求：1. 用户只能删除自己的文档2. 删除数据库中的文档记录3. 删除对象存储中的原始文件4. 删除向量数据库对应的 Embedding5. 如果外部资源删除失败，需要避免产生无法追踪的数据不一致先分析项目现有结构和实现方案，不要修改代码。
-AI 分析完成以后：
-/opsx:propose add-document-delete
-然后：
-openspec/changes/add-document-delete/
-可能出现：
-proposal.mddesign.mdtasks.mdspecs/└── document-delete/    └── spec.md
-Spec 可以包含：
-## ADDED Requirements### Requirement: Delete owned documentThe system SHALL allow a user to delete a document they own.#### Scenario: Delete owned document- **WHEN** the authenticated user deletes a document they own- **THEN** the database record SHALL be removed- **THEN** the original stored file SHALL be removed- **THEN** the associated vector records SHALL be removed
-还可以增加权限场景：
-### Requirement: Reject unauthorized deletionThe system SHALL prevent users from deleting documents owned by other users.#### Scenario: Delete another user&#x27;s document- **WHEN** a user attempts to delete a document owned by another user- **THEN** the system SHALL reject the request
-Design 则可以描述：
-先验证 Owner↓标记删除状态↓删除 Object Storage↓删除 Vector Records↓删除数据库记录↓失败时记录 Cleanup Job
-Tasks 则拆成：
-- [ ] Add ownership validation- [ ] Add document delete service- [ ] Remove object storage file- [ ] Remove vector database entries- [ ] Add cleanup failure handling- [ ] Add authorization tests- [ ] Add integration tests
-然后执行：
-openspec validate add-document-delete
-没有问题后：
-/opsx:apply
-让 AI 开始开发。
-实现完成后运行：
-pytest
-或者项目自己的：
-npm test
-随后：
-/opsx:verify
-最后：
-/opsx:archive
-这样一次开发完成以后，项目不仅得到了：
-删除文档功能代码
-同时还永久保存了：
-为什么增加这个功能↓它应该如何表现↓使用什么设计↓具体开发了哪些任务↓最终系统规范是什么
-这就是 OpenSpec 相比普通 AI Coding 最大的区别。
-常用命令速查
-最后整理一下最常用的 OpenSpec CLI。
-
-
-
-命令
-作用
-
-
-
-
-openspec init
-初始化 OpenSpec
-
-
-openspec update
-更新 Agent Workflow
-
-
-openspec list
-查看当前 Changes
-
-
-openspec list --specs
-查看现有 Specs
-
-
-openspec view
-查看 OpenSpec 状态
-
-
-openspec show &lt;name&gt;
-查看某个 Change 或 Spec
-
-
-openspec validate &lt;name&gt;
-验证指定 Change
-
-
-openspec validate --all
-验证全部 OpenSpec 内容
-
-
-openspec validate --all --strict
-严格验证
-
-
-openspec archive &lt;change&gt;
-归档 Change
-
-
-openspec status
-查看状态
-
-
-openspec schemas
-查看 Schema
-
-
-openspec config
-管理配置
-
-
-
-AI Agent 中最值得记住的则是：
-/opsx:explore
-分析需求。
-/opsx:propose
-建立 Change。
-/opsx:update
-修改规划。
-/opsx:apply
-正式实现。
-/opsx:verify
-检查代码是否满足规范。
-/opsx:archive
-结束并归档 Change。
-如果你只想记住一套最实用的工作流，可以直接记：
-Explore↓Propose↓Review↓Validate↓Apply↓Test↓Verify↓Archive
-总结
-OpenSpec 本质上并不是一个：
-让 AI 写代码更快
-的工具。
-它真正解决的是：
-让 AI 更少把代码写错方向。
-传统 AI Coding：
-Prompt   ↓Code
-而 OpenSpec：
-Idea   ↓Explore   ↓Proposal   ↓Specification   ↓Design   ↓Tasks   ↓Implementation   ↓Verification   ↓Archive
-当 Claude Code、Codex 这种 Agent 越来越强以后，真正稀缺的已经不是：
-代码生成能力
-而是：
-需求边界系统规范架构约束长期上下文验收标准
-如果没有这些东西，AI 越强，甚至可能：
-越快地把错误方向实现完整。
-而 OpenSpec 做的事情，就是在：
-人类需求
-和：
-AI 实现
-之间建立一层长期、结构化、可验证的规范。
-第一次使用 OpenSpec，其实不用学得太复杂。
-安装：
-npm install -g @fission-ai/openspec@latest
-进入项目：
-cd your-project
-初始化：
-openspec init
-然后进入 Claude Code、Codex 或 Cursor：
-/opsx:explore↓/opsx:propose add-your-feature↓检查 Proposal / Spec / Design / Tasks↓/opsx:apply↓/opsx:verify↓/opsx:archive
-中间配合：
-openspec validate --all
-基本就已经掌握了 OpenSpec 最核心的使用方式。
-真正值得形成的开发习惯其实只有一句话：
-
-不要让 AI 拿到需求以后立刻写代码。先定义什么叫正确，再让 AI 去实现正确。
-
-]]></content>
-      <categories>
-        <category>开发</category>
       </categories>
   </entry>
   <entry>
@@ -6192,6 +6368,687 @@ Job 类
       </tags>
   </entry>
   <entry>
+    <title>Elasticsearch使用</title>
+    <url>/posts/78c3da92/</url>
+    <content><![CDATA[安装
+docker安装 es
+
+拉取镜像
+
+docker pull elasticsearch:7.3.0
+
+准备好数据挂载文件夹比如：E:docker/elasticsearch，先启动一个容器
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; elasticsearch:7.3.0
+
+复制需要挂载的文件夹
+
+docker cp es7:/usr/share/elasticsearch/config E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/data E:\docker\elasticsearchdocker cp es7:/usr/share/elasticsearch/plugins E:\docker\elasticsearch
+
+修改/config文件夹下 的 elasticsearch.yml文件如下,cluster.name 可自己指定
+
+cluster.name: &quot;elasticsearch-cluster&quot;network.host: 0.0.0.0# 跨域相关http.cors.allow-origin: &quot;*&quot;http.cors.enabled: truehttp.cors.allow-headers: Authorization,X-Requested-With,Content-Length,Content-Type
+
+删除刚刚创建的容器
+
+docker rm -f es7
+
+新建容器，使用挂载的文件夹
+
+docker run -d --name es7 -p 9200:9200 -p 9300:9300 -e &quot;discovery.type=single-node&quot; -e ES_JAVA_OPTS=&quot;-Xms1024m -Xmx1024m&quot; -v E:\docker\elasticsearch\config:/usr/share/elasticsearch/config -v E:\docker\elasticsearch\data:/usr/share/elasticsearch/data -v E:\docker\elasticsearch\plugins:/usr/share/elasticsearch/plugins -v E:\docker\elasticsearch\logs:/usr/share/elasticsearch/logs elasticsearch:7.3.0
+
+浏览器访问 http://localhost:9200/ 如下：
+
+
+可视化工具 Kibana 安装
+
+拉取镜像
+
+docker pull kibana:7.3.0
+
+准备和挂载的文件夹，先运行一个容器
+
+docker run -d --name kibana -p 5601:5601 kibana:7.3.0
+
+复制配置到挂载的文件夹
+
+docker cp kibana:/usr/share/kibana/config E:\docker\kibana
+
+编辑配置文件 kibana.yml 如下
+
+server.name: kibanaserver.host: &quot;0&quot;elasticsearch.hosts: [ &quot;http://172.17.0.1:9200&quot; ] # 修改为宿主机 IP 地址xpack.monitoring.ui.container.elasticsearch.enabled: truei18n.locale: &quot;zh-CN&quot; # 设置使用中文
+
+如何确定本机 IP 地址：windows 系统终端执行 ipconfig 命令，复制 IPV4 地址即可
+
+
+
+删除刚刚运行的容器，并重新使用挂载的文件夹数据运行一个新的容器
+
+docker rm -f kibana
+docker run -d --name kibana -p 5601:5601 -v E:\docker\kibana\config:/usr/share/kibana/config kibana:7.3.0
+
+浏览器访问 http://localhost:5601 即可访问控制台
+
+
+Dev Tools 是 Kibana 内置的一个强大工具，它为用户提供了一个方便的界面来与 Elasticsearch 进行交互。主要特点包括：
+
+命令行界面：提供了一个类似命令行的界面，用户可以在这里输入 Elasticsearch 的 RESTful API 调用，执行各种操作，如查询数据、创建索引、更新设置等。
+历史记录：保存了用户的查询历史，方便用户回顾之前的请求或重用某些查询。
+语法高亮和自动完成：支持 JSON 语法高亮显示，以及对 API 方法和参数的自动完成提示，提高了编码效率。
+响应格式化：返回的 JSON 响应会自动格式化，便于阅读和理解。
+
+
+Elasticsearch 基本请求格式
+Elasticsearch 提供 REST API，常见请求格式如下：
+GET /索引名/_searchPOST /索引名/_docPUT /索引名/_doc/文档IDDELETE /索引名/_doc/文档ID
+Elasticsearch 基础语法学习
+1. 创建索引
+
+创建一个名为 users 的索引。
+
+PUT /users&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 1,    &quot;number_of_replicas&quot;: 0  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      &#125;,      &quot;age&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;      &#125;,      &quot;email&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;      &#125;    &#125;  &#125;&#125;
+
+2. 新增文档
+指定 ID 新增
+PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+自动生成 ID 新增
+POST /users/_doc&#123;  &quot;name&quot;: &quot;李四&quot;,  &quot;age&quot;: 25,  &quot;email&quot;: &quot;lisi@example.com&quot;&#125;
+3. 根据 ID 查询文档
+GET /users/_doc/1
+
+4. 搜索文档
+查询所有文档
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;&#125;
+条件搜索
+
+查询 name 包含 张 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;name&quot;: &quot;张&quot;    &#125;  &#125;&#125;
+精确查询
+
+查询 email 等于指定值：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;email&quot;: &quot;zhangsan@example.com&quot;    &#125;  &#125;&#125;
+范围查询
+
+查询年龄大于等于 20 的文档：
+
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;age&quot;: &#123;        &quot;gte&quot;: 20      &#125;    &#125;  &#125;&#125;
+分页查询
+GET /users/_search&#123;  &quot;query&quot;: &#123;    &quot;match_all&quot;: &#123;&#125;  &#125;,  &quot;from&quot;: 0,  &quot;size&quot;: 10&#125;
+含义：
+
+from：从第几条开始
+size：每页返回多少条
+
+5. 更新文档
+局部更新
+只更新某个字段：
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+增加字段
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;city&quot;: &quot;北京&quot;  &#125;&#125;
+
+6. 删除文档
+删除 ID 为 1 的文档：
+DELETE /users/_doc/1
+
+7. 删除索引
+删除整个 users 索引：
+DELETE /users
+
+8. 查看索引是否存在
+HEAD /users
+如果存在，返回状态码：
+200
+如果不存在，返回：
+404
+
+9. 查看索引信息
+GET /users
+查看索引 mapping：
+GET /users/_mapping
+查看索引 settings：
+GET /users/_settings
+
+10. 最小可用 CRUD 总结
+增
+PUT /users/_doc/1&#123;  &quot;name&quot;: &quot;张三&quot;,  &quot;age&quot;: 20,  &quot;email&quot;: &quot;zhangsan@example.com&quot;&#125;
+查
+GET /users/_doc/1
+改
+POST /users/_update/1&#123;  &quot;doc&quot;: &#123;    &quot;age&quot;: 21  &#125;&#125;
+删
+DELETE /users/_doc/1
+
+记住这个格式就行：
+PUT    /索引/_doc/ID       新增或覆盖文档GET    /索引/_doc/ID       查询单个文档POST   /索引/_update/ID    更新文档DELETE /索引/_doc/ID       删除文档GET    /索引/_search       搜索文档DELETE /索引               删除索引
+倒排索引
+认识
+
+倒排索引是从关键词到文档的映射。它与传统的正排索引不同，正排索引存储的是文档及其内容，而倒排索引反其道而行之，存储的是每个关键词以及包含这些关键词的文档信息。
+
+
+简单示例：
+假设我们有以下文档，分别对应一条中文句子：
+
+文档 1: Elasticsearch 是分布式引擎
+文档 2: 分布式系统的核心是搜索
+文档 3: 搜索引擎的未来是智能化
+
+倒排索引将这些文档转化为如下形式：
+
+
+
+关键词
+文档 ID
+
+
+
+
+elasticsearch
+1
+
+
+分布式
+1, 2
+
+
+系统
+2
+
+
+核心
+2
+
+
+搜索
+2, 3
+
+
+引擎
+1, 3
+
+
+智能化
+3
+
+
+
+当用户搜索某个关键词，如“引擎” 时，Elasticsearch 可以通过倒排索引快速查找到关键词对应的文档 ID（文档 1 和文档 3），而无需扫描所有文档。
+构建过程
+1. 分词（Tokenization）
+
+分词是将文本内容拆分为独立的单词或短语，例如：
+
+原语句：Elasticsearch是分布式引擎分词结果：[Elasticsearch, 是, 分布式, 引擎]
+2. 归一化（Normalization）
+
+归一化是对分词结果进行标准化处理，包括：
+
+
+转小写：将所有大写字母转为小写。例如 Elasticsearch → elasticsearch。
+去除停用词：删除一些对查询结果影响不大的词，如 “的“ “是” 等等。
+词干提取：将词汇归为基本形式，如 running → run。
+
+3. 创建倒排索引
+
+根据分词结果，为每个词项建立一个到文档的映射关系。最终生成的倒排索引可以看作如下结构，然后存储起来：
+
+&#123;  &quot;Elasticsearch&quot;: [1],  &quot;分布式&quot;: [1, 2],  &quot;引擎&quot;: [1, 3],  &quot;搜索&quot;: [2, 3],&#125;
+
+此时，倒排索引已经完成，后续的搜索操作会以此为基础。
+
+ik 中文分词器插件
+安装
+
+打开终端进入 es7 容器的内部
+
+docker exec -it es7 /bin/sh
+
+执行安装命令
+
+bin/elasticsearch-plugin install https://gt.infini.cloud/elasticsearch/analysis-ik/7.3.0
+
+安装完成后，执行如下命令，退出容器：
+
+exit
+
+然后，执行 docker cp 命令，将已安装的 ik 插件相关文件，复制到宿主机中，防止丢失：
+
+docker cp es7:/usr/share/elasticsearch/plugins/analysis-ik E:\docker\elasticsearch\pluginsdocker cp es7:/usr/share/elasticsearch/config/analysis-ik E:\docker\elasticsearch\config
+
+重启容器
+
+docker restart es7
+分词模式
+智能化分词 - ik_smart
+POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_smart&quot;,  &quot;text&quot;: &quot;小米手机&quot;&#125;
+
+最细粒度分词 - ik_max_word
+POST /_analyze&#123;  &quot;analyzer&quot;: &quot;ik_max_word&quot;,  &quot;text&quot;: &quot;中华人民共和国&quot;&#125;
+
+进阶使用
+索引
+常用属性
+顶层控制属性
+dynamic
+场景：你定义了 title 是 text，结果代码不小心多传了个 age 字段。
+
+dynamic: true（默认）：ES 默默帮你在映射里加上 age，类型可能错判成 long，导致后续范围查询异常。
+dynamic: strict（推荐）：直接拒绝写入，返回明确报错，倒逼你修正代码。
+
+示例（严格模式下的报错）：
+# 1. 创建索引，开启 strictPUT /test_strict&#123;  &quot;mappings&quot;: &#123;    &quot;dynamic&quot;: &quot;strict&quot;,    &quot;properties&quot;: &#123; &quot;title&quot;: &#123; &quot;type&quot;: &quot;text&quot; &#125; &#125;  &#125;&#125;# 2. 插入一条多带了字段的数据POST /test_strict/_doc/1&#123;  &quot;title&quot;: &quot;Hello&quot;,  &quot;unexpected_field&quot;: &quot;oops&quot;   # 这个字段没在 mapping 里定义过&#125;# 3. 返回结果：直接报错 400# &#123;#   &quot;error&quot;: &#123;#     &quot;reason&quot;: &quot;mapping set to strict, dynamic introduction of [unexpected_field] is not allowed&quot;#   &#125;# &#125;
+
+fields + ignore_above
+场景：title 既要全文搜索（用 text），又要按字母排序（必须用 keyword）。同时，为了防止有人存超长文本撑爆内存，用 ignore_above 切断。
+# 1. 创建索引PUT /test_fields&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;title&quot;: &#123;        &quot;type&quot;: &quot;text&quot;,        &quot;fields&quot;: &#123;                # 扩展子字段          &quot;keyword&quot;: &#123;             &quot;type&quot;: &quot;keyword&quot;,            &quot;ignore_above&quot;: 10      # 超过10个字符的，不建立 keyword 索引          &#125;        &#125;      &#125;    &#125;  &#125;&#125;# 2. 插入两条数据POST /test_fields/_doc/1&#123; &quot;title&quot;: &quot;Short&quot; &#125;              # 5个字符，正常POST /test_fields/_doc/2&#123; &quot;title&quot;: &quot;Very Very Long Title&quot; &#125; # 超过10个字符# 3. 尝试按 title.keyword 排序GET /test_fields/_search&#123;  &quot;sort&quot;: [&#123; &quot;title.keyword&quot;: &quot;asc&quot; &#125;]&#125;# 结果：文档1正常排序，文档2被忽略了（不会出现在排序结果中），# 这有效防止了对超长字符串排序导致的内存溢出崩溃。
+
+copy_to
+场景：用户想搜索 title 或 content，不想分两个字段查，希望一个 full 字段覆盖所有。用 copy_to 把多个字段的内容复制到一个隐藏字段里。
+# 1. 创建索引PUT /test_copy&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;title&quot;: &#123;        &quot;type&quot;: &quot;text&quot;,        &quot;copy_to&quot;: &quot;full_text&quot;    # 复制一份给 full_text      &#125;,      &quot;content&quot;: &#123;        &quot;type&quot;: &quot;text&quot;,        &quot;copy_to&quot;: &quot;full_text&quot;    # 复制一份给 full_text      &#125;,      &quot;full_text&quot;: &#123;              # 专门用来搜的组合字段        &quot;type&quot;: &quot;text&quot;      &#125;    &#125;  &#125;&#125;# 2. 插入数据POST /test_copy/_doc/1&#123;  &quot;title&quot;: &quot;Elasticsearch 教程&quot;,  &quot;content&quot;: &quot;本文讲解 mappings 核心属性&quot;&#125;# 3. 直接在 full_text 里搜，能命中 title 或 content 里的词GET /test_copy/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123; &quot;full_text&quot;: &quot;教程&quot; &#125;   # 成功命中！  &#125;&#125;
+
+format
+场景：你的数据来源复杂，有时候传 &quot;2026-09-05&quot;，有时候传 &quot;2026/09/05&quot;，默认的 ES 只认 ISO 标准（2026-09-05T10:30:00Z），不认斜杠。
+# 1. 创建索引，指定多种兼容格式（用 || 分隔）PUT /test_date&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;create_time&quot;: &#123;        &quot;type&quot;: &quot;date&quot;,        &quot;format&quot;: &quot;yyyy-MM-dd||yyyy/MM/dd||yyyy-MM-dd HH:mm:ss&quot;      &#125;    &#125;  &#125;&#125;# 2. 插入三种不同格式，全部成功！POST /test_date/_doc/1&#123; &quot;create_time&quot;: &quot;2026-09-05&quot; &#125;POST /test_date/_doc/2&#123; &quot;create_time&quot;: &quot;2026/09/05&quot; &#125;POST /test_date/_doc/3&#123; &quot;create_time&quot;: &quot;2026-09-05 18:30:00&quot; &#125;# 3. 此时按日期范围查询，所有文档都能被正确筛选，不会因为格式报错。
+
+null_value
+场景：有些文档的 tags 字段没填，是 null。默认情况下，null 值不会建立倒排索引，你搜 tags: &quot;NULL&quot; 搜不到。如果你想统一把空值替换成占位符，就用 null_value。
+# 1. 创建索引，将 null 替换成 &quot;EMPTY&quot;PUT /test_null&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;tags&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;,        &quot;null_value&quot;: &quot;EMPTY&quot;   # 存 null 时，实际索引里存的是 &quot;EMPTY&quot;      &#125;    &#125;  &#125;&#125;# 2. 插入一条 tags 为 null 的数据POST /test_null/_doc/1&#123; &quot;tags&quot;: null &#125;# 3. 搜索 &quot;EMPTY&quot;，能够搜到这条数据！GET /test_null/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;tags&quot;: &quot;EMPTY&quot; &#125;  &#125;&#125;# 成功返回文档1
+
+normalizer
+场景：存邮箱或用户名，用户搜 &quot;Admin&quot; 想命中 &quot;admin&quot;，但 keyword 是精确匹配，区分大小写。用 normalizer 在索引时统一转小写。
+# 1. 先在 settings 里定义自定义 normalizerPUT /test_normalizer&#123;  &quot;settings&quot;: &#123;    &quot;analysis&quot;: &#123;      &quot;normalizer&quot;: &#123;        &quot;lowercase_normalizer&quot;: &#123;          &quot;type&quot;: &quot;custom&quot;,          &quot;filter&quot;: [&quot;lowercase&quot;]   # 统一转小写        &#125;      &#125;    &#125;  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;username&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;,        &quot;normalizer&quot;: &quot;lowercase_normalizer&quot;      &#125;    &#125;  &#125;&#125;# 2. 插入数据时存大写的 &quot;Admin&quot;POST /test_normalizer/_doc/1&#123; &quot;username&quot;: &quot;Admin&quot; &#125;# 3. 实际 ES 倒排索引里存的是 &quot;admin&quot;（被转换了）# 此时用小写去 term 精确查询，依然能命中GET /test_normalizer/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;username&quot;: &quot;admin&quot; &#125;   # 成功命中！  &#125;&#125;
+
+字段级属性
+index：搜索开关
+场景：有些字段（如内部 ID、base64 图片、加密数据）只需要随文档返回展示，永远不需要被搜索。关闭索引可以节省大量磁盘空间和写入 CPU。
+# 1. 创建索引：secret_id 不建索引，name 正常建索引PUT /test_index_attr&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;secret_id&quot;: &#123;        &quot;type&quot;: &quot;keyword&quot;,        &quot;index&quot;: false      # 关闭索引，此字段不可被查询      &#125;,      &quot;name&quot;: &#123;        &quot;type&quot;: &quot;text&quot;      # 默认 index: true，可被搜索      &#125;    &#125;  &#125;&#125;# 2. 插入数据POST /test_index_attr/_doc/1&#123;  &quot;secret_id&quot;: &quot;S999_TOP_SECRET&quot;,  &quot;name&quot;: &quot;Alice&quot;&#125;# 3. 尝试搜索 secret_id（会报错）GET /test_index_attr/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;secret_id&quot;: &quot;S999_TOP_SECRET&quot; &#125;  &#125;&#125;# ❌ 报错：Cannot search on field [secret_id] since it is not indexed.# 4. 搜索 name（正常返回）GET /test_index_attr/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123; &quot;name&quot;: &quot;Alice&quot; &#125;  &#125;&#125;# ✅ 成功命中
+
+analyzer vs search_analyzer
+场景：索引时希望尽可能多地切词（提高召回率），搜索时希望更符合用户意图（提高精准度）。比如中文搜索，索引用 ik_max_word（细粒度），搜索用 ik_smart（粗粒度）。
+# 1. 创建索引（假设你已安装 IK 分词器；若未安装，用 standard 做对比演示原理）PUT /test_analyzer&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;title&quot;: &#123;        &quot;type&quot;: &quot;text&quot;,        &quot;analyzer&quot;: &quot;ik_max_word&quot;,      # 索引时：尽可能多拆分（如&quot;中华人民共和国&quot;拆成&quot;中华&quot;,&quot;华人&quot;,&quot;共和&quot;,&quot;国&quot;...）        &quot;search_analyzer&quot;: &quot;ik_smart&quot;   # 搜索时：拆成最粗粒度（如&quot;中华人民共和国&quot;只拆成&quot;中华人民共和国&quot;）      &#125;    &#125;  &#125;&#125;# 2. 插入数据POST /test_analyzer/_doc/1&#123; &quot;title&quot;: &quot;中华人民共和国国歌&quot; &#125;# 3. 用户搜索&quot;国歌&quot;（ik_smart 会把&quot;国歌&quot;作为一个词），能命中GET /test_analyzer/_search&#123;  &quot;query&quot;: &#123; &quot;match&quot;: &#123; &quot;title&quot;: &quot;国歌&quot; &#125; &#125;&#125;# ✅ 命中（因为索引时 ik_max_word 拆出了&quot;国歌&quot;）# 注意：如果不设置 search_analyzer，默认等于 analyzer。# 如果搜索也用 ik_max_word，用户搜&quot;国歌&quot;时会被拆成&quot;国&quot;和&quot;歌&quot;，会搜出更多无关结果，精准度下降。
+
+doc_values
+核心原理：text 类型默认 doc_values: false（因为分词后无法做精确排序/聚合），keyword 和数值类型默认 true。如果你错误地关闭了它，排序和聚合会直接报错。
+# 1. 创建索引：score 关闭 doc_valuesPUT /test_docvalues&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;score&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;,        &quot;doc_values&quot;: false   # 强制关闭列式存储      &#125;    &#125;  &#125;&#125;# 2. 插入数据POST /test_docvalues/_doc/1&#123; &quot;score&quot;: 100 &#125;POST /test_docvalues/_doc/2&#123; &quot;score&quot;: 200 &#125;# 3. 尝试按 score 排序（会报错）GET /test_docvalues/_search&#123;  &quot;sort&quot;: [&#123; &quot;score&quot;: &quot;asc&quot; &#125;]&#125;# ❌ 报错：Cannot sort on field [score] without doc_values# 结论：除非你百分百确定这个字段永不排序/聚合，否则永远保持 doc_values: true（默认）
+
+coerce
+场景：你定义字段为 integer，但数据源传来 &quot;10.0&quot;（字符串带小数点）。默认 coerce: true 会自动转成整数 10，不会报错。如果你希望严格校验，就关掉它。
+# 1. 创建索引，关闭 coerce（严格模式）PUT /test_coerce&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;price&quot;: &#123;        &quot;type&quot;: &quot;integer&quot;,        &quot;coerce&quot;: false     # 关闭自动类型转换      &#125;    &#125;  &#125;&#125;# 2. 插入带小数点的字符串（会报错）POST /test_coerce/_doc/1&#123; &quot;price&quot;: &quot;10.0&quot; &#125;# ❌ 报错：failed to parse field [price] of type [integer]# 对比：如果设为 coerce: true（默认），&quot;10.0&quot; 会被自动转为 10，正常写入。# 生产建议：日志/爬虫数据来源混乱，保持 true；核心业务接口数据，设为 false 强制规范。
+
+properties
+场景：你的文档里有一个嵌套的 user 对象，包含 name 和 age。必须在 properties 里再定义一次内部字段，否则 ES 会动态映射，类型可能不准。
+# 1. 创建索引，定义 object 内部结构PUT /test_object&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;user&quot;: &#123;        &quot;type&quot;: &quot;object&quot;,              # 显式声明为对象        &quot;properties&quot;: &#123;                # 关键：必须在这里定义内部字段          &quot;name&quot;: &#123; &quot;type&quot;: &quot;keyword&quot; &#125;,          &quot;age&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;        &#125;      &#125;    &#125;  &#125;&#125;# 2. 插入数据（标准 JSON 对象格式）POST /test_object/_doc/1&#123;  &quot;user&quot;: &#123;    &quot;name&quot;: &quot;Charlie&quot;,    &quot;age&quot;: 28  &#125;&#125;# 3. 查询时用「点号」访问内部字段GET /test_object/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;user.name&quot;: &quot;Charlie&quot; &#125;   # ✅ 点号访问，成功命中  &#125;&#125;# 如果不定义 properties，ES 也能动态生成，但 name 可能会被误判为 text（分词），导致 term 查询失效。
+
+enabled
+场景：你需要存储一个巨大的、结构不固定的 JSON（如第三方回调的原始报文），只是存着将来展示用，永远不需要在内部字段上做搜索或聚合。开启 enabled: false 可以节省大量索引开销。
+# 1. 创建索引，metadata 字段只存不解析PUT /test_enabled&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;metadata&quot;: &#123;        &quot;type&quot;: &quot;object&quot;,        &quot;enabled&quot;: false       # 整个对象被当作一个“黑盒”字符串存储，不解析内部字段      &#125;    &#125;  &#125;&#125;# 2. 插入任意复杂 JSON（完全不报错）POST /test_enabled/_doc/1&#123;  &quot;metadata&quot;: &#123;    &quot;ip&quot;: &quot;192.168.1.1&quot;,    &quot;device&quot;: &#123; &quot;os&quot;: &quot;iOS&quot;, &quot;version&quot;: 17.5 &#125;,    &quot;nested_any&quot;: &#123; &quot;deep&quot;: &#123; &quot;value&quot;: [1,2,3] &#125; &#125;  &#125;&#125;# 3. 尝试在 metadata 内部字段上搜索（会报错或查不到）GET /test_enabled/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123; &quot;metadata.ip&quot;: &quot;192.168.1.1&quot; &#125;  &#125;&#125;# ❌ 因为 enabled: false，内部字段未索引，搜索无效。# 但取回文档时，metadata 完整保留（因为 _source 存储了原始 JSON）。
+
+字段的数据类型
+核心基础类型
+1. text vs keyword
+
+text：会分词，用于全文模糊搜索（如百度搜索文章内容）。默认不支持排序和聚合。
+keyword：不分词，整个值作为一个整体，用于精确匹配、排序、聚合统计（如状态码、分类、邮箱）。
+
+实战对比示例：
+# 1. 创建索引，对比 text 和 keywordPUT /test_strings&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;content&quot;: &#123; &quot;type&quot;: &quot;text&quot; &#125;,      // 全文搜索      &quot;status&quot;: &#123; &quot;type&quot;: &quot;keyword&quot; &#125;     // 精确过滤    &#125;  &#125;&#125;# 2. 插入一条数据POST /test_strings/_doc/1&#123;  &quot;content&quot;: &quot;Hello World&quot;,  &quot;status&quot;: &quot;Published&quot;&#125;# 3. 用 match 搜 content（text 类型）—— 能搜到，因为 &quot;Hello World&quot; 被拆成了 &quot;Hello&quot; 和 &quot;World&quot;GET /test_strings/_search&#123; &quot;query&quot;: &#123; &quot;match&quot;: &#123; &quot;content&quot;: &quot;Hello&quot; &#125; &#125; &#125;   // ✅ 命中# 4. 用 term 搜 status（keyword 类型）—— 必须完全匹配 &quot;Published&quot;GET /test_strings/_search&#123; &quot;query&quot;: &#123; &quot;term&quot;: &#123; &quot;status&quot;: &quot;Published&quot; &#125; &#125; &#125; // ✅ 命中GET /test_strings/_search&#123; &quot;query&quot;: &#123; &quot;term&quot;: &#123; &quot;status&quot;: &quot;published&quot; &#125; &#125; &#125; // ❌ 查不到（大小写敏感）
+2. long、integer、short、byte、double、float
+
+用途：存储数字，用于范围查询（range）、排序（sort）、数学聚合（sum、avg）。
+选型原则：尽量选最小的够用的类型，以节省磁盘。
+
+人的年龄：byte（-128~127）就够了。
+商品价格：用 float 或 scaled_float（推荐，精确控制小数点）。
+商品浏览量：用 integer（约 21 亿）通常够。
+订单金额（精确到分）：建议用 long 存储“分”的整数值，避免浮点精度丢失。
+
+
+
+示例：
+PUT /test_numbers&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;age&quot;: &#123; &quot;type&quot;: &quot;byte&quot; &#125;,        // 小范围      &quot;price&quot;: &#123; &quot;type&quot;: &quot;scaled_float&quot;, &quot;scaling_factor&quot;: 100 &#125;, // 存 19.99 实际存 1999，精确      &quot;views&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;    // 常规整数    &#125;  &#125;&#125;
+3. date
+
+用途：存储时间，支持范围查询（最近7天）、排序（按发布时间）。
+关键配置：必须指定 format，否则只认 ISO 标准（2026-09-05T10:30:00Z）。
+
+实战示例（兼容多种格式）：
+PUT /test_dates&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;create_time&quot;: &#123;        &quot;type&quot;: &quot;date&quot;,        &quot;format&quot;: &quot;yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis&quot;      &#125;    &#125;  &#125;&#125;# 以下三种格式都能正常写入：POST /test_dates/_doc/1 &#123; &quot;create_time&quot;: &quot;2026-09-05 18:30:00&quot; &#125;POST /test_dates/_doc/2 &#123; &quot;create_time&quot;: &quot;2026-09-05&quot; &#125;POST /test_dates/_doc/3 &#123; &quot;create_time&quot;: &quot;1693900000000&quot; &#125;  // 毫秒时间戳
+4. boolean
+
+用途：存真/假。
+注意：ES 会自动将 &quot;true&quot;、&quot;false&quot;、&quot;on&quot;、&quot;off&quot;、1、0 转成布尔值。
+
+PUT /test_boolean&#123; &quot;mappings&quot;: &#123; &quot;properties&quot;: &#123; &quot;is_active&quot;: &#123; &quot;type&quot;: &quot;boolean&quot; &#125; &#125; &#125; &#125;POST /test_boolean/_doc/1&#123; &quot;is_active&quot;: &quot;true&quot; &#125;   // 字符串也能被正确解析为 true
+
+复杂结构类型
+1. object
+
+用途：处理普通的 JSON 嵌套对象。
+写法：直接用 properties 定义内部字段。
+
+PUT /test_object&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;user&quot;: &#123;                     // 默认就是 object 类型，可省略        &quot;properties&quot;: &#123;          &quot;name&quot;: &#123; &quot;type&quot;: &quot;keyword&quot; &#125;,          &quot;age&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;        &#125;      &#125;    &#125;  &#125;&#125;# 插入数据POST /test_object/_doc/1&#123; &quot;user&quot;: &#123; &quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 30 &#125; &#125;# 查询时用点号访问GET /test_object/_search&#123; &quot;query&quot;: &#123; &quot;term&quot;: &#123; &quot;user.name&quot;: &quot;Alice&quot; &#125; &#125; &#125; // ✅ 命中
+2. nested
+
+场景：当你的对象是数组，且需要独立维护数组内每个对象的查询条件时，必须用 nested。
+为什么必须用？ 如果用默认的 object 存数组，ES 会将其扁平化，丢失对象间的边界。
+
+经典错误场景：
+# 错误示范：用 object 存员工数组PUT /test_wrong_object&#123; &quot;mappings&quot;: &#123; &quot;properties&quot;: &#123; &quot;employees&quot;: &#123; &quot;type&quot;: &quot;object&quot; &#125; &#125; &#125; &#125;POST /test_wrong_object/_doc/1&#123;  &quot;employees&quot;: [    &#123; &quot;name&quot;: &quot;John&quot;, &quot;age&quot;: 25 &#125;,    &#123; &quot;name&quot;: &quot;Jane&quot;, &quot;age&quot;: 30 &#125;  ]&#125;# 此时你想查「name=John 且 age=30」的人，本应查不到，但 object 会扁平化成：# employees.name = [John, Jane]  AND  employees.age = [25, 30]# 结果导致 John(25) 和 Jane(30) 跨对象匹配，**错误地命中了这条文档**！
+正确写法：
+PUT /test_correct_nested&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;employees&quot;: &#123;        &quot;type&quot;: &quot;nested&quot;,          // 声明为 nested        &quot;properties&quot;: &#123;          &quot;name&quot;: &#123; &quot;type&quot;: &quot;keyword&quot; &#125;,          &quot;age&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;        &#125;      &#125;    &#125;  &#125;&#125;# 查询时，必须用 nested 查询包裹，保证条件只在同一个对象内生效GET /test_correct_nested/_search&#123;  &quot;query&quot;: &#123;    &quot;nested&quot;: &#123;      &quot;path&quot;: &quot;employees&quot;,      &quot;query&quot;: &#123;        &quot;bool&quot;: &#123;          &quot;must&quot;: [            &#123; &quot;term&quot;: &#123; &quot;employees.name&quot;: &quot;John&quot; &#125; &#125;,            &#123; &quot;term&quot;: &#123; &quot;employees.age&quot;: 30 &#125; &#125;          ]        &#125;      &#125;    &#125;  &#125;&#125;# ✅ 结果：正确地返回 0 条（因为 John 只有 25 岁）
+
+创建索引
+1.1 基础创建（使用默认配置）
+最简单的创建方式，Elasticsearch 会应用默认设置（如1个主分片、1个副本分片）并启用动态映射。
+PUT /my_first_index
+1.2 指定分片与副本设置
+在生产环境中，建议你根据数据量规划好主分片数，并设置副本以提高可用性。
+PUT /my_blog&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 3,    # 主分片数，创建后不可修改！    &quot;number_of_replicas&quot;: 2   # 副本数，可动态调整  &#125;&#125;
+1.3 定义字段映射 (Mappings)
+映射定义了索引中字段的数据类型，这对于搜索和聚合至关重要。下面的例子定义了一个包含 id（整数）、title（文本，支持全文搜索）和 publish_date（日期）的映射。
+PUT /my_blog&#123;  &quot;settings&quot;: &#123;    &quot;number_of_shards&quot;: 2  &#125;,  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;id&quot;: &#123; &quot;type&quot;: &quot;integer&quot; &#125;,      &quot;title&quot;: &#123; &quot;type&quot;: &quot;text&quot; &#125;,      &quot;publish_date&quot;: &#123; &quot;type&quot;: &quot;date&quot; &#125;    &#125;  &#125;&#125;
+
+注意：一旦创建，主分片数 (number_of_shards) 和已有字段的类型通常无法修改。如需更改，通常需要重建索引（Reindex）。
+
+
+2. 查看索引信息
+
+查看单个索引的详细信息（包括设置和映射）：
+
+GET /my_blog
+
+查看集群中所有索引的概览：
+
+GET /_cat/indices?v
+
+仅查看索引的设置或映射：
+
+GET /my_blog/_settingsGET /my_blog/_mapping
+
+3. 删除索引
+此操作将永久删除整个索引及其包含的所有数据，操作前请务必确认。
+DELETE /my_blog
+你也可以使用通配符一次删除多个索引，例如 DELETE /index_*。
+
+4. 更新索引设置
+与映射不同，部分索引设置（如副本数）可以动态更新。
+PUT /my_blog/_settings&#123;  &quot;number_of_replicas&quot;: 1&#125;
+查询
+查询基础
+Elasticsearch 所有查询都通过 _search 接口，并使用基于 JSON 的 Query DSL (领域特定语言) 来构建。其核心结构如下：
+GET /your_index/_search&#123;  &quot;query&quot;: &#123;    &quot;查询类型&quot;: &#123;      // 查询的具体条件    &#125;  &#125;&#125;
+
+注意：_search 是固定路径。
+
+
+常用查询功能详解
+Elasticsearch 的查询 DSL 主要分为叶子查询（在单个字段上查询）和复合查询（组合多个叶子查询）。
+1. 全文检索
+这类查询会对输入的搜索文本进行分词，然后用分词结果去匹配索引中的内容，并根据相关性（_score）排序。
+
+match** 查询**：最常用的全文搜索，用于在一个指定字段中进行分词匹配。
+
+GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;description&quot;: &quot;分布式搜索引擎&quot;  // 会对 &quot;分布式搜索引擎&quot; 进行分词    &#125;  &#125;&#125;
+示例场景：在图书描述中搜索包含“分布式”或“搜索引擎”的书籍。
+
+multi_match** 查询**：match 的增强版，允许在多个字段中同时进行全文搜索。
+
+GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;multi_match&quot;: &#123;      &quot;query&quot;: &quot;分布式搜索引擎&quot;,      &quot;fields&quot;: [&quot;title&quot;, &quot;description&quot;] // 同时在标题和描述中搜索    &#125;  &#125;&#125;
+
+&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;match_phrase&lt;/font&gt; 查询：要求分词后的所有词项必须全部出现在文档中，并且顺序一致、位置连续（允许通过 **&lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;slop&lt;/font&gt;** 参数调整间隔）。它不会像 &lt;font style=&quot;color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);&quot;&gt;match&lt;/font&gt; 那样将词项拆开独立匹配，而是当作一个整体短语来查找。
+
+GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;match_phrase&quot;: &#123;      &quot;description&quot;: &quot;分布式搜索引擎&quot;    &#125;  &#125;&#125;
+补充：
+
+在Elasticsearch中，operator主要用于match系列查询（如match、multi_match），其核心作用是控制多个搜索词之间的逻辑关系，决定文档需要满足“任意一个”还是“全部”搜索词才算匹配。
+它接受两个值，默认为or：
+
+or** (默认值)：只要文档包含任意一个**搜索词，就算匹配。例如，搜索“quick brown fox”，只要文档包含quick、brown或fox中的任意一个词就会被召回。
+and：文档必须同时包含所有搜索词，才算匹配。例如，搜索“quick brown fox”，文档必须同时包含quick、brown和fox这三个词才会被召回。
+
+示例对比：
+假设索引中有两篇文档：
+
+文档A: &quot;I love cats&quot;
+文档B: &quot;I love dogs&quot;
+
+执行查询 &quot;match&quot;: {&quot;content&quot;: {&quot;query&quot;: &quot;cats dogs&quot;}}：
+
+
+
+
+operator 参数
+逻辑
+匹配结果
+
+
+
+
+&quot;or&quot;** (默认)**
+cats OR dogs
+文档A和文档B都会被匹配，因为每篇文档至少包含其中一个词。
+
+
+&quot;and&quot;
+cats AND dogs
+两篇文档都不会被匹配，因为没有文档同时包含cats和dogs。
+
+
+
+2. 精确查询
+这类查询不会对输入文本进行分词，而是将整个输入作为一个词条，与字段中的精确值进行匹配。通常用于 keyword、数值、日期等类型的字段。
+
+term** 查询**：用于查找与指定值完全相等的文档。
+
+GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;term&quot;: &#123;      &quot;status&quot;: &quot;published&quot;  // 精确匹配状态为 &quot;published&quot; 的文档    &#125;  &#125;&#125;
+注意：不要用 term 查询 text 类型的字段，否则可能查不到结果。
+
+terms** 查询**：term 的复数版本，用于匹配多个精确值中的任意一个。
+
+GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;terms&quot;: &#123;      &quot;category&quot;: [&quot;技术&quot;, &quot;科学&quot;]  // 查找分类是 &quot;技术&quot; 或 &quot;科学&quot; 的文档    &#125;  &#125;&#125;
+
+range** 查询**：用于查找字段值在指定范围内的文档。
+
+GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;range&quot;: &#123;      &quot;price&quot;: &#123;        &quot;gte&quot;: 30,  // 价格 &gt;= 30        &quot;lte&quot;: 80   // 价格 &lt;= 80      &#125;    &#125;  &#125;&#125;
+同样适用于日期范围，如 publish_date 在 &quot;2023-01-01&quot; 之后。
+3. 复合查询
+主要用于组合多个查询条件，其中 bool** 查询**最为核心和常用。它包含四个子句：
+
+must：条件必须满足，有算分贡献。
+filter：条件必须满足，但不算分，用于过滤，性能更高。
+should：条件满足任意一个即可，有算分贡献。
+must_not：条件必须不满足，不算分。
+
+示例：查找标题或描述包含“Elasticsearch”，价格在 30 到 80 之间，且状态为“published”的书籍。
+GET /books/_search&#123;  &quot;query&quot;: &#123;    &quot;bool&quot;: &#123;      &quot;must&quot;: [        &#123; &quot;match&quot;: &#123; &quot;title&quot;: &quot;Elasticsearch&quot; &#125; &#125;,        &#123; &quot;match&quot;: &#123; &quot;description&quot;: &quot;Elasticsearch&quot; &#125; &#125;      ],      &quot;filter&quot;: [        &#123; &quot;range&quot;: &#123; &quot;price&quot;: &#123; &quot;gte&quot;: 30, &quot;lte&quot;: 80 &#125; &#125; &#125;,        &#123; &quot;term&quot;: &#123; &quot;status&quot;: &quot;published&quot; &#125; &#125;      ]    &#125;  &#125;&#125;
+4. 聚合查询
+聚合提供了对数据进行分组、统计和分析的能力，类似于 SQL 的 GROUP BY 和聚合函数。
+GET /books/_search&#123;  &quot;size&quot;: 0,  // 不返回具体文档，只看聚合结果  &quot;aggs&quot;: &#123;    &quot;category_stats&quot;: &#123;           // 自定义聚合名称      &quot;terms&quot;: &#123;                  // 按字段值分组        &quot;field&quot;: &quot;category.keyword&quot; // 注意：text 类型需用 .keyword 子字段      &#125;    &#125;  &#125;&#125;
+这个查询会统计每个图书分类下的文档数量。
+
+kNN 与 BM25 Rescore
+认识
+1. kNN
+在 kNN 向量检索出现之前，搜索主要依赖关键词匹配——你搜什么词，系统就找包含什么词的文档。这套机制在以下场景中显得力不从心：
+
+语义鸿沟：用户搜“性价比高的手机”，系统只认识“性价比”“高”“手机”这几个词，无法理解“划算”“实惠”“值”等语义相近的表达。
+非文本数据：图片、视频、音频等无法用关键词描述的内容，传统全文检索无能为力。
+推荐系统：需要根据用户行为找到“相似”的商品或内容，关键词匹配无法表达“相似”这个概念。
+
+kNN 检索的核心解决方案是：将文本、图片、用户行为等一切数据转化为向量（一串数字），用向量之间的“距离”来衡量相似度。你搜“好吃的餐厅”，系统会把这句话转成向量，然后找到向量最接近的那些文档——哪怕文档里没有“好吃”这个词，只要语义相近（如“美味”“口碑不错”），也能被检索出来。
+Elasticsearch 从 8.0 版本开始原生支持 kNN 向量检索。
+2. BM25 Rescore
+BM25 是 Elasticsearch 默认的相关性评分算法。它根据词频（TF） 、逆文档频率（IDF） 和字段长度来计算文档与查询的相关性。
+但 BM25 有一个局限：它只能基于关键词匹配来算分。在复杂场景下，比如：
+
+用户希望“苹果手机”这个短语整体匹配，而不是“苹果”和“手机”分开匹配；
+用户希望用更复杂的模型（如机器学习排序模型）来重新排序；
+第一轮检索结果不够精准，需要第二轮精细化调整。
+
+如果对所有文档都执行这些复杂计算，性能会急剧下降。
+Rescore（二次打分）的核心解决思路是：先用廉价的 BM25 快速召回 Top N 个候选文档，然后只对这 N 个文档执行第二轮更精准（但更昂贵）的评分，重新排序。这就像海选先用简单标准筛一遍，决赛再用严格标准精评——既保证了质量，又控制了成本。
+适用场景
+
+
+
+技术
+适用场景
+不适用场景
+
+
+
+
+kNN
+语义搜索、图片/视频相似检索、推荐系统、异常检测、RAG 知识库问答
+纯关键词精确匹配、数据量极小（&lt; 几千条）、对解释性要求极高的场景
+
+
+BM25 Rescore
+需要二次精排的复杂搜索、短语优先匹配、结合业务字段（如热度）重新排序、多轮渐进式排序
+数据量极小（不需要二次优化）、对实时性要求极高且无法接受额外延迟、排序逻辑在第一轮已完全满足
+
+
+
+特别地：kNN 和 BM25 Rescore 经常组合使用——先用 BM25 做关键词召回 + kNN 做语义召回（混合搜索），再用 Rescore 对结果做二次精排，实现“召回层 + 精排层”的经典搜索架构。
+使用
+dense_vector
+
+dense_vector 是 Elasticsearch 中专门用来存储向量数据的字段类型。你在索引里定义一个 dense_vector 字段，然后把 ML 模型生成的向量（一串浮点数）存进去，kNN 检索就靠它。
+使用：
+
+PUT my_index&#123;  &quot;mappings&quot;: &#123;    &quot;properties&quot;: &#123;      &quot;title_vector&quot;: &#123;        &quot;type&quot;: &quot;dense_vector&quot;,        &quot;dims&quot;: 384,        &quot;similarity&quot;: &quot;cosine&quot;,        &quot;index&quot;: true,        &quot;index_options&quot;: &#123;          &quot;type&quot;: &quot;hnsw&quot;,          &quot;m&quot;: 16,          &quot;ef_construction&quot;: 100        &#125;      &#125;    &#125;  &#125;&#125;
+dims 是向量维度（必须与模型输出一致），similarity 是相似度算法（cosine/dot_product/l2_norm）。
+近似 kNN vs 精确 kNN
+
+近似 kNN 用 HNSW 图索引“大概”找到最近的向量，速度快但不保证 100% 精确；精确 kNN 逐个比较所有向量，保证精确但数据量大时极慢。
+使用：
+
+近似 kNN ：
+GET my_index/_search&#123;  &quot;knn&quot;: &#123;    &quot;field&quot;: &quot;title_vector&quot;,    &quot;query_vector&quot;: [0.1, 0.2, 0.3, ...],    &quot;k&quot;: 10,    &quot;num_candidates&quot;: 100  &#125;&#125;
+精确 kNN ：
+GET my_index/_search&#123;  &quot;query&quot;: &#123;    &quot;script_score&quot;: &#123;      &quot;query&quot;: &#123; &quot;match_all&quot;: &#123;&#125; &#125;,      &quot;script&quot;: &#123;        &quot;source&quot;: &quot;cosineSimilarity(params.query_vector, &#x27;title_vector&#x27;) + 1.0&quot;,        &quot;params&quot;: &#123;          &quot;query_vector&quot;: [0.1, 0.2, 0.3, ...]        &#125;      &#125;    &#125;  &#125;&#125;
+
+精确 kNN 通过 script_score 实现，必须扫描所有匹配文档。
+
+BM25（默认相关性评分算法）
+
+BM25 是 Elasticsearch 默认的“算分公式”。它根据三个因素给文档打分：这个词在文档里出现了几次（词频 TF）、这个词在整个索引里稀不稀有（逆文档频率 IDF）、文档的字段是长是短（字段长度归一化）。
+使用：
+
+GET my_index/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;title&quot;: &#123;        &quot;query&quot;: &quot;elasticsearch tutorial&quot;,        &quot;operator&quot;: &quot;or&quot;      &#125;    &#125;  &#125;&#125;
+BM25 的参数可在索引设置中调整：
+PUT my_index&#123;  &quot;settings&quot;: &#123;    &quot;similarity&quot;: &#123;      &quot;my_bm25&quot;: &#123;        &quot;type&quot;: &quot;BM25&quot;,        &quot;k1&quot;: 1.2,        &quot;b&quot;: 0.75      &#125;    &#125;  &#125;&#125;
+k1 控制词频饱和度（默认 1.2），b 控制字段长度归一化强度（默认 0.75）。
+Rescore（二次打分）
+
+Rescore 是在第一轮搜索结果返回后，只对排名靠前的少量文档“再算一次分”，用更复杂的逻辑重新排序。
+使用：
+
+GET my_index/_search&#123;  &quot;query&quot;: &#123;    &quot;match&quot;: &#123;      &quot;title&quot;: &quot;elasticsearch tutorial&quot;    &#125;  &#125;,  &quot;rescore&quot;: &#123;    &quot;window_size&quot;: 50,    &quot;query&quot;: &#123;      &quot;rescore_query&quot;: &#123;        &quot;match_phrase&quot;: &#123;          &quot;title&quot;: &#123;            &quot;query&quot;: &quot;elasticsearch tutorial&quot;,            &quot;slop&quot;: 2          &#125;        &#125;      &#125;,      &quot;query_weight&quot;: 0.7,      &quot;rescore_query_weight&quot;: 1.2    &#125;  &#125;&#125;
+window_size 控制参与重打分的文档数（默认 10），query_weight 和 rescore_query_weight 控制两轮分数的权重。
+混合检索
+完整的查询请求示例
+&#123;  &quot;size&quot;: 10,  &quot;knn&quot;: &#123;    &quot;field&quot;: &quot;vector&quot;,    &quot;query_vector&quot;: [0.12, -0.34, 0.56, ...],    &quot;k&quot;: 300,    &quot;num_candidates&quot;: 300  &#125;,  &quot;query&quot;: &#123;    &quot;bool&quot;: &#123;      &quot;must&quot;: [        &#123; &quot;match&quot;: &#123; &quot;textContent&quot;: &quot;如何配置Redis集群&quot; &#125; &#125;      ],      &quot;filter&quot;: [        &#123;          &quot;bool&quot;: &#123;            &quot;should&quot;: [              &#123; &quot;term&quot;: &#123; &quot;userId&quot;: &quot;42&quot; &#125; &#125;,              &#123; &quot;term&quot;: &#123; &quot;public&quot;: true &#125; &#125;,              &#123;                &quot;bool&quot;: &#123;                  &quot;should&quot;: [                    &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;ENGINEERING&quot; &#125; &#125;,                    &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;TECH_DEPT&quot; &#125; &#125;,                    &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;COMPANY&quot; &#125; &#125;                  ]                &#125;              &#125;            ]          &#125;        &#125;      ]    &#125;  &#125;,  &quot;rescore&quot;: &#123;    &quot;window_size&quot;: 300,    &quot;query&quot;: &#123;      &quot;query_weight&quot;: 0.2,      &quot;rescore_query_weight&quot;: 1.0,      &quot;rescore_query&quot;: &#123;        &quot;match&quot;: &#123;          &quot;textContent&quot;: &#123;            &quot;query&quot;: &quot;如何配置Redis集群&quot;,            &quot;operator&quot;: &quot;and&quot;          &#125;        &#125;      &#125;    &#125;  &#125;&#125;
+
+注意：query_vector 里的 ... 是占位符，实际生产环境中是一长串几百位的浮点数（由 NLP 模型将“如何配置Redis集群”这句话转化而来）。
+
+
+为什么需要“混合检索”？
+假设你在公司内部知识库搜索“如何配置Redis集群”：
+
+纯关键词检索（BM25）：它会老老实实找包含“配置”、“Redis”、“集群”这些词的文档。但如果有人写的是“Redis 集群搭建步骤”（没有“配置”二字），它可能就搜不到了。
+纯向量检索（kNN）：它能读懂语义，知道“搭建”和“配置”是一回事。但它可能把权限搞混，把别人私密的“Redis故障演练”文档也推给你。
+
+混合检索 = 左手抓关键词精确匹配，右手抓语义泛化理解，脚下还踩着“权限过滤器”防止越权，最后再用“精排算法”把最好的结果顶到最前面。
+模块一：&quot;size&quot;: 10 —— 返回结果数
+这是整个查询的“出口阀门”。无论中间过程捞出来 300 条还是 1000 条，最后返回给前端或用户的，只有 10 条。
+模块二：knn —— 语义检索
+&quot;knn&quot;: &#123;  &quot;field&quot;: &quot;vector&quot;,           // ① 要在哪个字段里做向量搜索？  &quot;query_vector&quot;: [0.12, ...], // ② 把“如何配置Redis集群”变成数学向量  &quot;k&quot;: 300,                    // ③ 向量检索要拿回多少个“语义相似”的文档？  &quot;num_candidates&quot;: 300        // ④ 每个分片内部先看多少个候选？&#125;
+
+field：你在建索引时，一定有个字段叫 vector，类型是 dense_vector，里面存着每篇文档的向量值。
+query_vector：这是通过机器学习模型实时推理出来的向量。
+k：向量检索这一路，先猛捞 300 个语义最像的文档。
+num_candidates：为了性能，每个分片会先挑出 300 个“看起来像的”，再汇总挑出全局最优的 300 个。
+
+模块三：query.bool —— 关键词硬匹配 + 权限安检（最重要的复合查询）
+这是整个查询里最复杂的部分，由 must（必须匹配，算分）和 filter（必须匹配，不算分）组成。
+① must 里的 match —— 全文检索（传统搜索引擎老本行）
+&#123; &quot;match&quot;: &#123; &quot;textContent&quot;: &quot;如何配置Redis集群&quot; &#125; &#125;
+
+这个 match 会把“如何配置Redis集群”分词（比如分成：如何、配置、Redis、集群）。
+然后去 textContent 字段里找包含这些词的文档，并计算一个 相关性评分（_score），词频越高、越稀有的词，得分越高。
+
+② filter 里的 bool.should —— 权限门禁（OR 逻辑，必须满足其一）
+&quot;filter&quot;: [  &#123;    &quot;bool&quot;: &#123;      &quot;should&quot;: [        &#123; &quot;term&quot;: &#123; &quot;userId&quot;: &quot;42&quot; &#125; &#125;,          // 条件A：文档是你自己写的        &#123; &quot;term&quot;: &#123; &quot;public&quot;: true &#125; &#125;,          // 条件B：文档是公开的        &#123;                                          // 条件C：文档所属部门符合要求          &quot;bool&quot;: &#123;            &quot;should&quot;: [              &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;ENGINEERING&quot; &#125; &#125;,              &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;TECH_DEPT&quot; &#125; &#125;,              &#123; &quot;term&quot;: &#123; &quot;orgTag&quot;: &quot;COMPANY&quot; &#125; &#125;            ]          &#125;        &#125;      ]    &#125;  &#125;]
+这里的逻辑翻译成人话就是：
+
+只有满足以下条件之一的文档，才有资格进入候选池：
+
+作者 ID 是 42（你自己写的）；或者
+是公开文档；或者
+组织标签属于 “ENGINEERING / TECH_DEPT / COMPANY” 中的任意一个。
+
+
+关键区别：filter 里的条件 不影响相关性评分，只做“硬过滤”。也就是说，哪怕这篇文档关键词匹配度 100 分，只要不通过这里的安全检查，就会直接舍弃。
+模块四：rescore —— 二次精排
+前面的 knn + query 已经产生了一个初步排名，但 Elasticsearch 觉得“不够精细”，于是启动重打分机制。
+&quot;rescore&quot;: &#123;  &quot;window_size&quot;: 300,            // 只对当前排名前 300 名的文档进行重算  &quot;query&quot;: &#123;    &quot;query_weight&quot;: 0.2,         // 第一阶段的老分数，只占 20% 权重    &quot;rescore_query_weight&quot;: 1.0, // 新算的分数，占 100% 权重    &quot;rescore_query&quot;: &#123;      &quot;match&quot;: &#123;        &quot;textContent&quot;: &#123;          &quot;query&quot;: &quot;如何配置Redis集群&quot;,          &quot;operator&quot;: &quot;and&quot;      // 四个词（如何/配置/Redis/集群）必须全部同时出现！        &#125;      &#125;    &#125;  &#125;&#125;
+
+window_size: 300：大海捞针捞出来的几十万文档，我只关心当前得分最高的前 300 个，其他的不管了。
+rescore_query：用 operator: &quot;and&quot; 重新匹配一次。这意味着，只有在 textContent 里 同时包含“如何”、“配置”、“Redis”、“集群”这四个词 的文档，才会在这个环节获得极高的加分。
+权重计算：最终得分 = 0.2 * 老分数 + 1.0 * 新分数。rescore_query_weight 设为 1.0（远大于 0.2），相当于用“必须全部包含关键词”这个硬标准，把最精准的文档强行提拔到最前面。
+
+
+混合检索流程
+
+并行双路召回：
+
+一路走 knn（向量），捞出 300 条语义相似的。
+一路走 query（关键词 + 过滤器），筛出所有符合关键词且通过权限验证的文档，并算出初步分数。
+
+
+结果合并与粗排：
+
+系统将两路结果合并，去掉重复项，按初步分数（_score）排序，形成一个大的候选池。
+
+
+截取前 300 名：
+
+从候选池中只取出当前排名最靠前的 300 个文档（由 window_size 决定）。
+
+
+精排重算：
+
+对这 300 个文档执行 rescore_query（要求四个词全匹配），重新计算最终得分并排序。
+
+
+输出最终结果：
+
+从精排后的前 300 名里，截取前 10 条（size: 10）返回给调用方。
+
+
+
+
+调优建议
+
+k和 window_size 的关系：通常建议 window_size ≥ knn.k，确保向量捞回来的 300 条都能进入重打分环节。
+num_candidates 要大于 k：比如 k=300，num_candidates 可以设 500 或 1000，能提升召回率（但会增加性能开销）。
+query_weight 与 rescore_query_weight 的配比：如果你觉得关键词精确匹配更重要，可以把 rescore_query_weight 调得比 query_weight 大很多（就像本例中的 1.0 vs 0.2）。
+filter 里多用 term：对于精确匹配（如 ID、状态、标签），请务必用 term，千万别用 match，否则会被分词器拆散，导致权限越界！
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+      <tags>
+        <tag>Elasticsearch</tag>
+        <tag>Kibana</tag>
+        <tag>全文检索</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>kafka实践教程</title>
     <url>/posts/c2881daa/</url>
     <content><![CDATA[kafka实践教程
@@ -6490,992 +7347,15 @@ Consumer 幂等 (processed_event 约束)：解决消费端在接收到多次重�
       </categories>
   </entry>
   <entry>
-    <title>如何添加书签</title>
-    <url>/posts/3ffe122/</url>
-    <content><![CDATA[本站的书签页（/links/）通过 source/_data/link.yml 文件管理。本文记录如何添加和管理书签。
-一、书签数据文件
-所有书签数据存放在：
-source/_data/link.yml
-用任意编辑器（VS Code、Typora、记事本）打开即可编辑。
-二、文件结构
-文件按「分类」组织，每个分类下有多个书签，每个书签 4 个字段：
-- class_name: 开发工具          # 分类名（顶格，0 空格）  class_desc: 常用开发工具与平台  # 分类描述（2 空格）  link_list:                    # 书签列表（2 空格）    - name: GitHub              # 书签名（4 空格）      link: https://github.com       # 网址（6 空格）      avatar: https://github.com/favicon.ico  # 图标（6 空格）      descr: 全球最大代码托管平台      # 描述（6 空格）
-三、添加书签到已有分类
-在对应分类的 link_list 下，照着已有书签的格式复制一条，改成本站内容即可。例如在「开发工具」分类末尾加一个新网站：
-- name: 新网站名  link: https://新网站.com  avatar: https://新网站.com/favicon.ico  descr: 一句话描述
-注意 name 前面是 4 个空格，link/avatar/descr 前面是 6 个空格，和同分类下其他书签对齐。
-四、新建分类
-在文件末尾追加一整组，class_name 顶格写，和文件里已有的分类对齐：
-- class_name: 设计灵感  class_desc: 设计资源与灵感  link_list:    - name: Dribbble      link: https://dribbble.com      avatar: https://dribbble.com/favicon.ico      descr: 设计师作品分享    - name: Behance      link: https://behance.net      avatar: https://behance.net/favicon.ico      descr: 创意作品社区
-新分类前面留一个空行和上个分类隔开。
-五、缩进规则（重要）
-YAML 对缩进敏感，必须用空格，不能用 Tab：
-
-
-
-层级
-内容
-缩进
-
-
-
-
-1
-class_name
-0 空格（顶格）
-
-
-2
-class_desc / link_list
-2 空格
-
-
-3
-name
-4 空格
-
-
-4
-link / avatar / descr
-6 空格
-
-
-
-六、图标自动获取
-avatar 字段填网站自己的 favicon，格式固定：
-https://网站域名/favicon.ico
-例如：
-
-GitHub → https://github.com/favicon.ico
-掘金 → https://juejin.cn/favicon.ico
-
-不用手动下载图标，浏览器会自动加载网站图标。
-七、删除书签
-找到对应书签的 4 行（name/link/avatar/descr），整段删除即可。注意不要破坏周围书签的缩进。
-八、部署上线
-改完 link.yml 后，执行：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/links/ 即可看到更新。
-
-GitHub Pages 有 CDN 缓存，如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-九、完整示例
-下面是一个包含两个分类的完整 link.yml 示例：
-- class_name: 开发工具  class_desc: 常用开发工具与平台  link_list:    - name: GitHub      link: https://github.com      avatar: https://github.com/favicon.ico      descr: 全球最大代码托管平台    - name: VS Code      link: https://code.visualstudio.com      avatar: https://code.visualstudio.com/favicon.ico      descr: 代码编辑器- class_name: 效率工具  class_desc: 日常使用的工具  link_list:    - name: Typora      link: https://typora.io      avatar: https://typora.io/favicon.ico      descr: Markdown 编辑器
-照着这个格式改就行，改完记得 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署。
-]]></content>
+    <title>Redis</title>
+    <url>/posts/bae4ff13/</url>
+    <content><![CDATA[]]></content>
       <categories>
-        <category>博客搭建</category>
+        <category>数据存储</category>
       </categories>
       <tags>
-        <tag>Hexo</tag>
-        <tag>书签</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>从零开始搭建 Hexo + Butterfly 博客（零基础教程）</title>
-    <url>/posts/35a7b521/</url>
-    <content><![CDATA[本篇面向完全没接触过代码的同学。跟着做完，你会得到一个有独立网址（你的名字.github.io）、能写文章、手机电脑都能看的个人博客。
-一、先认识几个概念
-别急着动手，花两分钟搞清楚我们在做什么。
-
-
-
-名词
-是什么
-在本教程里干嘛
-
-
-
-
-Hexo
-一个博客生成工具
-把你写的 Markdown 文章变成网页
-
-
-Butterfly
-一个博客主题（皮肤）
-让博客好看
-
-
-Node.js
-运行环境
-Hexo 依赖它才能运行
-
-
-Git
-版本控制工具
-把博客推送到网上
-
-
-GitHub
-代码托管平台
-免费存放你的博客
-
-
-GitHub Pages
-GitHub 的建站服务
-让别人能通过网址访问你的博客
-
-
-
-一句话流程：用 Hexo 在本地写文章 → 用 Git 推到 GitHub → GitHub Pages 自动发布 → 全网可访问。
-二、准备工作
-1. 注册 GitHub 账号
-打开 https://github.com/ 注册账号。用户名要记住，因为你的博客网址会是 用户名.github.io。
-2. 安装 Node.js
-去 https://nodejs.org/ 下载 LTS（长期支持版），一路下一步安装即可。
-安装完打开命令行（Windows 按 Win+R 输入 cmd 回车），输入：
-node -vnpm -v
-能看到版本号就说明装好了。
-
-💡 国内用户如果后面安装很慢，可以换淘宝镜像：
-npm config set registry https://registry.npmmirror.com
-
-3. 安装 Git
-去 https://git-scm.com/ 下载安装，一路下一步。验证：
-git --version
-三、安装 Hexo
-在命令行执行：
-npm install -g hexo-cli
--g 表示全局安装，装一次到处能用。验证：
-hexo version
-四、初始化博客
-先在电脑上新建一个空文件夹放博客（比如 D:\blog），然后命令行进入这个文件夹，执行：
-hexo initnpm install
-等一会儿，会生成这些文件：
-blog/├── _config.yml        # 站点配置文件（改站名、作者、部署等）├── package.json├── source/            # 文章和资源都放这里│   └── _posts/        # 文章目录（你写的文章在这）└── themes/            # 主题目录
-五、本地预览
-hexo server
-浏览器打开 http://localhost:4000/ ，看到一个默认博客就成功了。按 Ctrl+C 停止。
-六、安装 Butterfly 主题
-在博客根目录执行（推荐用 npm 安装，升级方便、不会有嵌套 git 仓库的坑）：
-npm install hexo-theme-butterfly --save
-再装主题需要的两个渲染依赖：
-npm install hexo-renderer-pug hexo-renderer-stylus --save
-打开 _config.yml，找到 theme 字段改成：
-theme: butterfly
-
-💡 接着在博客根目录新建一个文件 _config.butterfly.yml，把 node_modules/hexo-theme-butterfly/_config.yml 里的内容全部复制过去。以后改主题配置就改这个文件，升级主题不会丢配置。本文说的&quot;主题配置&quot;都指它。
-
-再次 hexo server 预览，能看到 Butterfly 的样式就对了。
-七、站点基础配置（_config.yml）
-打开 _config.yml，改这几项：
-title: 我的博客                     # 站点标题subtitle: &quot;&quot;description: &quot;&quot;author: 你的名字                    # 作者名（全站署名读这里）language: zh-CNtimezone: Asia/Shanghaiurl: https://用户名.github.io       # 换成你的 GitHub 用户名permalink: :year/:month/:day/:title/
-
-permalink 是文章网址格式，上面是默认值。想用更短的固定网址，可参考《文章分类、置顶与短链配置》装 abbrlink 插件。
-
-八、主题配置（_config.butterfly.yml）
-这里只列最常用的几项，完整外观配置见《如何配置网站外观与个人信息》。
-导航菜单：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标。图标去 https://fontawesome.com/icons 搜，复制 class 名。
-头像： 准备一张正方形图片放到 source/img/avatar.png（没有 img 文件夹就新建），然后：
-avatar:  img: /img/avatar.png  effect: false       # true 会一直转圈，一般关掉
-建菜单对应页面： 菜单里写了的页面要手动建，否则点进去 404：
-hexo new page tagshexo new page categorieshexo new page archiveshexo new page about
-然后编辑 source/tags/index.md，开头加上 type: tags；source/categories/index.md 加 type: categories。归档页和关于页不用加。
-九、写第一篇文章
-hexo new &quot;我的第一篇文章&quot;
-会在 source/_posts/ 生成 我的第一篇文章.md。用 Typora 或任意编辑器打开，开头是 front-matter（两行 --- 之间的配置）：
----title: 我的第一篇文章date: 2026-08-06 14:30:00tags:  - 随笔categories:  - 生活---
-下面用 Markdown 写正文，常用语法：
-# 大标题## 二级标题普通段落直接写。- 列表项一- 列表项二**加粗** *斜体* `行内代码`[链接文字](https://example.com)![图片说明](图片名.png)
-写完 hexo server 预览效果。
-十、部署到 GitHub Pages
-最后一步，把博客发布到网上。
-1. 新建仓库
-在 GitHub 点 New repository，名字必须是 用户名.github.io（用户名换成你的）。选 Public，其他不勾，创建。
-2. 配置 SSH（让电脑有权推送到 GitHub）
-git config --global user.name &quot;你的名字&quot;git config --global user.email &quot;你的邮箱&quot;ssh-keygen -t ed25519 -C &quot;你的邮箱&quot;
-一路回车。然后打开生成的公钥文件（Windows 路径 C:\Users\你的用户名\.ssh\id_ed25519.pub），用记事本打开，复制全部内容。
-到 GitHub → 右上角头像 → Settings → SSH and GPG keys → New SSH key，Title 随便填，Key 粘贴刚才复制的内容，保存。
-验证：
-ssh -T git@github.com
-第一次问 yes/no 输 yes。看到 Hi 用户名! 就成功了。
-3. 安装部署插件
-npm install hexo-deployer-git --save
-4. 配置部署信息
-打开 _config.yml，翻到最下面的 deploy，改成：
-deploy:  type: git  repo: git@github.com:用户名/用户名.github.io.git  branch: main
-
-用户名要换成你自己的。repo 地址也能在 GitHub 仓库页面点 Code → SSH 复制。
-
-5. 一键发布
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-三个命令的作用：
-
-
-
-命令
-作用
-
-
-
-
-hexo clean
-清理缓存
-
-
-hexo g
-生成静态网页
-
-
-hexo d
-推送到 GitHub
-
-
-
-第一次推送可能要确认，输 yes。等 1-2 分钟，访问 https://用户名.github.io/ 就能看到你的博客了！
-十一、日常使用
-博客搭好后，日常写文章就三步：
-hexo new &quot;新文章&quot;                  # 1. 建文章# （用编辑器写内容）hexo clean &amp;&amp; hexo g &amp;&amp; hexo d     # 2. 发布
-想先看看效果不发布，用 hexo server 本地预览。
-完整的写作发布流程（图片处理、草稿、本地预览细节）见《Hexo 博客发布笔记完整教程》。
-十二、进阶推荐
-博客跑起来后，可以接着折腾：
-
-《如何配置网站外观与个人信息》——改背景、菜单、社交链接、公告
-《文章分类、置顶与短链配置》——文章自动归类、置顶、固定短网址
-《如何添加书签》——做个网址收藏页
-
-十三、常见问题
-Q：hexo server 打不开 localhost:4000？
-看命令行有没有报错。端口可能被占用，换一个：hexo server -p 5000。
-Q：部署报错 Permission denied (publickey)？
-SSH 没配好。重新按第十步生成 key 并添加到 GitHub，确认 ssh -T git@github.com 能通过。
-Q：部署成功了但访问 404？
-按顺序检查：仓库名是不是严格的 用户名.github.io；仓库是不是 Public；去仓库 Settings → Pages 看是否已开启。
-Q：部署后看到的还是旧内容？
-GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可去仓库 Actions 页面看部署状态。
-Q：中文文章网址又长又丑？
-默认网址带中文和日期。装 hexo-abbrlink 插件可生成 8 位固定短链，详见《文章分类、置顶与短链配置》。
-Q：图片显示不出来？
-在 _config.yml 设置 post_asset_folder: true，图片放文章同名文件夹，用裸文件名引用 ![](图片.png)。详见《Hexo 博客发布笔记完整教程》。
-小结
-
-
-
-步骤
-命令 / 操作
-
-
-
-
-装环境
-Node.js + Git
-
-
-装 Hexo
-npm install -g hexo-cli
-
-
-建博客
-hexo init
-
-
-装主题
-npm install hexo-theme-butterfly --save + 改 theme: butterfly
-
-
-改配置
-_config.yml + _config.butterfly.yml
-
-
-写文章
-hexo new &quot;标题&quot;
-
-
-发布
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-
-
-搭一次，以后写文章只需要后两行。祝写作愉快。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>缓存技术常见问题及解决</title>
-    <url>/posts/aad9f202/</url>
-    <content><![CDATA[缓存技术常见的问题
-缓存雪崩
-认识
-
-当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
-
-解决方案
-
-为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
-
-缓存穿透
-认识
-
-解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
-
-举个栗子:
-
-假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
-
-解决方案
-
-为了应对上述情况，可以选择如下两种策略：
-
-
-
-当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
-
-这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
-为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
-
-
-
-引入布隆过滤器；
-
-布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
-布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
-
-将数据库中的所有用户数据加入布隆过滤器中；
-当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
-若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
-若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
-
-
-
-
-缓存击穿
-认识
-
-解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
-
-解决方案
-为了应对上述情况，可以选择如下方案：
-
-
-缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
-
-
-加分布式锁；
-
-当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
-
-
-
-引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
-
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-      <tags>
-        <tag>缓存</tag>
         <tag>Redis</tag>
-        <tag>高并发</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>文章分类、置顶与短链配置</title>
-    <url>/posts/1784a007/</url>
-    <content><![CDATA[本站用四个机制管理文章：文件夹自动归类 + sticky 置顶排序 + abbrlink 永久短链 + series 系列关联。配合起来，写笔记时只要把文件放进文件夹就自动归类，URL 永久固定不受文件夹影响，重要文章还能置顶，连续的文章还能组成系列按顺序阅读。
-一、文件夹自动归类（auto_category）
-装了 hexo-auto-category 插件，文件夹名 = 分类名。文章放进 _posts 下的子文件夹，就自动归到对应分类，不用手写 categories。
-用法
-在 source/_posts/ 下建文件夹，文章放进去：
-source/_posts/  博客搭建/          ← 文件夹名「博客搭建」就是分类名    hexo-publish-guide.md    bookmark-guide.md  Java/              ← 再建一个文件夹就是新分类    spring-note.md
-上面的 spring-note.md 会自动归到「Java」分类，无需在 front-matter 写 categories。
-注意
-
-手写的 categories 会被覆盖：插件用文件夹名覆盖 front-matter 里的 categories。所以归好类后不用再手写。
-_posts 根目录的文章：不放文件夹的文章归类为「uncategorized」。建议都放进文件夹。
-建文件夹即建分类：新建一个文件夹并放入文章，hexo g 后分类页 /categories/ 就会出现这个分类。
-
-配置（已设好，一般不用改）
-_config.yml 里：
-auto_category:  enable: true  depth: 1          # 只取第一层文件夹名作为分类  multiple: false   # 扁平分类，不做多级层级
-想用多级分类（如 Java/框架/Spring → 分类「Java &gt; 框架 &gt; Spring」），把 depth 改大、multiple: true。
-二、置顶排序（sticky）
-首页文章默认按日期倒序。想让某篇永远排最前，在 front-matter 加 sticky 字段：
----title: 重要文章date: 2026-08-06 10:00:00sticky: 100        # 数字越大越靠前---
-规则
-
-有 sticky 的文章：按 sticky 数值从大到小排在最前，标题旁会显示一个📌图钉图标
-没 sticky 的文章：按日期倒序排在置顶文章之后
-sticky 值随便定，常见用 100、99、1 这种。多篇置顶时数字大的排前面
-
-示例
-本站的《Hexo 博客发布笔记完整教程》设了 sticky: 100，所以它一直挂在首页第一条。
-三、永久短链（abbrlink）
-装了 hexo-abbrlink 插件，文章 URL 自动生成短链，与文件夹、日期无关：
-https://zenty-me.github.io/posts/b9c5d664/
-为什么用短链
-
-永久固定：URL 基于文章标题生成，文章移动文件夹、改日期，URL 都不变
-简洁无中文：不会出现 %E5%8D%9A%E5%AE%A2 这种编码
-适合分享：短链好看，外链稳定
-
-工作机制
-
-第一次 hexo g 时，插件给每篇文章算出一个 8 位 hash（如 b9c5d664），写入文章 front-matter 的 abbrlink 字段
-之后这个值永久不变，URL 固定为 /posts/abbrlink值/
-不要手动改或删 front-matter 里的 abbrlink 字段，否则 URL 会变
-
-配置（已设好）
-_config.yml 里：
-permalink: posts/:abbrlink/abbrlink:  alg: crc32   # 算法  rep: hex     # 16进制，生成 8 位
-四、系列文章（series）
-写连续的系列文章（比如本「博客搭建教程」就是 6 篇组成的系列），想让它们关联起来、按顺序阅读，用 series 字段。
-归入系列
-在 front-matter 加 series: 系列名，同名的就是一个系列：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程---
-加完后该文章自动获得：
-
-文章底部：显示系列内的「上一篇 / 下一篇」导航（不是全站按时间的）
-侧边栏：显示「系列文章」卡片，列出整个系列的所有文章
-
-自定义顺序
-默认按文章 date 排序。想自己指定顺序，加 series_order: 数字，数字越小越靠前：
----title: 从零开始搭建 Hexo 博客series: 博客搭建教程series_order: 1---
-series_order 是独立字段，不影响文章日期、归档页、首页排序——它只控制系列内的顺序。一个系列里只要有一篇带了 series_order，整个系列就按数字排（没加的排最后）；全都不加则按 date。
-排序规则
-
-
-
-情况
-排序方式
-
-
-
-
-系列里有任一篇带 series_order
-按 series_order 数字升序（没加的排最后）
-
-
-全都没加 series_order
-按 date 排序
-
-
-
-配置在 _config.butterfly.yml：
-series:  enable: true  orderBy: &#x27;date&#x27;     # 也可 &#x27;title&#x27;，但中文标题排序不可控，不推荐  order: 1            # 1 升序，-1 降序  number: true        # 系列列表显示编号
-示例
-本站的「博客搭建教程」系列就是 6 篇文章，每篇都设了 series: 博客搭建教程 + series_order: 1~6，按搭建→发布→配置→组织→书签→图床的顺序排列。打开任意一篇，底部都能跳到系列的上一篇或下一篇。
-五、日常写笔记流程
-结合三个机制，写一篇新笔记的完整流程：
-
-建文章：hexo new &quot;标题&quot;（会生成在 _posts 根目录）
-移到对应文件夹：把 md 文件移到 source/_posts/分类名/ 下（没有文件夹就新建）
-（可选）置顶：在 front-matter 加 sticky: 100
-（可选）加入系列：如果是连续系列文章，加 series: 系列名 + series_order: 序号
-编辑：Typora 写正文
-部署：hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-
-分类自动生成，短链自动生成，不用手填 categories，不用管 URL。
-小结
-
-
-
-需求
-怎么做
-
-
-
-
-给文章归类
-把 md 文件放进 _posts/分类名/ 文件夹
-
-
-新建分类
-在 _posts/ 下新建文件夹并放入文章
-
-
-置顶文章
-front-matter 加 sticky: 100
-
-
-文章 URL
-自动生成 /posts/xxxxxxxx/，不用管
-
-
-多级分类
-auto_category.depth 改大、multiple: true
-
-
-组成系列文章
-front-matter 加 series: 系列名
-
-
-指定系列内顺序
-front-matter 加 series_order: 数字（越小越靠前）
-
-
-
-一句话：文件放文件夹就归类，加 sticky 就置顶，URL 自动短链不用管，连续文章加 series 组成系列。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>性能测试</title>
-    <url>/posts/d189c3ce/</url>
-    <content><![CDATA[性能测试核心术语：
-
-并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
-
-
-说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
-
-
-
-QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
-
-
-TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
-
-
-RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
-
-
-RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
-
-
-易混淆的术语
-接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
-
-TPS vs. QPS
-
-TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
-QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
-
-
-QPS vs. RPS
-
-QPS 通常特指数据库查询的频率，API 接口的调用速率。
-RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
-
-
-TPS vs. RPS
-
-TPS 关注的是业务层面的事务处理速度。
-RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
-
-
-
-VU (并发用户) 和 TPS 换算
-
-公式描述：TPS = VU/RT，（RT单位：秒）。
-
-举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
-性能测试工具对比
-目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
-Apache JMeter
-Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
-
-支持分布式施压。
-支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
-扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
-技术生态好，有强大的开源社区支持，开发者活跃度高。
-支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
-基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
-开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
-不支持测试用例管理、压测脚本管理等功能。
-
-ApacheBench
-ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
-
-具有较好的扩展性。
-支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
-支持请求总数、并发数、压测时长控制。
-作为一款命令行压测工具，上手较为简单。
-单机压测工具，无分布式施压能力，无可视化界面。
-不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
-单次压测，只能对单个域名或地址发起流量请求。
-压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
-
-wrk
-wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
-
-轻量级性能测试工具，安装简单。
-学习成本低。
-基于异步事件驱动框架，单机支持高并发。
-单机压测工具，无分布式施压能力。
-只支持HTTP协议。
-无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
-
-]]></content>
-      <categories>
-        <category>开发</category>
-      </categories>
-      <tags>
-        <tag>高并发</tag>
-        <tag>性能测试</tag>
-        <tag>压测</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何配置网站外观与个人信息</title>
-    <url>/posts/9fa0ea99/</url>
-    <content><![CDATA[本站基于 Hexo + Butterfly 主题。日常改外观、改个人信息，主要动两个文件：
-
-
-
-文件
-作用
-
-
-
-
-_config.yml
-Hexo 站点级配置（站名、作者、语言、部署等）
-
-
-_config.butterfly.yml
-Butterfly 主题配置（头像、背景、菜单、侧边栏等）
-
-
-
-改完后执行 hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 部署即可生效。
-一、站点基本信息
-编辑 _config.yml 顶部的 Site 段：
-title: Zenty&#x27;s Blog     # 站点标题（浏览器标签页和首页大标题）subtitle: &quot;&quot;            # 副标题description: &quot;Zenty 的个人技术博客，分享 Java 后端、Python 爬虫、AI Agent 开发的学习笔记与实践经验。&quot;  # 站点描述（SEO 用）keywords:               # 关键词author: Zenty           # 站长名称（侧边栏卡片、页脚版权都读这里）language: zh-CNtimezone: &quot;&quot;
-
-title：浏览器标签页和首页大标题都读这里
-description：搜索引擎抓取的站点描述，写一句话介绍即可
-author：改一次，全站的作者署名、版权信息都会同步
-
-二、头像
-编辑 _config.butterfly.yml：
-avatar:  img: /img/avatar.png   # 头像图片路径  effect: false          # 是否旋转，true 会一直转圈
-图片放到 source/img/avatar.png（没有 img 文件夹就新建一个）。路径里的 /img/xxx 对应的就是 source/img/xxx。
-
-支持 png / jpg / webp，建议用正方形图，否则会被裁切。
-
-三、网站背景
-背景在 _config.butterfly.yml 的 background 字段：
-# 纯色background: &quot;#f5f5f5&quot;# 渐变（本站当前用的，深空紫）background: &quot;linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)&quot;# 图片背景background: url(https://example.com/bg.jpg)
-本站用的是深空紫渐变（三个色值由暗到亮再到暗）。想换色，改这三个色值即可；想用图片，把 url 换成自己的图。
-四、顶部图（Top Img）
-顶部图是每页面顶部那张大横图：
-disable_top_img: false       # true 则全站关闭顶部图default_top_img: /img/top-bg.webp   # 默认顶部图（没单独配的页面用它）index_img: /img/top-bg.webp         # 首页顶部图archive_img: /img/top-bg.webp       # 归档页顶部图tag_img:                            # 标签页顶部图（留空用 default）category_img:                       # 分类页顶部图（留空用 default）
-图片放到 source/img/top-bg.webp（或你指定的路径）。
-
-单篇文章也能单独配顶部图：在文章 front-matter 加 top_img: /img/xxx.jpg。
-
-五、导航菜单
-菜单在 _config.butterfly.yml 顶部：
-menu:  首页: / || fas fa-home  归档: /archives/ || fas fa-archive  标签: /tags/ || fas fa-tags  分类: /categories/ || fas fa-folder-open  书签: /links/ || fas fa-bookmark  关于: /about/ || fas fa-heart
-格式是 显示名: 路径 || 图标class。
-
-显示名：菜单上显示的文字
-路径：页面的 URL，比如 /tags/
-图标：FontAwesome 图标 class，去 fontawesome.com 搜，复制 class 名（如 fas fa-home）
-
-新增菜单项后，记得用 hexo new page 页面名 建对应页面，否则点进去会 404。
-六、社交链接
-侧边栏的社交图标：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;
-格式是 图标class: 链接 || 悬停文字 || 颜色。想加多个就多写几行：
-social:  fab fa-github: https://github.com/Zenty-Me || Github || &#x27;#24292e&#x27;  fas fa-envelope: mailto:me@example.com || Email || &#x27;#88c0d0&#x27;  fab fa-weibo: https://weibo.com/yourid || 微博 || &#x27;#e6162d&#x27;
-七、侧边栏作者卡片
-侧边栏那个带头像和按钮的卡片：
-card_author:  enable: true  description: 写代码，也写点别的   # 作者名下方的描述  button:    enable: true    icon: fab fa-github    text: Follow Me    link: https://github.com/Zenty-Me
-description 是作者名下面那一行小字，改成自己的签名即可。
-八、Favicon（浏览器标签页小图标）
-favicon: /img/favicon.png
-图片放到 source/img/favicon.png。建议用 32×32 或 64×64 的 png，也可以用 ico 格式（写成 /img/favicon.ico）。
-九、图片资源放哪
-所有自定义图片（头像、顶部图、favicon、文章配图）都放在 source/img/ 目录下：
-source/  img/    avatar.png        # 头像    top-bg.webp       # 顶部图    favicon.png       # 站点图标    404.jpg           # 404 页配图
-引用时路径写 /img/文件名。新增图片后不需要额外配置，直接部署即可。
-十、图片灯箱（lightbox）
-文章里的图片默认点击没反应。开启灯箱后，点击图片会放大居中显示，再点一下关闭，方便读者看细节图、截图。
-在 _config.butterfly.yml 里：
-lightbox: fancybox
-一行搞定。Butterfly 自带 fancybox 支持，设成 fancybox 即启用，留空则关闭。本站当前已开启。
-
-写文章时正常用 Markdown 图片语法 ![描述](图片地址) 即可，无需额外标记，所有文章内的图片都会自动获得点击放大效果。
-
-十一、部署生效
-任何配置改完后，三连部署：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-等 30 秒 ~ 2 分钟，访问 https://zenty-me.github.io/ 查看。GitHub Pages 有 CDN 缓存，看到旧内容就 Ctrl+F5 强刷或等一两分钟。
-小结
-
-
-
-想改什么
-改哪里
-
-
-
-
-站点名 / 作者名 / SEO 描述
-_config.yml 的 title / author / description
-
-
-头像
-_config.butterfly.yml 的 avatar.img + 放图到 source/img/
-
-
-背景色 / 渐变
-_config.butterfly.yml 的 background
-
-
-顶部图
-_config.butterfly.yml 的 default_top_img 等
-
-
-导航菜单
-_config.butterfly.yml 的 menu
-
-
-社交图标
-_config.butterfly.yml 的 social
-
-
-作者签名
-_config.butterfly.yml 的 card_author.description
-
-
-图片点击放大
-_config.butterfly.yml 的 lightbox: fancybox
-
-
-标签页小图标
-_config.butterfly.yml 的 favicon
-
-
-
-记住一句话：个人信息和外观基本都在 _config.butterfly.yml，站点名和作者在 _config.yml。改完记得部署。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Butterfly</tag>
-        <tag>教程</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hexo 博客发布笔记完整教程</title>
-    <url>/posts/b9c5d664/</url>
-    <content><![CDATA[本篇记录从新建文章到部署上线的完整流程，方便以后查阅。
-一、新建文章
-hexo new &quot;文章标题&quot;
-执行后会在 source/_posts/ 下生成两个东西：
-
-文章标题.md：Markdown 文章文件
-文章标题/：同名文件夹，用于存放图片等资源
-
-二、文章结构（Front-matter）
-文章开头 --- 之间是 front-matter，用于配置文章元信息：
----title: 文章标题date: 2026-08-06 10:00:00tags:  - 标签1  - 标签2categories:  - 分类名cover: /img/xxx.pngdescription: 文章摘要---
-常用字段说明：
-
-
-
-字段
-作用
-必填
-
-
-
-
-title
-文章标题
-是
-
-
-date
-发布时间
-是
-
-
-tags
-标签（列表）
-否
-
-
-categories
-分类（列表）
-否
-
-
-cover
-封面图路径
-否
-
-
-description
-摘要（首页显示）
-否
-
-
-
-三、写作与图片处理
-用 Typora 或任意 Markdown 编辑器打开 .md 文件写作即可。
-图片存放规则
-本站已开启 post_asset_folder，图片放在文章同名文件夹里。例如文章 我的笔记.md，图片就放在 我的笔记/ 文件夹下。
-图片引用方式
-文章里用裸文件名引用图片：
-![图片说明](图片名.png)
-
-⚠️ 注意：必须用裸文件名（不带文件夹前缀），例如 ![](photo.png) 而不是 ![](我的笔记/photo.png)。否则部署后图片会 404。
-
-Typora 配置建议
-如果用 Typora 写作，推荐这样配置：
-
-偏好设置 → 图片 → “插入图片时” 选 “复制到指定路径”
-路径填：./${filename}/（Typora 变量，自动替换成文章名）
-勾选 “对相对路径使用 ./” 和 “应用上述规则到所有插入的图片”
-
-这样图片会自动存到文章同名文件夹。但 Typora 生成的引用会带文件夹前缀，需要手动改成裸文件名，或安装 hexo-image-link 插件自动转换。
-四、本地预览
-hexo server
-访问 http://localhost:4000/ 预览效果。修改文章内容保存后刷新浏览器即可看到，无需重启服务。
-预览草稿：
-hexo server --draft
-按 Ctrl+C 停止服务。
-
-修改 _config.yml 或主题配置后必须重启 hexo server 才生效；只改文章内容不用重启。
-
-五、部署到 GitHub Pages
-写完满意后，一键部署：
-hexo clean &amp;&amp; hexo generate &amp;&amp; hexo deploy
-简写形式：
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-各步骤作用：
-
-
-
-命令
-作用
-
-
-
-
-hexo clean
-清理缓存（删 db.json 和 public/）
-
-
-hexo generate
-生成静态文件到 public/
-
-
-hexo deploy
-把 public/ 推送到 GitHub 仓库
-
-
-
-部署后约 30 秒 ~ 2 分钟，GitHub Pages 自动构建完成即可访问。
-六、访问博客
-部署完成后访问主页：
-https://zenty-me.github.io/
-文章地址格式：
-https://zenty-me.github.io/年/月/日/文章标题/
-
-GitHub Pages 有 CDN 缓存，部署后如果看到的还是旧内容，Ctrl+F5 强刷或等 1-2 分钟。
-
-七、草稿机制
-不想发布的文章放在 source/_drafts/ 目录，不会被生成和部署。
-新建草稿：
-hexo new draft &quot;草稿标题&quot;
-把草稿转为正式文章（从 _drafts/ 移到 _posts/）：
-hexo publish &quot;草稿标题&quot;
-发布后记得执行部署命令。
-八、常用命令速查
-
-
-
-命令
-作用
-
-
-
-
-hexo new &quot;标题&quot;
-新建文章
-
-
-hexo new draft &quot;标题&quot;
-新建草稿
-
-
-hexo publish &quot;标题&quot;
-草稿转正式
-
-
-hexo server
-本地预览
-
-
-hexo server --draft
-预览含草稿
-
-
-hexo clean
-清理缓存
-
-
-hexo generate
-生成静态文件
-
-
-hexo deploy
-部署到远程
-
-
-hexo clean &amp;&amp; hexo g &amp;&amp; hexo d
-一键发布
-
-
-hexo list
-列出所有文章
-
-
-hexo version
-查看版本
-
-
-
-简写：g = generate，s = server，d = deploy，c = clean
-九、常见问题
-1. 修改配置后预览没变化？
-改了 _config.yml 或主题配置文件需要重启 hexo server。只改文章内容不用重启。
-2. 图片显示不出来？
-按顺序检查：
-
-确认图片放在文章同名文件夹里（不是 assets/ 或其他目录）
-确认引用是裸文件名 ![](图片.png)，不带文件夹前缀
-确认 _config.yml 里 post_asset_folder: true 已开启
-确认 marked 配置了 postAsset: true
-
-3. 部署后看不到更新？
-GitHub Pages 有缓存，等 1-2 分钟或 Ctrl+F5 强刷。也可以去 GitHub 仓库的 Actions 页面查看部署状态。
-4. 草稿为什么没部署上去？
-_drafts/ 下的草稿默认不生成、不部署。用 hexo publish &quot;标题&quot; 转为正式文章后再部署。
-
-以上就是 Hexo 博客发布笔记的完整流程。日常使用记住三步：hexo new 写、hexo s 看、hexo clean &amp;&amp; hexo g &amp;&amp; hexo d 发。
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>教程</tag>
+        <tag>缓存</tag>
       </tags>
   </entry>
   <entry>
@@ -7878,59 +7758,6 @@ revoke 权限列表 on 数据库.表名 from &#x27;用户名&#x27;@&#x27;主机�
       </tags>
   </entry>
   <entry>
-    <title>图床搭建</title>
-    <url>/posts/f7ade587/</url>
-    <content><![CDATA[1. 准备
-
-github账号
-PicList软件：https://github.com/Kuingsmile/PicList
-
-2. 配置
-2.1 github新建仓库+token获取
-
-新建一个公开的仓库，eg：images-test
-
-
-
-在设置页面申请token
-
-
-
-2.2 PicList配置
-
-打开下载好的PicList，对图床进行配置
-
-
-
-CDN加速服务：PicList 支持给 GitHub 图床套一层 CDN 加速，常用的是 jsDelivr（https://cdn.jsdelivr.net/gh/用户名/仓库@分支/路径）。套上后图片走 CDN 节点，加载更快。
-⚠️ 注意：jsDelivr 在国内不时会抽风（图片加载失败或很慢）。如果遇到加载不出来的情况，可以临时关掉 CDN 直接走 GitHub 原链，或换其他图床方案。
-
-
-3. 使用
-
-]]></content>
-      <categories>
-        <category>博客搭建</category>
-      </categories>
-      <tags>
-        <tag>图床</tag>
-        <tag>PicList</tag>
-        <tag>GitHub</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Redis</title>
-    <url>/posts/bae4ff13/</url>
-    <content><![CDATA[]]></content>
-      <categories>
-        <category>数据存储</category>
-      </categories>
-      <tags>
-        <tag>缓存</tag>
-        <tag>Redis</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>补环境</title>
     <url>/posts/43a51ea6/</url>
     <content><![CDATA[1. 介绍
@@ -8052,6 +7879,182 @@ function watch(obj, name, visited = new WeakSet()) &#123;    // 防止循环引�
         <tag>JavaScript</tag>
         <tag>逆向</tag>
         <tag>补环境</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>性能测试</title>
+    <url>/posts/d189c3ce/</url>
+    <content><![CDATA[性能测试核心术语：
+
+并发用户：在性能测试工具中，一般称为虚拟用户（Virtual User，简称 VU），指的是现实系统中操作业务的用户。
+
+
+说明: 并发用户与注册用户、在线用户不同。注册用户一般指的是数据库中存在的用户。在线用户只是“挂”在系统上，对服务器不产生压力。但并发用户一定会对服务器产生压力。
+
+
+
+QPS (Queries Per Second)：每秒执行的查询次数。例如，如果一个网站的首页每秒可以响应 100 次用户请求，则该页面的 QPS 为 100。
+
+
+TPS (Transaction Per Second): 每秒事务数（吞吐量），是衡量系统性能的一个非常重要的指标。事务通常是指一系列相关的操作，例如一个在线商城，在高峰期平均每秒能够完成多少笔交易。
+
+
+RPS（Request Per Second）：每秒请求数。RPS模式适合用于容量规划和作为限流管控的参考依据。
+
+
+RT（Response Time）：响应时间，指的是业务从客户端发起到客户端接收的时间。
+
+
+易混淆的术语
+接下来，我们对以上容易混淆的指标，特别是 TPS、QPS 和 RPS 做一波对比，以加深理解：
+
+TPS vs. QPS
+
+TPS 关注的是整个业务流程的完成情况，例如完成一笔订单交易。
+QPS 更加细化，专注于单个数据库查询或 API 调用的速度。一个TPS可能包含多个QPS。
+
+
+QPS vs. RPS
+
+QPS 通常特指数据库查询的频率，API 接口的调用速率。
+RPS 是指 HTTP 请求的频率，可以包括GET、POST等不同类型的操作。
+
+
+TPS vs. RPS
+
+TPS 关注的是业务层面的事务处理速度。
+RPS 则是针对 HTTP 协议的请求处理速度，通常比 TPS 更加频繁。
+
+
+
+VU (并发用户) 和 TPS 换算
+
+公式描述：TPS = VU/RT，（RT单位：秒）。
+
+举例说明：假如1个虚拟用户在 1 秒内完成 1 笔事务，那么 TPS 明显就是1。如果某笔业务响应时间是1 ms，那么1个虚拟用户在1s内能完成1000笔事务，TPS就是1000 了；如果某笔业务响应时间是 1s，那么 1 个虚拟用户在1s内只能完成1笔事务，要想达到1000 TPS，就需要1000个虚拟用户。因此可以说1个虚拟用户可以产生1000 TPS，1000个虚拟用户也可以产生1000 TPS，无非是看响应时间快慢。
+性能测试工具对比
+目前主流的几种性能压测工具，包括 Apache JMeter、ApacheBench（ab）、wrk，以下多方面分析这些压测工具的优缺点。
+Apache JMeter
+Apache JMeter是Apache组织开发的基于Java的压力测试工具。Apache JMeter具备如下特性：
+
+支持分布式施压。
+支持图形化界面，且支持流程编排，同时支持断言、逻辑控制器等高级指令，可满足复杂业务压测需求。
+扩展性强，开发、测试人员可通过编写自己的插件，满足各种压测需求。
+技术生态好，有强大的开源社区支持，开发者活跃度高。
+支持查看资源监控、性能报告，但可查看的监控和报告指标较少。
+基于并发模型，受限于JVM，单机无法支持超高并发。且只支持并发施压模型，不支持吞吐量施压模型。
+开源支持的分布式能力无法大规模应用到生产环境，部署成本高。
+不支持测试用例管理、压测脚本管理等功能。
+
+ApacheBench
+ApacheBench（ab）是一款针对HTTP协议做性能压测的命令行工具。ApacheBench具备如下特性：
+
+具有较好的扩展性。
+支持协议单一。对HTTP协议支持度较好，不支持主流的HTTPS、WebSocket等协议。
+支持请求总数、并发数、压测时长控制。
+作为一款命令行压测工具，上手较为简单。
+单机压测工具，无分布式施压能力，无可视化界面。
+不支持链路编排、场景管理等功能，无法做带业务含义的复杂压测。
+单次压测，只能对单个域名或地址发起流量请求。
+压测统计指标维度少，缺少压测过程中的统计数据，无法获取系统负载等指标。
+
+wrk
+wrk是一款针对HTTP协议的基准测试工具。wrk具备如下特性：
+
+轻量级性能测试工具，安装简单。
+学习成本低。
+基于异步事件驱动框架，单机支持高并发。
+单机压测工具，无分布式施压能力。
+只支持HTTP协议。
+无可视化界面，不支持流程编排、断言等能力，无法满足复杂压测需求。
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+      <tags>
+        <tag>性能测试</tag>
+        <tag>压测</tag>
+        <tag>高并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>缓存技术常见问题及解决</title>
+    <url>/posts/aad9f202/</url>
+    <content><![CDATA[缓存技术常见的问题
+缓存雪崩
+认识
+
+当大量的缓存数据在同一时间失效，导致大量的请求直接打到数据库上，这种现象称为缓存雪崩。
+
+解决方案
+
+为了避免以上情况的发生，比较常见的做法是，在存入缓存时，为它们设置不同的失效时间，从而避免同一时间，大量缓存同时失效的情况发生。
+
+缓存穿透
+认识
+
+解释：缓存穿透是指查询一个缓存中不存在的数据，同时，数据库中同样不存在该条数据。
+
+举个栗子:
+
+假设系统被恶意攻击，查询一个不存在的用户，如用户 ID 为 -1， 按照之前的逻辑，会先从 Redis 中查询，缓存中不存在，然后会走数据库查询，依然不存在，那么此类请求永远都会打到数据库。如果被恶意发起大量此类请求，缓存形同虚设，依然会带来数据库雪崩，直接导致整个服务不可用。
+
+解决方案
+
+为了应对上述情况，可以选择如下两种策略：
+
+
+
+当数据库中找不到某条数据时，可以在 Redis 中缓存一个空值，表示该条数据不存在。这样后续的此类请求，都会命中缓存，从而拦截非法请求对数据库的压力；
+
+这样也会带来另一个问题，如果被恶意请求大量不同的非法数据，如用户 ID 为 -1，-2，-3 …，此方案会使 Redis 中存储大量无用的空数据，极端情况下，甚至会驱逐出合法的缓存数据，导致缓存命中率大大的降低，数据库再次面临访问量激增的风险。
+为了解决此问题，可以对不存在的空缓存，设置一个较短的过期时间，防止 Redis 内存占用持续增加。
+
+
+
+引入布隆过滤器；
+
+布隆过滤器（Bloom Filter）是一种数据结构，用于判断一个元素是否在一个集合中。它的特点是空间利用高且查询速度快，但是会有一定的误判率，即对于 “数据不存在” 的判定是准确的，但是对 “数据存在” 有一定的误判。
+布隆过滤器非常适合用来防止内存穿透，它的处理流程大致如下：
+
+将数据库中的所有用户数据加入布隆过滤器中；
+当查询某条用户数据，且 Redis 中不存在时，开始检查布隆过滤器是否记录了此数据；
+若布隆过滤器认为 “不存在”，由于布隆过滤器对此类判断绝对准确，故而则认为数据库中也不存在该数据，直接响应该用户不存在；
+若布隆过滤器认为 “存在”，则走数据库查询，并加入 Redis 缓存中。虽然有一定误判，但是误判率较低，仅会存缓存少许空值。不会存储大量无用空数据，导致合法数据被驱逐，缓存命中率降低的情况。
+
+
+
+
+缓存击穿
+认识
+
+解释：缓存击穿是指某个热点数据在失效的瞬间，大量的并发请求直接打到了数据库上，导致数据库压力过大。
+
+解决方案
+为了应对上述情况，可以选择如下方案：
+
+
+缓存不设置过期时间：缓存不会过期被删除，自然不会有缓存击穿的风险；
+
+
+加分布式锁；
+
+当一个热点数据在缓存中失效时，可以使用分布式锁来确保只有一个服务实例去数据库中获取数据并更新缓存。这样可以避免大量请求同时访问数据库。
+
+
+
+引入本地缓存，和 Redis 形成二级缓存，互成犄角之势，并且两种缓存过期时间都会设置的不一样:
+
+
+]]></content>
+      <categories>
+        <category>开发</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+        <tag>缓存</tag>
+        <tag>高并发</tag>
       </tags>
   </entry>
 </search>

@@ -11,17 +11,18 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-10-04T07:20:39.596Z</updated>
+  <updated>2026-10-04T07:21:03.457Z</updated>
   <entry>
     <author>
       <name>Zenty</name>
     </author>
+    <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
     <id>https://zenty-me.github.io/posts/f7088878/</id>
     <link href="https://zenty-me.github.io/posts/f7088878/"/>
     <published>2026-10-04T07:20:01.000Z</published>
     <summary>在 Python 后端开发中，只要项目使用了 SQLAlchemy，基本都会遇到一个问题： 数据库表结构发生变化之后，应该怎么安全地同步到数据库？ 比如一开始我们有一个 表： 后来业务发生变化，需要增加： 如果项目还处于刚开始开发的阶段，我们当然可以直接删掉…</summary>
     <title>Alembic 使用教程</title>
-    <updated>2026-10-04T07:20:39.596Z</updated>
+    <updated>2026-10-04T07:21:03.457Z</updated>
   </entry>
   <entry>
     <author>
@@ -128,8 +129,8 @@
       <name>Zenty</name>
     </author>
     <category term="数据存储" scheme="https://zenty-me.github.io/categories/%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8/"/>
-    <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
     <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
+    <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
     <id>https://zenty-me.github.io/posts/bae4ff13/</id>
     <link href="https://zenty-me.github.io/posts/bae4ff13/"/>
     <published>2026-09-05T01:54:41.000Z</published>
