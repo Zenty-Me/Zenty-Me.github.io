@@ -11,7 +11,7 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-10-03T15:55:36.656Z</updated>
+  <updated>2026-10-03T15:56:44.425Z</updated>
   <entry>
     <author>
       <name>Zenty</name>
@@ -22,7 +22,7 @@
     <published>2026-10-03T15:51:28.000Z</published>
     <summary>在前后端分离项目中，前端最常见的工作之一就是向后端发送 HTTP 请求。 例如： 浏览器本身提供了 ，但在实际 Vue、React 项目中，Axios 依然非常常见，因为它提供了比较完整的请求配置、拦截器、超时控制、请求实例、统一错误处理等能力。 本文从最基…</summary>
     <title>Axios 从入门到实战</title>
-    <updated>2026-10-03T15:55:36.656Z</updated>
+    <updated>2026-10-03T15:56:44.425Z</updated>
   </entry>
   <entry>
     <author>
@@ -119,8 +119,8 @@
       <name>Zenty</name>
     </author>
     <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
-    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
+    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/</id>
     <link href="https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/"/>
@@ -263,16 +263,16 @@
     <published>2026-08-07T12:10:58.000Z</published>
     <summary>Docker 常用命令以及镜像、容器管理笔记。</summary>
     <title>docker</title>
-    <updated>2026-09-17T06:42:01.254Z</updated>
+    <updated>2026-10-04T05:05:30.103Z</updated>
   </entry>
   <entry>
     <author>
       <name>Zenty</name>
     </author>
     <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
+    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
     <category term="Redis" scheme="https://zenty-me.github.io/tags/Redis/"/>
     <category term="缓存" scheme="https://zenty-me.github.io/tags/%E7%BC%93%E5%AD%98/"/>
-    <category term="高并发" scheme="https://zenty-me.github.io/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/aad9f202/</id>
     <link href="https://zenty-me.github.io/posts/aad9f202/"/>
     <published>2026-08-06T08:33:20.000Z</published>
