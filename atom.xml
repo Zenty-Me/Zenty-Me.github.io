@@ -119,8 +119,8 @@
       <name>Zenty</name>
     </author>
     <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
-    <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
     <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
+    <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
     <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/</id>
     <link href="https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/"/>
