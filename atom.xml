@@ -146,12 +146,12 @@
     <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
     <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
-    <id>https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/</id>
-    <link href="https://zenty-me.github.io/posts/FastAPI%E6%95%99%E7%A8%8B/"/>
+    <id>https://zenty-me.github.io/posts/dd7fb916/</id>
+    <link href="https://zenty-me.github.io/posts/dd7fb916/"/>
     <published>2026-08-27T11:14:53.000Z</published>
-    <summary>FastAPI 入门教程：用 uv 管理环境，路径操作与路由分发、路径参数与查询参数、请求体与嵌套模型、表单、静态文件和响应模型。</summary>
+    <summary>FastAPI 入门到实战：路由分发、参数校验、请求体与响应模型、文件上传、异常处理、依赖注入、中间件与 CORS、Tortoise-ORM 与 Aerich 迁移、接口测试和部署。</summary>
     <title>FastAPI教程</title>
-    <updated>2026-09-17T07:49:14.174Z</updated>
+    <updated>2026-10-08T05:41:22.207Z</updated>
   </entry>
   <entry>
     <author>
@@ -287,6 +287,6 @@
     <published>2026-08-07T12:10:58.000Z</published>
     <summary>Docker 常用命令以及镜像、容器管理笔记。</summary>
     <title>docker</title>
-    <updated>2026-10-04T05:05:30.103Z</updated>
+    <updated>2026-10-08T05:41:12.307Z</updated>
   </entry>
 </feed>
