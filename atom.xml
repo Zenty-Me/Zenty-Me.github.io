@@ -11,7 +11,7 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-10-04T07:22:11.779Z</updated>
+  <updated>2026-10-09T02:56:01.333Z</updated>
   <entry>
     <author>
       <name>Zenty</name>
@@ -22,7 +22,7 @@
     <published>2026-10-04T07:20:01.000Z</published>
     <summary>在 Python 后端开发中，只要项目使用了 SQLAlchemy，基本都会遇到一个问题： 数据库表结构发生变化之后，应该怎么安全地同步到数据库？ 比如一开始我们有一个 表： 后来业务发生变化，需要增加： 如果项目还处于刚开始开发的阶段，我们当然可以直接删掉…</summary>
     <title>Alembic 使用教程</title>
-    <updated>2026-10-04T07:22:11.779Z</updated>
+    <updated>2026-10-09T02:56:01.333Z</updated>
   </entry>
   <entry>
     <author>
@@ -32,9 +32,9 @@
     <id>https://zenty-me.github.io/posts/67f9161d/</id>
     <link href="https://zenty-me.github.io/posts/67f9161d/"/>
     <published>2026-10-04T06:18:35.000Z</published>
-    <summary>随着 Claude Code、Codex、Cursor 等 AI 编程工具越来越强，现在让 AI 完成一个完整功能已经不是什么难事。 真正麻烦的问题反而变成了： AI 写代码很快，但它不一定真正理解你想做什么。 比如我们直接告诉 AI： AI 很可能马上开始…</summary>
+    <summary>随着 Claude Code、Codex、Cursor 等 AI 编程工具越来越强，现在让 AI 完成一个完整功能已经不是什么难事。 麻烦反而变成了： AI 写代码很快，但它不一定真正理解你想做什么。 比如我们直接告诉 AI： AI 很可能马上开始创建接口、…</summary>
     <title>Open Spec使用教程</title>
-    <updated>2026-10-04T06:22:33.338Z</updated>
+    <updated>2026-10-09T03:03:42.591Z</updated>
   </entry>
   <entry>
     <author>
@@ -44,9 +44,9 @@
     <id>https://zenty-me.github.io/posts/82962a93/</id>
     <link href="https://zenty-me.github.io/posts/82962a93/"/>
     <published>2026-10-03T15:51:28.000Z</published>
-    <summary>在前后端分离项目中，前端最常见的工作之一就是向后端发送 HTTP 请求。 例如： 浏览器本身提供了 ，但在实际 Vue、React 项目中，Axios 依然非常常见，因为它提供了比较完整的请求配置、拦截器、超时控制、请求实例、统一错误处理等能力。 本文从最基…</summary>
+    <summary>在前后端分离项目中，前端最常见的工作之一就是向后端发送 HTTP 请求。 例如： 浏览器本身提供了 ，但在实际 Vue、React 项目中，Axios 依然很常见，因为它提供了比较完整的请求配置、拦截器、超时控制、请求实例、统一错误处理等能力。 本文从最基础…</summary>
     <title>Axios 从入门到实战</title>
-    <updated>2026-10-03T15:56:44.425Z</updated>
+    <updated>2026-10-09T03:04:24.972Z</updated>
   </entry>
   <entry>
     <author>
@@ -56,9 +56,9 @@
     <id>https://zenty-me.github.io/posts/6b2eee5a/</id>
     <link href="https://zenty-me.github.io/posts/6b2eee5a/"/>
     <published>2026-10-03T14:33:34.000Z</published>
-    <summary>Vim 是 Linux、服务器、Git、Docker 等开发环境中非常常见的文本编辑器。 很多人第一次打开 Vim 时都会遇到同一个问题： 为什么我不能直接输入？又该怎么退出？ 这并不是 Vim 难，而是因为 Vim 和普通编辑器的设计思路不一样。 普通编辑…</summary>
+    <summary>Vim 是 Linux、服务器、Git、Docker 等开发环境中常见的文本编辑器。 很多人第一次打开 Vim 时都会遇到同一个问题： 为什么我不能直接输入？又该怎么退出？ 原因在于 Vim 和普通编辑器的设计思路不一样。 普通编辑器默认是“输入文字”，而 …</summary>
     <title>Vim教程</title>
-    <updated>2026-10-03T14:46:17.916Z</updated>
+    <updated>2026-10-09T02:52:37.970Z</updated>
   </entry>
   <entry>
     <author>
@@ -68,9 +68,9 @@
     <id>https://zenty-me.github.io/posts/d83a5595/</id>
     <link href="https://zenty-me.github.io/posts/d83a5595/"/>
     <published>2026-09-29T03:37:46.000Z</published>
-    <summary>适合读者：刚接触 Git/GitHub 协作、需要向团队项目提交代码或参与开源贡献的开发者。本文以 Go 项目为例，但 Git 工作流适用于绝大多数语言和项目。 你已经修改了一个项目，接下来如何把代码提交给维护者审核？答案通常是创建 Pull Request…</summary>
+    <summary>适合读者：刚接触 Git/GitHub 协作、需要向团队项目提交代码或参与开源贡献的开发者。本文以 Go 项目为例，但 Git 工作流适用于绝大多数语言和项目。 修改完项目代码后，通常要创建 Pull Request（简称 PR）交给维护者审核。下面分两种场…</summary>
     <title>github提交pr</title>
-    <updated>2026-09-29T03:42:10.006Z</updated>
+    <updated>2026-10-09T02:53:34.556Z</updated>
   </entry>
   <entry>
     <author>
@@ -80,9 +80,9 @@
     <id>https://zenty-me.github.io/posts/c2881daa/</id>
     <link href="https://zenty-me.github.io/posts/c2881daa/"/>
     <published>2026-09-19T11:36:08.000Z</published>
-    <summary>在切入业务代码前，需要先厘清 Kafka 的通信模型与基础组件。如果不理解这些设计动机，使用 、 与 时就容易陷入机械配置的误区。 假设一个电商系统在处理创建订单请求 时，采用传统的单体同步调用： 整个请求的链路耗时为各项之和（约 650ms）。但在多数业务…</summary>
+    <summary>写业务代码前，先理清 Kafka 的通信模型与基础组件。不理解这些设计动机，使用 、 与 时就容易只会照搬配置。 假设一个电商系统在处理创建订单请求 时，采用传统的单体同步调用： 整个请求的链路耗时为各项之和（约 650ms）。但在多数业务场景下，调用方只需…</summary>
     <title>kafka实践教程</title>
-    <updated>2026-09-19T11:39:33.747Z</updated>
+    <updated>2026-10-09T03:02:32.279Z</updated>
   </entry>
   <entry>
     <author>
@@ -94,7 +94,7 @@
     <published>2026-09-19T02:15:00.000Z</published>
     <summary>这次参加初试，我选了方向 A 的模型价格计算器，交付作品是 ModelMeter。 在线体验：https://modelmeter.vercel.app/ 源码仓库：https://github.com/Zenty-Me/modelmeter 最开始构思时，…</summary>
     <title>ModelMeter 开发复盘</title>
-    <updated>2026-09-19T02:17:51.504Z</updated>
+    <updated>2026-10-09T02:54:39.229Z</updated>
   </entry>
   <entry>
     <author>
@@ -107,7 +107,7 @@
     <published>2026-09-17T09:27:31.000Z</published>
     <summary>uv 是 Astral 开发的 Python 项目与包管理工具，基于 Rust 构建。它将解释器下载、虚拟环境配置、依赖安装和锁文件管理整合到了单一二进制文件中，可以直接替代 pip、virtualenv、pyenv 和 Poetry。 macOS 与 Li…</summary>
     <title>使用uv管理环境</title>
-    <updated>2026-09-18T04:26:09.323Z</updated>
+    <updated>2026-10-09T03:02:11.018Z</updated>
   </entry>
   <entry>
     <author>
@@ -122,7 +122,7 @@
     <published>2026-09-15T03:47:12.000Z</published>
     <summary>梳理 Python asyncio 的核心用法：事件循环、async/await、create_task、gather、AsyncIterator 与 Queue，并给出生产者消费者流水线示例。</summary>
     <title>asyncio模块</title>
-    <updated>2026-09-17T06:41:49.806Z</updated>
+    <updated>2026-10-09T03:02:03.410Z</updated>
   </entry>
   <entry>
     <author>
@@ -143,15 +143,15 @@
       <name>Zenty</name>
     </author>
     <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
-    <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
     <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
+    <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
     <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/dd7fb916/</id>
     <link href="https://zenty-me.github.io/posts/dd7fb916/"/>
     <published>2026-08-27T11:14:53.000Z</published>
     <summary>FastAPI 入门到实战：路由分发、参数校验、请求体与响应模型、文件上传、异常处理、依赖注入、中间件与 CORS、Tortoise-ORM 与 Aerich 迁移、接口测试和部署。</summary>
     <title>FastAPI教程</title>
-    <updated>2026-10-08T05:41:22.207Z</updated>
+    <updated>2026-10-09T02:44:37.982Z</updated>
   </entry>
   <entry>
     <author>
@@ -167,7 +167,7 @@
     <published>2026-08-23T07:52:15.000Z</published>
     <summary>Spring Security 认证与授权实战：过滤器链原理、基于内存与数据库的用户认证、密码加密，以及前后端分离场景下的认证方案。</summary>
     <title>SpringSecurity认证与授权</title>
-    <updated>2026-09-17T06:42:15.452Z</updated>
+    <updated>2026-10-09T03:01:53.278Z</updated>
   </entry>
   <entry>
     <author>
@@ -182,7 +182,7 @@
     <published>2026-08-19T07:53:43.000Z</published>
     <summary>国内下载 LM Studio 模型速度慢的解决办法——先从魔搭社区（ModelScope）下载 GGUF 模型，再导入 LM Studio 本地运行。</summary>
     <title>解决lmstudio下载模型卡顿问题</title>
-    <updated>2026-09-17T06:41:55.332Z</updated>
+    <updated>2026-10-09T02:57:14.167Z</updated>
   </entry>
   <entry>
     <author>
@@ -198,7 +198,7 @@
     <published>2026-08-15T15:15:44.000Z</published>
     <summary>JS 逆向补环境实战笔记：浏览器常见对象（window、document、navigator 等）、常见环境检测手段、Proxy 代理脚本与原型链补全思路。</summary>
     <title>补环境</title>
-    <updated>2026-09-17T06:42:26.756Z</updated>
+    <updated>2026-10-09T03:02:44.875Z</updated>
   </entry>
   <entry>
     <author>
@@ -214,7 +214,7 @@
     <published>2026-08-14T06:55:53.000Z</published>
     <summary>XXL-JOB 分布式任务调度平台使用笔记：调度中心与执行器的搭建配置、GLUE 模式、路由策略、任务分片与集群执行。</summary>
     <title>XXL-Job分布式任务调度平台</title>
-    <updated>2026-09-17T06:42:15.480Z</updated>
+    <updated>2026-10-09T03:02:25.761Z</updated>
   </entry>
   <entry>
     <author>
@@ -229,7 +229,7 @@
     <published>2026-08-12T07:23:16.000Z</published>
     <summary>MySQL 基础语法速查：DDL 库表操作与数据类型、DML 增删改、DQL 条件 / 聚合 / 分组 / 排序 / 分页查询，以及 DCL 权限管理。</summary>
     <title>MySql</title>
-    <updated>2026-09-17T06:46:13.175Z</updated>
+    <updated>2026-10-09T03:02:03.409Z</updated>
   </entry>
   <entry>
     <author>
@@ -244,7 +244,7 @@
     <published>2026-08-10T06:32:28.000Z</published>
     <summary>从向量内积、基变换、协方差矩阵一路讲到拉格朗日乘子法，完整推导 PCA 降维的数学原理、求解过程与计算步骤。</summary>
     <title>PCA降维</title>
-    <updated>2026-09-17T06:41:49.781Z</updated>
+    <updated>2026-10-09T03:05:03.155Z</updated>
   </entry>
   <entry>
     <author>
@@ -259,7 +259,7 @@
     <published>2026-08-09T09:08:02.000Z</published>
     <summary>Elasticsearch 7 入门笔记：用 Docker 安装 ES 与 Kibana、解决跨域，以及索引和文档的增删改查与条件、精确、范围、分页搜索语法。</summary>
     <title>Elasticsearch使用</title>
-    <updated>2026-09-17T06:42:09.892Z</updated>
+    <updated>2026-10-09T03:05:03.152Z</updated>
   </entry>
   <entry>
     <author>
@@ -274,7 +274,7 @@
     <published>2026-08-07T13:15:42.000Z</published>
     <summary>用 GitHub 仓库加 PicList 搭建免费图床：创建仓库与 Token、配置 PicList，并让 Hexo 博客里的图片自动上传。</summary>
     <title>图床搭建</title>
-    <updated>2026-09-17T06:41:55.310Z</updated>
+    <updated>2026-10-09T02:54:39.227Z</updated>
   </entry>
   <entry>
     <author>
@@ -287,6 +287,6 @@
     <published>2026-08-07T12:10:58.000Z</published>
     <summary>Docker 常用命令以及镜像、容器管理笔记。</summary>
     <title>docker</title>
-    <updated>2026-10-08T05:41:12.307Z</updated>
+    <updated>2026-10-09T03:02:51.975Z</updated>
   </entry>
 </feed>
