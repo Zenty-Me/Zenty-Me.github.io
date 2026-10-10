@@ -11,7 +11,18 @@
   <rights>All rights reserved 2026, Zenty</rights>
   <subtitle>后端开发 · 技术笔记</subtitle>
   <title>Zenty's Blog</title>
-  <updated>2026-10-09T02:56:01.333Z</updated>
+  <updated>2026-10-10T00:45:21.453Z</updated>
+  <entry>
+    <author>
+      <name>Zenty</name>
+    </author>
+    <id>https://zenty-me.github.io/posts/d0edc1ed/</id>
+    <link href="https://zenty-me.github.io/posts/d0edc1ed/"/>
+    <published>2026-10-09T09:41:41.000Z</published>
+    <summary>Linux 命令是后端、运维、测试和开发岗位面试中的高频内容。面试官通常会继续追问：“执行后会看到什么？”“遇到问题时如何组合使用？” 本文为常用命令配备典型结果示例，示例输出会因机器、用户和发行版不同而变化。 用于显示当前工作目录。 查看详细信息： 查看隐…</summary>
+    <title>Linux常用命令</title>
+    <updated>2026-10-10T00:45:21.453Z</updated>
+  </entry>
   <entry>
     <author>
       <name>Zenty</name>
@@ -143,8 +154,8 @@
       <name>Zenty</name>
     </author>
     <category term="python" scheme="https://zenty-me.github.io/categories/python/"/>
-    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Python" scheme="https://zenty-me.github.io/tags/Python/"/>
+    <category term="FastAPI" scheme="https://zenty-me.github.io/tags/FastAPI/"/>
     <category term="Web开发" scheme="https://zenty-me.github.io/tags/Web%E5%BC%80%E5%8F%91/"/>
     <id>https://zenty-me.github.io/posts/dd7fb916/</id>
     <link href="https://zenty-me.github.io/posts/dd7fb916/"/>
@@ -275,18 +286,5 @@
     <summary>用 GitHub 仓库加 PicList 搭建免费图床：创建仓库与 Token、配置 PicList，并让 Hexo 博客里的图片自动上传。</summary>
     <title>图床搭建</title>
     <updated>2026-10-09T02:54:39.227Z</updated>
-  </entry>
-  <entry>
-    <author>
-      <name>Zenty</name>
-    </author>
-    <category term="开发" scheme="https://zenty-me.github.io/categories/%E5%BC%80%E5%8F%91/"/>
-    <category term="Docker" scheme="https://zenty-me.github.io/tags/Docker/"/>
-    <id>https://zenty-me.github.io/posts/f255ffad/</id>
-    <link href="https://zenty-me.github.io/posts/f255ffad/"/>
-    <published>2026-08-07T12:10:58.000Z</published>
-    <summary>Docker 常用命令以及镜像、容器管理笔记。</summary>
-    <title>docker</title>
-    <updated>2026-10-09T03:02:51.975Z</updated>
   </entry>
 </feed>

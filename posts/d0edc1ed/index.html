@@ -1,0 +1,535 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Linux常用命令 | Zenty's Blog</title><meta name="author" content="Zenty"><meta name="copyright" content="Zenty"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#111318"><meta name="description" content="Linux 命令是后端、运维、测试和开发岗位面试中的高频内容。面试官通常会继续追问：“执行后会看到什么？”“遇到问题时如何组合使用？” 本文为常用命令配备典型结果示例，示例输出会因机器、用户和发行版不同而变化。 用于显示当前工作目录。 查看详细信息： 查看隐…">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux常用命令">
+<meta property="og:url" content="https://zenty-me.github.io/posts/d0edc1ed/">
+<meta property="og:site_name" content="Zenty&#39;s Blog">
+<meta property="og:description" content="Linux 命令是后端、运维、测试和开发岗位面试中的高频内容。面试官通常会继续追问：“执行后会看到什么？”“遇到问题时如何组合使用？” 本文为常用命令配备典型结果示例，示例输出会因机器、用户和发行版不同而变化。 用于显示当前工作目录。 查看详细信息： 查看隐…">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zenty-me.github.io/img/avatar.png">
+<meta property="article:published_time" content="2026-10-09T09:41:41.000Z">
+<meta property="article:modified_time" content="2026-10-10T00:45:21.453Z">
+<meta property="article:author" content="Zenty">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="Spring">
+<meta property="article:tag" content="中间件">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="后端开发">
+<meta property="article:tag" content="技术博客">
+<meta property="article:tag" content="爬虫">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zenty-me.github.io/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Linux常用命令",
+  "url": "https://zenty-me.github.io/posts/d0edc1ed/",
+  "image": "https://zenty-me.github.io/img/avatar.png",
+  "datePublished": "2026-10-09T09:41:41.000Z",
+  "dateModified": "2026-10-10T00:45:21.453Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Zenty",
+      "url": "https://zenty-me.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zenty-me.github.io/posts/d0edc1ed/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="google-site-verification" content="ugbqFSlzzcGrfeS3Xc3apR5gPpdP8zW40PtxcWPJQrs"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.9/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#111318')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#F5F6F8')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: Zenty","link":"链接: ","source":"来源: Zenty's Blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Linux常用命令',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/minimal.css"><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="Zenty's Blog" type="application/atom+xml">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">28</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">42</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fas fa-bookmark"></i><span> 书签</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/top-bg.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Zenty's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Linux常用命令</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/links/"><i class="fa-fw fas fa-bookmark"></i><span> 书签</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Linux常用命令</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-09T09:41:41.000Z" title="发表于 2026-10-09 17:41:41">2026-10-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-10T00:45:21.453Z" title="更新于 2026-10-10 08:45:21">2026-10-10</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><div id="post-outdate-notice" data="{&quot;limitDay&quot;:365,&quot;messagePrev&quot;:&quot;距离上次更新已经&quot;,&quot;messageNext&quot;:&quot;天，文章内容可能已过时。&quot;,&quot;postUpdate&quot;:&quot;2026-10-10 08:45:21&quot;}" hidden></div><p>Linux 命令是后端、运维、测试和开发岗位面试中的高频内容。面试官通常会继续追问：“执行后会看到什么？”“遇到问题时如何组合使用？”</p>
+<p>本文为常用命令配备典型结果示例，示例输出会因机器、用户和发行版不同而变化。</p>
+<h2 id="一、文件和目录操作">一、文件和目录操作</h2>
+<h3 id="1-查看当前目录：pwd">1. 查看当前目录：<code>pwd</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">pwd</span></span><br><span class="line">/home/app</span><br></pre></td></tr></table></figure>
+<p><code>pwd</code> 用于显示当前工作目录。</p>
+<h3 id="2-查看目录内容：ls">2. 查看目录内容：<code>ls</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">ls</span></span><br><span class="line">app.jar  config  logs  start.sh</span><br></pre></td></tr></table></figure>
+<p>查看详细信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">ls</span> -l</span><br><span class="line">-rw-r--r-- 1 app app 24576 Oct  9 10:20 app.jar</span><br><span class="line">drwxr-xr-x 2 app app  4096 Oct  9 10:18 config</span><br><span class="line">drwxr-xr-x 2 app app  4096 Oct  9 10:19 logs</span><br><span class="line">-rwxr-xr-x 1 app app   512 Oct  9 10:20 start.sh</span><br></pre></td></tr></table></figure>
+<p>查看隐藏文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">ls</span> -la</span><br><span class="line">drwxr-xr-x 5 app app 4096 Oct  9 10:20 .</span><br><span class="line">drwxr-xr-x 3 app app 4096 Oct  9 10:00 ..</span><br><span class="line">-rw-r--r-- 1 app app  220 Oct  9 10:00 .bash_logout</span><br><span class="line">-rw-r--r-- 1 app app 3526 Oct  9 10:00 .bashrc</span><br></pre></td></tr></table></figure>
+<h3 id="3-创建目录和文件：mkdir、touch">3. 创建目录和文件：<code>mkdir</code>、<code>touch</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mkdir</span> logs</span><br><span class="line">$ <span class="built_in">touch</span> logs/app.log</span><br><span class="line">$ <span class="built_in">ls</span> logs</span><br><span class="line">app.log</span><br></pre></td></tr></table></figure>
+<p>创建多级目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mkdir</span> -p /opt/app/logs/archive</span><br><span class="line">$ <span class="built_in">ls</span> -ld /opt/app/logs/archive</span><br><span class="line">drwxr-xr-x 2 app app 4096 Oct  9 10:21 /opt/app/logs/archive</span><br></pre></td></tr></table></figure>
+<h3 id="4-复制、移动和重命名：cp、mv">4. 复制、移动和重命名：<code>cp</code>、<code>mv</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cp</span> app.jar app-backup.jar</span><br><span class="line">$ <span class="built_in">ls</span> app*.jar</span><br><span class="line">app-backup.jar  app.jar</span><br></pre></td></tr></table></figure>
+<p>复制目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cp</span> -r config config-backup</span><br><span class="line">$ <span class="built_in">ls</span></span><br><span class="line">app.jar  config  config-backup</span><br></pre></td></tr></table></figure>
+<p>移动文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mv</span> app-backup.jar backup/</span><br><span class="line">$ <span class="built_in">ls</span> backup/</span><br><span class="line">app-backup.jar</span><br></pre></td></tr></table></figure>
+<p>重命名文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mv</span> start.sh start-prod.sh</span><br><span class="line">$ <span class="built_in">ls</span> start*</span><br><span class="line">start-prod.sh</span><br></pre></td></tr></table></figure>
+<h3 id="5-删除文件和目录：rm">5. 删除文件和目录：<code>rm</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">rm</span> backup/app-backup.jar</span><br><span class="line">$ <span class="built_in">ls</span> backup/</span><br></pre></td></tr></table></figure>
+<p>删除目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">rm</span> -rf config-backup</span><br><span class="line">$ <span class="built_in">test</span> -d config-backup; <span class="built_in">echo</span> $?</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+<p>返回值 <code>1</code> 表示目录不存在。<code>rm -rf</code> 会递归强制删除，执行前必须确认路径。</p>
+<h3 id="6-查看文件类型：file">6. 查看文件类型：<code>file</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ file app.jar</span><br><span class="line">app.jar: Java archive data (JAR)</span><br></pre></td></tr></table></figure>
+<h2 id="二、查看和搜索文件内容">二、查看和搜索文件内容</h2>
+<h3 id="1-查看完整内容：cat">1. 查看完整内容：<code>cat</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cat</span> config/app.conf</span><br><span class="line">server.port=8080</span><br><span class="line">app.name=demo</span><br><span class="line">log.level=INFO</span><br></pre></td></tr></table></figure>
+<h3 id="2-分页查看：less">2. 分页查看：<code>less</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ less app.log</span><br><span class="line">2026-10-09 10:20:01 INFO  Application started</span><br><span class="line">2026-10-09 10:20:05 INFO  Request received</span><br></pre></td></tr></table></figure>
+<p>在 <code>less</code> 中：</p>
+<ul>
+<li>按 <code>q</code> 退出</li>
+<li>按 <code>/关键词</code> 搜索</li>
+<li>按 <code>n</code> 查看下一个匹配项</li>
+</ul>
+<h3 id="3-查看开头和结尾：head、tail">3. 查看开头和结尾：<code>head</code>、<code>tail</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">head</span> -n 3 app.log</span><br><span class="line">2026-10-09 10:20:01 INFO  Application started</span><br><span class="line">2026-10-09 10:20:02 INFO  Database connected</span><br><span class="line">2026-10-09 10:20:03 INFO  Cache initialized</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">tail</span> -n 3 app.log</span><br><span class="line">2026-10-09 10:21:01 INFO  Request received</span><br><span class="line">2026-10-09 10:21:02 INFO  Request completed</span><br><span class="line">2026-10-09 10:21:03 INFO  Application healthy</span><br></pre></td></tr></table></figure>
+<p>实时查看日志：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">tail</span> -f app.log</span><br><span class="line">2026-10-09 10:22:01 INFO  Request received</span><br><span class="line">2026-10-09 10:22:02 INFO  Request completed</span><br></pre></td></tr></table></figure>
+<h3 id="4-搜索文件内容：grep">4. 搜索文件内容：<code>grep</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ grep <span class="string">&quot;ERROR&quot;</span> app.log</span><br><span class="line">2026-10-09 10:23:10 ERROR Database connection failed</span><br><span class="line">2026-10-09 10:23:15 ERROR Request <span class="built_in">timeout</span></span><br></pre></td></tr></table></figure>
+<p>显示行号：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ grep -n <span class="string">&quot;ERROR&quot;</span> app.log</span><br><span class="line">25:2026-10-09 10:23:10 ERROR Database connection failed</span><br><span class="line">31:2026-10-09 10:23:15 ERROR Request <span class="built_in">timeout</span></span><br></pre></td></tr></table></figure>
+<p>忽略大小写并递归搜索：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grep -ri <span class="string">&quot;timeout&quot;</span> logs/</span><br><span class="line">logs/app.log:2026-10-09 10:23:15 ERROR Request <span class="built_in">timeout</span></span><br></pre></td></tr></table></figure>
+<p>统计匹配行数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grep -c <span class="string">&quot;ERROR&quot;</span> app.log</span><br><span class="line">2</span><br></pre></td></tr></table></figure>
+<h3 id="5-查找文件：find">5. 查找文件：<code>find</code></h3>
+<p>按名称查找：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ find /var/log -name <span class="string">&quot;*.log&quot;</span> 2&gt;/dev/null</span><br><span class="line">/var/log/syslog</span><br><span class="line">/var/log/nginx/access.log</span><br><span class="line">/var/log/nginx/error.log</span><br></pre></td></tr></table></figure>
+<p>查找大于 100 MB 的文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ find / -<span class="built_in">type</span> f -size +100M 2&gt;/dev/null</span><br><span class="line">/var/lib/docker/containers/container.log</span><br><span class="line">/opt/app/app.log</span><br></pre></td></tr></table></figure>
+<p>查找最近一天修改过的文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ find . -<span class="built_in">type</span> f -mtime -1</span><br><span class="line">./config/app.conf</span><br><span class="line">./logs/app.log</span><br></pre></td></tr></table></figure>
+<h3 id="6-统计内容：wc">6. 统计内容：<code>wc</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">wc</span> -l app.log</span><br><span class="line">120 app.log</span><br></pre></td></tr></table></figure>
+<p>表示文件共有 120 行。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">wc</span> -w README.md</span><br><span class="line">356 README.md</span><br></pre></td></tr></table></figure>
+<p>表示共有 356 个单词。</p>
+<h2 id="三、权限和用户">三、权限和用户</h2>
+<h3 id="1-查看当前用户：whoami">1. 查看当前用户：<code>whoami</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">whoami</span></span><br><span class="line">app</span><br></pre></td></tr></table></figure>
+<h3 id="2-查看用户和组：id">2. 查看用户和组：<code>id</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">id</span></span><br><span class="line">uid=1001(app) gid=1001(app) <span class="built_in">groups</span>=1001(app),4(adm)</span><br></pre></td></tr></table></figure>
+<h3 id="3-查看文件权限：ls-l">3. 查看文件权限：<code>ls -l</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">ls</span> -l start.sh</span><br><span class="line">-rwxr-xr-- 1 app app 512 Oct  9 10:20 start.sh</span><br></pre></td></tr></table></figure>
+<p>权限分为三组：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">所有者：rwx</span><br><span class="line">所属组：r-x</span><br><span class="line">其他用户：r--</span><br></pre></td></tr></table></figure>
+<p>其中：</p>
+<ul>
+<li><code>r</code>：读</li>
+<li><code>w</code>：写</li>
+<li><code>x</code>：执行</li>
+</ul>
+<h3 id="4-修改权限：chmod">4. 修改权限：<code>chmod</code></h3>
+<p>添加执行权限：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">chmod</span> +x start.sh</span><br><span class="line">$ <span class="built_in">ls</span> -l start.sh</span><br><span class="line">-rwxr-xr-x 1 app app 512 Oct  9 10:20 start.sh</span><br></pre></td></tr></table></figure>
+<p>设置数字权限：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">chmod</span> 755 start.sh</span><br><span class="line">$ <span class="built_in">stat</span> -c <span class="string">&quot;%a %n&quot;</span> start.sh</span><br><span class="line">755 start.sh</span><br></pre></td></tr></table></figure>
+<p><code>755</code> 表示所有者可读写执行，其他用户可读和执行。</p>
+<h3 id="5-修改所有者：chown">5. 修改所有者：<code>chown</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> <span class="built_in">chown</span> app:app app.log</span><br><span class="line">$ <span class="built_in">ls</span> -l app.log</span><br><span class="line">-rw-r--r-- 1 app app 4096 Oct  9 10:20 app.log</span><br></pre></td></tr></table></figure>
+<h3 id="6-使用管理员权限：sudo">6. 使用管理员权限：<code>sudo</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> systemctl restart nginx</span><br><span class="line">$ <span class="built_in">echo</span> $?</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+<p>返回值 <code>0</code> 通常表示命令执行成功。</p>
+<h2 id="四、进程和服务管理">四、进程和服务管理</h2>
+<h3 id="1-查看进程：ps">1. 查看进程：<code>ps</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ps aux | grep java</span><br><span class="line">app      2188  2.1  8.4 3256840 342112 ? Sl  10:20  0:15 java -jar app.jar</span><br><span class="line">app      2250  0.0  0.0   6400  2200 pts/0    S+ 10:25  0:00 grep java</span><br></pre></td></tr></table></figure>
+<p>常见字段：</p>
+<ul>
+<li><code>PID</code>：进程编号</li>
+<li><code>%CPU</code>：CPU 使用率</li>
+<li><code>%MEM</code>：内存使用率</li>
+<li><code>COMMAND</code>：启动命令</li>
+</ul>
+<h3 id="2-实时查看资源：top">2. 实时查看资源：<code>top</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ top</span><br><span class="line">top - 10:26:00 up 3 days,  4:12,  2 <span class="built_in">users</span>,  load average: 0.42, 0.38, 0.31</span><br><span class="line">Tasks: 215 total, 1 running, 214 sleeping</span><br><span class="line">%Cpu(s): 8.2 us, 1.4 sy, 0.0 ni, 90.0 <span class="built_in">id</span></span><br><span class="line">MiB Mem : 15932.0 total, 2048.0 free, 6100.0 used, 7784.0 buff/cache</span><br></pre></td></tr></table></figure>
+<p>常用操作：</p>
+<ul>
+<li><code>P</code>：按 CPU 排序</li>
+<li><code>M</code>：按内存排序</li>
+<li><code>k</code>：结束进程</li>
+<li><code>q</code>：退出</li>
+</ul>
+<h3 id="3-结束进程：kill">3. 结束进程：<code>kill</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">kill</span> 2188</span><br><span class="line">$ ps -p 2188</span><br><span class="line">  PID TTY          TIME CMD</span><br></pre></td></tr></table></figure>
+<p>普通 <code>kill</code> 会发送 <code>SIGTERM</code>，给程序机会正常退出。</p>
+<p>强制结束：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">kill</span> -9 2188</span><br><span class="line">$ <span class="built_in">echo</span> $?</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+<p><code>kill -9</code> 无法被程序捕获，应该作为最后手段使用。</p>
+<h3 id="4-查看服务：systemctl">4. 查看服务：<code>systemctl</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl status nginx</span><br><span class="line">● nginx.service - A high performance web server</span><br><span class="line">     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled)</span><br><span class="line">     Active: active (running) since Thu 2026-10-09 09:00:00 CST</span><br></pre></td></tr></table></figure>
+<p>启动、停止和重启：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> systemctl start nginx</span><br><span class="line">$ <span class="built_in">sudo</span> systemctl stop nginx</span><br><span class="line">$ <span class="built_in">sudo</span> systemctl restart nginx</span><br></pre></td></tr></table></figure>
+<p>查看是否运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl is-active nginx</span><br><span class="line">active</span><br></pre></td></tr></table></figure>
+<p>设置开机启动：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> systemctl <span class="built_in">enable</span> nginx</span><br><span class="line">Created symlink /etc/systemd/system/multi-user.target.wants/nginx.service</span><br></pre></td></tr></table></figure>
+<h2 id="五、磁盘、内存和文件句柄">五、磁盘、内存和文件句柄</h2>
+<h3 id="1-查看磁盘空间：df">1. 查看磁盘空间：<code>df</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">df</span> -h</span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/sda1        80G   52G   25G  68% /</span><br><span class="line">tmpfs           7.8G     0  7.8G   0% /dev/shm</span><br></pre></td></tr></table></figure>
+<p><code>df</code> 查看文件系统整体空间。</p>
+<h3 id="2-查看目录大小：du">2. 查看目录大小：<code>du</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">du</span> -sh /var/log</span><br><span class="line">2.4G    /var/log</span><br></pre></td></tr></table></figure>
+<p>查看一级目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">du</span> -h --max-depth=1 /var | <span class="built_in">sort</span> -h</span><br><span class="line">120M    /var/cache</span><br><span class="line">2.4G    /var/log</span><br><span class="line">3.1G    /var</span><br></pre></td></tr></table></figure>
+<p><code>du</code> 查看具体目录和文件占用空间。</p>
+<h3 id="3-查看内存：free">3. 查看内存：<code>free</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ free -h</span><br><span class="line">               total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:            15Gi        5.9Gi       2.0Gi       120Mi       7.6Gi       9.3Gi</span><br><span class="line">Swap:          2.0Gi          0B       2.0Gi</span><br></pre></td></tr></table></figure>
+<p>判断可用内存时，优先关注 <code>available</code>。</p>
+<h3 id="4-查看磁盘和分区：lsblk">4. 查看磁盘和分区：<code>lsblk</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ lsblk</span><br><span class="line">NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS</span><br><span class="line">sda      8:0    0   80G  0 disk</span><br><span class="line">└─sda1   8:1    0   80G  0 part /</span><br></pre></td></tr></table></figure>
+<h3 id="5-查看被删除但仍占用的文件：lsof">5. 查看被删除但仍占用的文件：<code>lsof</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> lsof | grep deleted</span><br><span class="line">java  2188 app  12w REG  8,1 2147483648 /opt/app/app.log (deleted)</span><br></pre></td></tr></table></figure>
+<p>这表示文件虽然已删除，但 Java 进程仍占用文件句柄，空间不会立即释放。</p>
+<h2 id="六、网络命令">六、网络命令</h2>
+<h3 id="1-查看-IP-地址：ip-addr">1. 查看 IP 地址：<code>ip addr</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ip addr</span><br><span class="line">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt;</span><br><span class="line">    inet 192.168.1.20/24 brd 192.168.1.255 scope global eth0</span><br></pre></td></tr></table></figure>
+<h3 id="2-查看路由：ip-route">2. 查看路由：<code>ip route</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ip route</span><br><span class="line">default via 192.168.1.1 dev eth0</span><br><span class="line">192.168.1.0/24 dev eth0 proto kernel scope <span class="built_in">link</span> src 192.168.1.20</span><br></pre></td></tr></table></figure>
+<h3 id="3-测试连通性：ping">3. 测试连通性：<code>ping</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ping -c 3 8.8.8.8</span><br><span class="line">PING 8.8.8.8 (8.8.8.8): 56 data bytes</span><br><span class="line">64 bytes from 8.8.8.8: icmp_seq=0 ttl=117 <span class="keyword">time</span>=32.4 ms</span><br><span class="line">--- 8.8.8.8 ping statistics ---</span><br><span class="line">3 packets transmitted, 3 packets received, 0.0% packet loss</span><br></pre></td></tr></table></figure>
+<h3 id="4-查询-DNS：nslookup">4. 查询 DNS：<code>nslookup</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ nslookup example.com</span><br><span class="line">Name:    example.com</span><br><span class="line">Address: 93.184.216.34</span><br></pre></td></tr></table></figure>
+<h3 id="5-查看端口：ss">5. 查看端口：<code>ss</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ss -lntp</span><br><span class="line">State  Local Address:Port  Process</span><br><span class="line">LISTEN 0.0.0.0:22          <span class="built_in">users</span>:((&quot;sshd&quot;,pid=<span class="number">800</span>,fd=<span class="number">3</span>))</span><br><span class="line">LISTEN 0.0.0.0:8080        <span class="built_in">users</span>:((&quot;java&quot;,pid=<span class="number">2188</span>,fd=<span class="number">120</span>))</span><br></pre></td></tr></table></figure>
+<p>查看指定端口：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ss -lntp | grep 8080</span><br><span class="line">LISTEN 0   વિક 0.0.0.0:8080  0.0.0.0:* <span class="built_in">users</span>:((&quot;java&quot;,pid=<span class="number">2188</span>,fd=<span class="number">120</span>))</span><br></pre></td></tr></table></figure>
+<h3 id="6-调试-HTTP：curl">6. 调试 HTTP：<code>curl</code></h3>
+<p>查看响应头：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ curl -I http://localhost:8080/health</span><br><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Content-Length: 15</span><br></pre></td></tr></table></figure>
+<p>查看详细请求过程：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ curl -v http://localhost:8080/health</span><br><span class="line">&gt; GET /health HTTP/1.1</span><br><span class="line">&gt; Host: localhost:8080</span><br><span class="line">&lt; HTTP/1.1 200 OK</span><br><span class="line">&#123;<span class="string">&quot;status&quot;</span>:<span class="string">&quot;UP&quot;</span>&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="7-远程登录：ssh">7. 远程登录：<code>ssh</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ssh app@192.168.1.20</span><br><span class="line">app@192.168.1.20<span class="string">&#x27;s password:</span></span><br><span class="line"><span class="string">Last login: Thu Oct  9 10:00:00 2026</span></span><br><span class="line"><span class="string">[app@server ~]$</span></span><br></pre></td></tr></table></figure>
+<h3 id="8-远程复制：scp">8. 远程复制：<code>scp</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ scp app.jar app@192.168.1.20:/opt/app/</span><br><span class="line">app.jar                         100%   24KB  1.2MB/s   00:00</span><br></pre></td></tr></table></figure>
+<h2 id="七、压缩和解压">七、压缩和解压</h2>
+<h3 id="1-创建-tar-gz-压缩包：tar-czf">1. 创建 tar.gz 压缩包：<code>tar -czf</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ tar -czf app.tar.gz app/</span><br><span class="line">$ <span class="built_in">ls</span> -lh app.tar.gz</span><br><span class="line">-rw-r--r-- 1 app app 18K Oct  9 10:30 app.tar.gz</span><br></pre></td></tr></table></figure>
+<h3 id="2-解压：tar-xzf">2. 解压：<code>tar -xzf</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ tar -xzf app.tar.gz</span><br><span class="line">$ <span class="built_in">ls</span></span><br><span class="line">app  app.tar.gz</span><br></pre></td></tr></table></figure>
+<h3 id="3-查看压缩包内容：tar-tzf">3. 查看压缩包内容：<code>tar -tzf</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ tar -tzf app.tar.gz</span><br><span class="line">app/</span><br><span class="line">app/app.jar</span><br><span class="line">app/config/app.conf</span><br></pre></td></tr></table></figure>
+<h3 id="4-ZIP-压缩和解压：zip、unzip">4. ZIP 压缩和解压：<code>zip</code>、<code>unzip</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ zip -r app.zip app/</span><br><span class="line">  adding: app/ (stored 0%)</span><br><span class="line">  adding: app/app.jar (deflated 12%)</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ unzip app.zip</span><br><span class="line">Archive:  app.zip</span><br><span class="line"> extracting: app/app.jar</span><br></pre></td></tr></table></figure>
+<h2 id="八、管道、重定向和环境变量">八、管道、重定向和环境变量</h2>
+<h3 id="1-管道：">1. 管道：<code>|</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ps aux | grep java</span><br><span class="line">app  2188  2.1  8.4  ... java -jar app.jar</span><br></pre></td></tr></table></figure>
+<p>管道会把前一个命令的输出传给后一个命令。</p>
+<h3 id="2-输出重定向：-和">2. 输出重定向：<code>&gt;</code> 和 <code>&gt;&gt;</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">&quot;start&quot;</span> &gt; status.log</span><br><span class="line">$ <span class="built_in">cat</span> status.log</span><br><span class="line">start</span><br></pre></td></tr></table></figure>
+<p><code>&gt;</code> 会覆盖文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">&quot;running&quot;</span> &gt; status.log</span><br><span class="line">$ <span class="built_in">cat</span> status.log</span><br><span class="line">running</span><br></pre></td></tr></table></figure>
+<p><code>&gt;&gt;</code> 会追加内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">&quot;healthy&quot;</span> &gt;&gt; status.log</span><br><span class="line">$ <span class="built_in">cat</span> status.log</span><br><span class="line">running</span><br><span class="line">healthy</span><br></pre></td></tr></table></figure>
+<h3 id="3-错误输出重定向：2">3. 错误输出重定向：<code>2&gt;</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">ls</span> /not-found 2&gt; error.log</span><br><span class="line">$ <span class="built_in">cat</span> error.log</span><br><span class="line"><span class="built_in">ls</span>: cannot access <span class="string">&#x27;/not-found&#x27;</span>: No such file or directory</span><br></pre></td></tr></table></figure>
+<p>合并标准输出和错误输出：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">command</span> &gt; all.log 2&gt;&amp;1</span><br><span class="line">$ <span class="built_in">cat</span> all.log</span><br><span class="line"><span class="built_in">command</span>: not found</span><br></pre></td></tr></table></figure>
+<h3 id="4-查看历史命令：history">4. 查看历史命令：<code>history</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">history</span> 3</span><br><span class="line">  101  systemctl status nginx</span><br><span class="line">  102  <span class="built_in">tail</span> -f app.log</span><br><span class="line">  103  <span class="built_in">history</span> 3</span><br></pre></td></tr></table></figure>
+<h3 id="5-查看命令帮助：man-和-help">5. 查看命令帮助：<code>man</code> 和 <code>--help</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">ls</span> --<span class="built_in">help</span> | <span class="built_in">head</span> -n 3</span><br><span class="line">Usage: <span class="built_in">ls</span> [OPTION]... [FILE]...</span><br><span class="line">List information about the FILEs.</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ man grep</span><br><span class="line">GREP(1)                 General Commands Manual</span><br><span class="line">NAME</span><br><span class="line">       grep - <span class="built_in">print</span> lines that match patterns</span><br></pre></td></tr></table></figure>
+<h3 id="6-查看和设置环境变量：echo、env、export">6. 查看和设置环境变量：<code>echo</code>、<code>env</code>、<code>export</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="variable">$PATH</span></span><br><span class="line">/usr/local/bin:/usr/bin:/bin</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">export</span> APP_ENV=prod</span><br><span class="line">$ <span class="built_in">echo</span> <span class="variable">$APP_ENV</span></span><br><span class="line">prod</span><br></pre></td></tr></table></figure>
+<p>查看全部环境变量：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">env</span> | grep APP_ENV</span><br><span class="line">APP_ENV=prod</span><br></pre></td></tr></table></figure>
+<h2 id="九、软件包管理">九、软件包管理</h2>
+<h3 id="Ubuntu-Debian：apt">Ubuntu/Debian：<code>apt</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> apt update</span><br><span class="line">Fetched 12.4 MB <span class="keyword">in</span> 2s</span><br><span class="line">Reading package lists... Done</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> apt install nginx</span><br><span class="line">nginx is already the newest version.</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> apt remove nginx</span><br><span class="line">Removing nginx ...</span><br></pre></td></tr></table></figure>
+<h3 id="CentOS-RHEL：dnf">CentOS/RHEL：<code>dnf</code></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> dnf install nginx</span><br><span class="line">Installed:</span><br><span class="line">  nginx.x86_64 1:1.24.0</span><br><span class="line">Complete!</span><br></pre></td></tr></table></figure>
+<p>不同发行版的软件包管理器不同，面试时应先确认系统类型。</p>
+<h2 id="十、综合面试场景">十、综合面试场景</h2>
+<h3 id="场景一：接口响应很慢，如何排查？">场景一：接口响应很慢，如何排查？</h3>
+<p>先查看系统资源：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ top</span><br><span class="line">%Cpu(s): 92.0 us, 3.0 sy, 0.0 ni, 5.0 <span class="built_in">id</span></span><br></pre></td></tr></table></figure>
+<p>CPU 空闲只有 <code>5%</code>，说明 CPU 可能存在压力。</p>
+<p>再查看内存和磁盘：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ free -h</span><br><span class="line">Mem: 15Gi 14Gi 200Mi  ...</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">df</span> -h /</span><br><span class="line">/dev/sda1  80G  79G  500M  99% /</span><br></pre></td></tr></table></figure>
+<p>发现磁盘接近满载后，继续定位大目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">du</span> -h --max-depth=1 /var | <span class="built_in">sort</span> -h</span><br><span class="line">2.4G  /var/log</span><br><span class="line">65G   /var/lib</span><br></pre></td></tr></table></figure>
+<p>最后检查应用日志和端口：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grep -i <span class="string">&quot;timeout\|error&quot;</span> app.log</span><br><span class="line">2026-10-09 10:40:01 ERROR Database connection <span class="built_in">timeout</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ss -lntp | grep 8080</span><br><span class="line">LISTEN 0 128 0.0.0.0:8080 0.0.0.0:* <span class="built_in">users</span>:((&quot;java&quot;,pid=<span class="number">2188</span>,fd=<span class="number">120</span>))</span><br></pre></td></tr></table></figure>
+<p>回答思路应为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">检查 CPU 和内存</span><br><span class="line">→ 检查磁盘空间</span><br><span class="line">→ 检查进程和端口</span><br><span class="line">→ 查看应用日志</span><br><span class="line">→ 使用 curl 验证接口</span><br></pre></td></tr></table></figure>
+<h3 id="场景二：端口无法访问，如何排查？">场景二：端口无法访问，如何排查？</h3>
+<p>先确认服务是否运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl is-active nginx</span><br><span class="line">inactive</span><br></pre></td></tr></table></figure>
+<p>启动服务：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> systemctl start nginx</span><br><span class="line">$ systemctl is-active nginx</span><br><span class="line">active</span><br></pre></td></tr></table></figure>
+<p>确认端口是否监听：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ss -lntp | grep 80</span><br><span class="line">LISTEN 0 511 0.0.0.0:80 0.0.0.0:* <span class="built_in">users</span>:((&quot;nginx&quot;,pid=<span class="number">3300</span>,fd=<span class="number">6</span>))</span><br></pre></td></tr></table></figure>
+<p>本机测试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ curl -I http://127.0.0.1</span><br><span class="line">HTTP/1.1 200 OK</span><br></pre></td></tr></table></figure>
+<p>如果本机正常、远程异常，还需要继续检查防火墙、安全组、路由和 DNS。</p>
+<h3 id="场景三：磁盘空间不足，如何排查？">场景三：磁盘空间不足，如何排查？</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">df</span> -h</span><br><span class="line">/dev/sda1  80G  80G  0G  100% /</span><br></pre></td></tr></table></figure>
+<p>查找大目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">du</span> -h --max-depth=1 / | <span class="built_in">sort</span> -h | <span class="built_in">tail</span></span><br><span class="line">65G  /var</span><br></pre></td></tr></table></figure>
+<p>查找大文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ find /var -<span class="built_in">type</span> f -size +1G -<span class="built_in">ls</span> 2&gt;/dev/null</span><br><span class="line">/var/log/app.log 2147483648</span><br></pre></td></tr></table></figure>
+<p>检查删除但仍被占用的文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> lsof | grep deleted</span><br><span class="line">java 2188 app 12w REG 80G /var/log/app.log (deleted)</span><br></pre></td></tr></table></figure>
+<p>这说明需要让相关进程重新打开日志文件，或者重启服务后释放空间。</p>
+<h2 id="十一、面试高频问题">十一、面试高频问题</h2>
+<h3 id="df-和-du-有什么区别？"><code>df</code> 和 <code>du</code> 有什么区别？</h3>
+<ul>
+<li><code>df</code>：查看文件系统整体剩余空间</li>
+<li><code>du</code>：查看具体目录或文件占用空间</li>
+</ul>
+<h3 id="grep-和-find-有什么区别？"><code>grep</code> 和 <code>find</code> 有什么区别？</h3>
+<ul>
+<li><code>grep</code>：搜索文件内容</li>
+<li><code>find</code>：按名称、大小、时间等条件查找文件</li>
+</ul>
+<h3 id="kill-和-kill-9-有什么区别？"><code>kill</code> 和 <code>kill -9</code> 有什么区别？</h3>
+<ul>
+<li><code>kill PID</code>：发送 <code>SIGTERM</code>，允许程序正常清理资源</li>
+<li><code>kill -9 PID</code>：发送 <code>SIGKILL</code>，强制结束进程</li>
+</ul>
+<h3 id="和-有什么区别？"><code>&gt;</code> 和 <code>&gt;&gt;</code> 有什么区别？</h3>
+<ul>
+<li><code>&gt;</code>：覆盖写入</li>
+<li><code>&gt;&gt;</code>：追加写入</li>
+</ul>
+<h3 id="如何查看端口被哪个进程占用？">如何查看端口被哪个进程占用？</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ss -lntp | grep 8080</span><br><span class="line">LISTEN 0 128 0.0.0.0:8080 0.0.0.0:* <span class="built_in">users</span>:((&quot;java&quot;,pid=<span class="number">2188</span>,fd=<span class="number">120</span>))</span><br></pre></td></tr></table></figure>
+<p>也可以：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ lsof -i:8080</span><br><span class="line">java 2188 app 120u IPv6 12345 TCP *:8080 (LISTEN)</span><br></pre></td></tr></table></figure>
+<h3 id="如何实时查看日志？">如何实时查看日志？</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">tail</span> -f app.log</span><br><span class="line">2026-10-09 10:45:01 INFO Request received</span><br><span class="line">2026-10-09 10:45:02 INFO Request completed</span><br></pre></td></tr></table></figure>
+<h2 id="结语">结语</h2>
+<p>Linux 面试的重点不是孤立记忆命令，而是理解命令的输出，并能组合命令定位问题。</p>
+<p>常见排查流程是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">确认现象</span><br><span class="line">→ 检查 CPU、内存和磁盘</span><br><span class="line">→ 检查进程和端口</span><br><span class="line">→ 搜索日志</span><br><span class="line">→ 验证修复结果</span><br></pre></td></tr></table></figure>
+<p>优先掌握以下命令：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">pwd  ls  cd  cp  mv  rm</span><br><span class="line">cat  less  head  tail  grep  find</span><br><span class="line">chmod  chown  ps  top  kill  systemctl</span><br><span class="line">df  du  free  lsof</span><br><span class="line">ip  ping  ss  curl  ssh  scp</span><br><span class="line">tar  history  man</span><br></pre></td></tr></table></figure>
+<p>当你能解释命令的作用、关键参数、典型输出和实际使用场景时，基本就具备了应对 Linux 基础面试的能力。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://zenty-me.github.io">Zenty</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://zenty-me.github.io/posts/d0edc1ed/">https://zenty-me.github.io/posts/d0edc1ed/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://zenty-me.github.io" target="_blank">Zenty's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/f7088878/" title="Alembic 使用教程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Alembic 使用教程</div></div><div class="info-2"><div class="info-item-1">在 Python 后端开发中，只要项目使用了 SQLAlchemy，基本都会遇到一个问题： 数据库表结构发生变化之后，应该怎么安全地同步到数据库？ 比如一开始我们有一个 表： 后来业务发生变化，需要增加： 如果项目还处于刚开始开发的阶段，我们当然可以直接删掉…</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Zenty</div><div class="author-info-description">写代码，也写点别的</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">28</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">42</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Zenty-Me"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/Zenty-Me" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C"><span class="toc-number">1.</span> <span class="toc-text">一、文件和目录操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E7%9B%AE%E5%BD%95%EF%BC%9Apwd"><span class="toc-number">1.1.</span> <span class="toc-text">1. 查看当前目录：pwd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%9F%A5%E7%9C%8B%E7%9B%AE%E5%BD%95%E5%86%85%E5%AE%B9%EF%BC%9Als"><span class="toc-number">1.2.</span> <span class="toc-text">2. 查看目录内容：ls</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%88%9B%E5%BB%BA%E7%9B%AE%E5%BD%95%E5%92%8C%E6%96%87%E4%BB%B6%EF%BC%9Amkdir%E3%80%81touch"><span class="toc-number">1.3.</span> <span class="toc-text">3. 创建目录和文件：mkdir、touch</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%A4%8D%E5%88%B6%E3%80%81%E7%A7%BB%E5%8A%A8%E5%92%8C%E9%87%8D%E5%91%BD%E5%90%8D%EF%BC%9Acp%E3%80%81mv"><span class="toc-number">1.4.</span> <span class="toc-text">4. 复制、移动和重命名：cp、mv</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%EF%BC%9Arm"><span class="toc-number">1.5.</span> <span class="toc-text">5. 删除文件和目录：rm</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B%EF%BC%9Afile"><span class="toc-number">1.6.</span> <span class="toc-text">6. 查看文件类型：file</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9F%A5%E7%9C%8B%E5%92%8C%E6%90%9C%E7%B4%A2%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9"><span class="toc-number">2.</span> <span class="toc-text">二、查看和搜索文件内容</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E7%9C%8B%E5%AE%8C%E6%95%B4%E5%86%85%E5%AE%B9%EF%BC%9Acat"><span class="toc-number">2.1.</span> <span class="toc-text">1. 查看完整内容：cat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%88%86%E9%A1%B5%E6%9F%A5%E7%9C%8B%EF%BC%9Aless"><span class="toc-number">2.2.</span> <span class="toc-text">2. 分页查看：less</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%9F%A5%E7%9C%8B%E5%BC%80%E5%A4%B4%E5%92%8C%E7%BB%93%E5%B0%BE%EF%BC%9Ahead%E3%80%81tail"><span class="toc-number">2.3.</span> <span class="toc-text">3. 查看开头和结尾：head、tail</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%90%9C%E7%B4%A2%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9%EF%BC%9Agrep"><span class="toc-number">2.4.</span> <span class="toc-text">4. 搜索文件内容：grep</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%9F%A5%E6%89%BE%E6%96%87%E4%BB%B6%EF%BC%9Afind"><span class="toc-number">2.5.</span> <span class="toc-text">5. 查找文件：find</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E7%BB%9F%E8%AE%A1%E5%86%85%E5%AE%B9%EF%BC%9Awc"><span class="toc-number">2.6.</span> <span class="toc-text">6. 统计内容：wc</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%9D%83%E9%99%90%E5%92%8C%E7%94%A8%E6%88%B7"><span class="toc-number">3.</span> <span class="toc-text">三、权限和用户</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E7%94%A8%E6%88%B7%EF%BC%9Awhoami"><span class="toc-number">3.1.</span> <span class="toc-text">1. 查看当前用户：whoami</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%9F%A5%E7%9C%8B%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%EF%BC%9Aid"><span class="toc-number">3.2.</span> <span class="toc-text">2. 查看用户和组：id</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%EF%BC%9Als-l"><span class="toc-number">3.3.</span> <span class="toc-text">3. 查看文件权限：ls -l</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E4%BF%AE%E6%94%B9%E6%9D%83%E9%99%90%EF%BC%9Achmod"><span class="toc-number">3.4.</span> <span class="toc-text">4. 修改权限：chmod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E4%BF%AE%E6%94%B9%E6%89%80%E6%9C%89%E8%80%85%EF%BC%9Achown"><span class="toc-number">3.5.</span> <span class="toc-text">5. 修改所有者：chown</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E4%BD%BF%E7%94%A8%E7%AE%A1%E7%90%86%E5%91%98%E6%9D%83%E9%99%90%EF%BC%9Asudo"><span class="toc-number">3.6.</span> <span class="toc-text">6. 使用管理员权限：sudo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%BF%9B%E7%A8%8B%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="toc-number">4.</span> <span class="toc-text">四、进程和服务管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E7%9C%8B%E8%BF%9B%E7%A8%8B%EF%BC%9Aps"><span class="toc-number">4.1.</span> <span class="toc-text">1. 查看进程：ps</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%AE%9E%E6%97%B6%E6%9F%A5%E7%9C%8B%E8%B5%84%E6%BA%90%EF%BC%9Atop"><span class="toc-number">4.2.</span> <span class="toc-text">2. 实时查看资源：top</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%BB%93%E6%9D%9F%E8%BF%9B%E7%A8%8B%EF%BC%9Akill"><span class="toc-number">4.3.</span> <span class="toc-text">3. 结束进程：kill</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%9F%A5%E7%9C%8B%E6%9C%8D%E5%8A%A1%EF%BC%9Asystemctl"><span class="toc-number">4.4.</span> <span class="toc-text">4. 查看服务：systemctl</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%A3%81%E7%9B%98%E3%80%81%E5%86%85%E5%AD%98%E5%92%8C%E6%96%87%E4%BB%B6%E5%8F%A5%E6%9F%84"><span class="toc-number">5.</span> <span class="toc-text">五、磁盘、内存和文件句柄</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E7%9C%8B%E7%A3%81%E7%9B%98%E7%A9%BA%E9%97%B4%EF%BC%9Adf"><span class="toc-number">5.1.</span> <span class="toc-text">1. 查看磁盘空间：df</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%9F%A5%E7%9C%8B%E7%9B%AE%E5%BD%95%E5%A4%A7%E5%B0%8F%EF%BC%9Adu"><span class="toc-number">5.2.</span> <span class="toc-text">2. 查看目录大小：du</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%9F%A5%E7%9C%8B%E5%86%85%E5%AD%98%EF%BC%9Afree"><span class="toc-number">5.3.</span> <span class="toc-text">3. 查看内存：free</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%9F%A5%E7%9C%8B%E7%A3%81%E7%9B%98%E5%92%8C%E5%88%86%E5%8C%BA%EF%BC%9Alsblk"><span class="toc-number">5.4.</span> <span class="toc-text">4. 查看磁盘和分区：lsblk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%9F%A5%E7%9C%8B%E8%A2%AB%E5%88%A0%E9%99%A4%E4%BD%86%E4%BB%8D%E5%8D%A0%E7%94%A8%E7%9A%84%E6%96%87%E4%BB%B6%EF%BC%9Alsof"><span class="toc-number">5.5.</span> <span class="toc-text">5. 查看被删除但仍占用的文件：lsof</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%BD%91%E7%BB%9C%E5%91%BD%E4%BB%A4"><span class="toc-number">6.</span> <span class="toc-text">六、网络命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E7%9C%8B-IP-%E5%9C%B0%E5%9D%80%EF%BC%9Aip-addr"><span class="toc-number">6.1.</span> <span class="toc-text">1. 查看 IP 地址：ip addr</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%9F%A5%E7%9C%8B%E8%B7%AF%E7%94%B1%EF%BC%9Aip-route"><span class="toc-number">6.2.</span> <span class="toc-text">2. 查看路由：ip route</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%B5%8B%E8%AF%95%E8%BF%9E%E9%80%9A%E6%80%A7%EF%BC%9Aping"><span class="toc-number">6.3.</span> <span class="toc-text">3. 测试连通性：ping</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%9F%A5%E8%AF%A2-DNS%EF%BC%9Anslookup"><span class="toc-number">6.4.</span> <span class="toc-text">4. 查询 DNS：nslookup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%9F%A5%E7%9C%8B%E7%AB%AF%E5%8F%A3%EF%BC%9Ass"><span class="toc-number">6.5.</span> <span class="toc-text">5. 查看端口：ss</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E8%B0%83%E8%AF%95-HTTP%EF%BC%9Acurl"><span class="toc-number">6.6.</span> <span class="toc-text">6. 调试 HTTP：curl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95%EF%BC%9Assh"><span class="toc-number">6.7.</span> <span class="toc-text">7. 远程登录：ssh</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-%E8%BF%9C%E7%A8%8B%E5%A4%8D%E5%88%B6%EF%BC%9Ascp"><span class="toc-number">6.8.</span> <span class="toc-text">8. 远程复制：scp</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8E%8B%E7%BC%A9%E5%92%8C%E8%A7%A3%E5%8E%8B"><span class="toc-number">7.</span> <span class="toc-text">七、压缩和解压</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%88%9B%E5%BB%BA-tar-gz-%E5%8E%8B%E7%BC%A9%E5%8C%85%EF%BC%9Atar-czf"><span class="toc-number">7.1.</span> <span class="toc-text">1. 创建 tar.gz 压缩包：tar -czf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E8%A7%A3%E5%8E%8B%EF%BC%9Atar-xzf"><span class="toc-number">7.2.</span> <span class="toc-text">2. 解压：tar -xzf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%9F%A5%E7%9C%8B%E5%8E%8B%E7%BC%A9%E5%8C%85%E5%86%85%E5%AE%B9%EF%BC%9Atar-tzf"><span class="toc-number">7.3.</span> <span class="toc-text">3. 查看压缩包内容：tar -tzf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-ZIP-%E5%8E%8B%E7%BC%A9%E5%92%8C%E8%A7%A3%E5%8E%8B%EF%BC%9Azip%E3%80%81unzip"><span class="toc-number">7.4.</span> <span class="toc-text">4. ZIP 压缩和解压：zip、unzip</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E7%AE%A1%E9%81%93%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E5%92%8C%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="toc-number">8.</span> <span class="toc-text">八、管道、重定向和环境变量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%AE%A1%E9%81%93%EF%BC%9A"><span class="toc-number">8.1.</span> <span class="toc-text">1. 管道：|</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91%EF%BC%9A-%E5%92%8C"><span class="toc-number">8.2.</span> <span class="toc-text">2. 输出重定向：&gt; 和 &gt;&gt;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E9%94%99%E8%AF%AF%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91%EF%BC%9A2"><span class="toc-number">8.3.</span> <span class="toc-text">3. 错误输出重定向：2&gt;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%9F%A5%E7%9C%8B%E5%8E%86%E5%8F%B2%E5%91%BD%E4%BB%A4%EF%BC%9Ahistory"><span class="toc-number">8.4.</span> <span class="toc-text">4. 查看历史命令：history</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%9F%A5%E7%9C%8B%E5%91%BD%E4%BB%A4%E5%B8%AE%E5%8A%A9%EF%BC%9Aman-%E5%92%8C-help"><span class="toc-number">8.5.</span> <span class="toc-text">5. 查看命令帮助：man 和 --help</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%9F%A5%E7%9C%8B%E5%92%8C%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%EF%BC%9Aecho%E3%80%81env%E3%80%81export"><span class="toc-number">8.6.</span> <span class="toc-text">6. 查看和设置环境变量：echo、env、export</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86"><span class="toc-number">9.</span> <span class="toc-text">九、软件包管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Ubuntu-Debian%EF%BC%9Aapt"><span class="toc-number">9.1.</span> <span class="toc-text">Ubuntu&#x2F;Debian：apt</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CentOS-RHEL%EF%BC%9Adnf"><span class="toc-number">9.2.</span> <span class="toc-text">CentOS&#x2F;RHEL：dnf</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E7%BB%BC%E5%90%88%E9%9D%A2%E8%AF%95%E5%9C%BA%E6%99%AF"><span class="toc-number">10.</span> <span class="toc-text">十、综合面试场景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E4%B8%80%EF%BC%9A%E6%8E%A5%E5%8F%A3%E5%93%8D%E5%BA%94%E5%BE%88%E6%85%A2%EF%BC%8C%E5%A6%82%E4%BD%95%E6%8E%92%E6%9F%A5%EF%BC%9F"><span class="toc-number">10.1.</span> <span class="toc-text">场景一：接口响应很慢，如何排查？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E4%BA%8C%EF%BC%9A%E7%AB%AF%E5%8F%A3%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AE%EF%BC%8C%E5%A6%82%E4%BD%95%E6%8E%92%E6%9F%A5%EF%BC%9F"><span class="toc-number">10.2.</span> <span class="toc-text">场景二：端口无法访问，如何排查？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E4%B8%89%EF%BC%9A%E7%A3%81%E7%9B%98%E7%A9%BA%E9%97%B4%E4%B8%8D%E8%B6%B3%EF%BC%8C%E5%A6%82%E4%BD%95%E6%8E%92%E6%9F%A5%EF%BC%9F"><span class="toc-number">10.3.</span> <span class="toc-text">场景三：磁盘空间不足，如何排查？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc-number">11.</span> <span class="toc-text">十一、面试高频问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#df-%E5%92%8C-du-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">11.1.</span> <span class="toc-text">df 和 du 有什么区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#grep-%E5%92%8C-find-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">11.2.</span> <span class="toc-text">grep 和 find 有什么区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kill-%E5%92%8C-kill-9-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">11.3.</span> <span class="toc-text">kill 和 kill -9 有什么区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">11.4.</span> <span class="toc-text">&gt; 和 &gt;&gt; 有什么区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E7%AB%AF%E5%8F%A3%E8%A2%AB%E5%93%AA%E4%B8%AA%E8%BF%9B%E7%A8%8B%E5%8D%A0%E7%94%A8%EF%BC%9F"><span class="toc-number">11.5.</span> <span class="toc-text">如何查看端口被哪个进程占用？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E6%97%B6%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97%EF%BC%9F"><span class="toc-number">11.6.</span> <span class="toc-text">如何实时查看日志？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-number">12.</span> <span class="toc-text">结语</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Zenty</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div><div class="footer_custom_text"><p>心之所向，素履以往</p></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.9/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('/css/lib/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script></div><script src="/js/custom.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      true
+        ? pjax.loadUrl('/404')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
